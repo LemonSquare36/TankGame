@@ -45,15 +45,16 @@ namespace TankGame
             content = Content;
             window = Window;
             IsMouseVisible = true;
-            graphicsManager = new GraphicsDeviceManager(this);
-            //window size for game on start up
-            graphicsManager.PreferredBackBufferWidth = 1344;
-            graphicsManager.PreferredBackBufferHeight = 756;
-            graphicsManager.ApplyChanges();
+            graphicsManager = new GraphicsDeviceManager(this);           
         }
 
         protected override void Initialize()
         {
+            //window size for game on start up
+            graphicsManager.PreferredBackBufferWidth = 1344;
+            graphicsManager.PreferredBackBufferHeight = 756;
+            graphicsManager.ApplyChanges();
+
             //initialize my Graphics Device and SpriteBatch 
             graphics = GraphicsDevice;
             spriteBatch = new SpriteBatch(GraphicsDevice);

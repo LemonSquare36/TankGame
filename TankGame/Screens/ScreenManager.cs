@@ -28,7 +28,7 @@ namespace TankGame
         //puases the game when true
         protected bool pause = false;
 
-        
+        #region Held functions
 
         //Holds Initialize
         public virtual void Initialize()
@@ -50,30 +50,27 @@ namespace TankGame
         {
 
         }
-        public void getKey()
-        {
-            Key = Keyboard.GetState();
-        }
 
         //Holds the Function
         public virtual void ButtonReset()
         {
 
         }
+        #endregion
+
         //Gets the next screen
         public string getNextScreen()
         {
             return nextScreen;
         }
+        //gets current keyboardstate
+        public void getKey()
+        {
+            Key = Keyboard.GetState();
+        }
 
-        #region Game Screen Manager
-        ///////////////////////////////GAME SCREEN MANAGER STUFF//////////////////////////////////
+        #region Manager
 
-        
-        #endregion
-
-        #region MenuManager
-        ///////////////////////////////MENU MANAGER STUFF////////////////////////
         protected MouseState mouse;
 
         //ButtonCLicked leads Here

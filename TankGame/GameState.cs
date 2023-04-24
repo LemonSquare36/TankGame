@@ -38,7 +38,7 @@ namespace TankGame
         #region Declare the Screens
         private ScreenManager CurrentScreen;
         private MainMenu mainMenu;
-        //public IntoTheFray mainGame;
+        private GameBoard mainGame;
         #endregion
 
         //Constructor
@@ -46,7 +46,7 @@ namespace TankGame
         {
             #region Initialize the Screens
             mainMenu = new MainMenu();
-            //mainGame = new IntoTheFray();
+            mainGame = new GameBoard();
             #endregion
         }
         //Initialize things upon class creation
@@ -60,7 +60,7 @@ namespace TankGame
 
             if (CurrentScreen == null)
             {
-                CurrentScreen = mainMenu;
+                CurrentScreen = mainGame;
             }
             CurrentScreen.Initialize();
 
