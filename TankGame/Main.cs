@@ -37,6 +37,13 @@ namespace TankGame
             get { return graphics; }
             set { graphics = value; }
         }
+        //GET SET for GraphicsAdapter
+        private static GraphicsAdapter graphicsAdaptr;
+        public static GraphicsAdapter graphicsAdapter
+        {
+            get { return graphicsAdaptr; }
+            set { graphicsAdaptr = value; }
+        }
         //constructor
         public Main()
         {
@@ -45,7 +52,8 @@ namespace TankGame
             content = Content;
             window = Window;
             IsMouseVisible = true;
-            graphicsManager = new GraphicsDeviceManager(this);           
+            graphicsManager = new GraphicsDeviceManager(this);
+            graphicsAdaptr = new GraphicsAdapter();
         }
 
         protected override void Initialize()
