@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework.Audio;
 using System.Diagnostics;
 using System.IO;
 using System.Collections;
+using TankGame.Tools;
 
 namespace TankGame
 {
@@ -20,13 +21,21 @@ namespace TankGame
     {
         Board gameBoard;
         Tank testTank;
+
+        Camera gameView, sidebar;
         public override void Initialize()
         {
             //columns = Main.gameWindow.ClientBounds.Width / 10;
             //rows = Main.gameWindow.ClientBounds.Height / 10;
-            gameBoard = new Board(new Point(100,1), new Point(600,600), 6, 6);
-            testTank = new Tank(gameBoard.getGridSquare(1,4));
-            
+
+
+            //initialize the cameras
+            gameView = new Camera(new Point(0,0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height));
+            //create new board
+            gameBoard = new Board(new Point(0, 0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height), 8, 12);
+
+            testTank = new Tank(gameBoard.getGridSquare(1, 4));
+
         }
         public override void LoadContent(SpriteBatch spriteBatchmain)
         {
@@ -43,6 +52,16 @@ namespace TankGame
         {
             //spriteBatch.Draw(Outline,new Rectangle(new Point(100, 100), new Point(600, 600)) , Color.Blue);
             //rectangle - first point is the top left corner, second point is the bottom right corner based on the position of point 1
+
+            //get the camera factors for scaling the screen
+            gameView.scaleCameraStart();
+            Main.graphicsDevice.Viewport = gameView.GetViewport();
+
+            //end the current call and begin the one scaled properly
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, gameView.getScalingMatrix());
+
+
             gameBoard.draw(spriteBatch, Color.Black);
             testTank.Draw(spriteBatch);
         }

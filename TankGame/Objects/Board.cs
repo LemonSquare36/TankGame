@@ -22,6 +22,7 @@ namespace TankGame
         Rectangle[,] gridarray;
         Point TopLeft, BottomRight;
         int Col, Rows;
+        Point realBoardSize;
 
         //gets the information needs to create a 2d array that makes up the board
         public Board(Point topLeft, Point bottomRight, int col, int rows)
@@ -30,6 +31,7 @@ namespace TankGame
             BottomRight = bottomRight;
             Col = col;
             Rows = rows;
+
             gridarray = getBoard();
         }
 
@@ -43,13 +45,13 @@ namespace TankGame
         public void draw(SpriteBatch spriteBatch, Color color)
         {
             //draws an outline for the board creating a thicker border
-            spriteBatch.Draw(Outline, new Rectangle(new Point(TopLeft.X-1, TopLeft.Y-1), BottomRight), color);
+            spriteBatch.Draw(Outline, new Rectangle(new Point(TopLeft.X - 1, TopLeft.Y - 1), realBoardSize), color);
 
             for (int i = 0; i <= gridarray.GetUpperBound(1); i++)
             {
                 for (int j = 0; j <= gridarray.GetUpperBound(0); j++)
                 {
-                    spriteBatch.Draw(Outline, gridarray[i,j], color);
+                    spriteBatch.Draw(Outline, gridarray[i, j], color);
                 }
             }
         }
@@ -60,19 +62,21 @@ namespace TankGame
             Point size = new Point(BottomRight.X / Col, BottomRight.Y / Rows);
             Point location = TopLeft;
 
-            Rectangle[,] rectangles = new Rectangle[Col,Rows];
+            Rectangle[,] rectangles = new Rectangle[Col, Rows];
 
             for (int i = 0; i <= rectangles.GetUpperBound(1); i++)
             {
                 for (int j = 0; j <= rectangles.GetUpperBound(0); j++)
                 {
-                    rectangles[i,j] = new Rectangle(location, size);
+                    rectangles[i, j] = new Rectangle(location, size);
 
                     location.X += size.X - 1;
-                }
+                }          
                 location.X = TopLeft.X;
                 location.Y += size.Y - 1;
             }
+            var last = rectangles[Col-1, Rows -1];
+            realBoardSize = last.Location + new Point(last.Width, last.Height);
             return rectangles;
         }
         public Rectangle[,] getGrid()

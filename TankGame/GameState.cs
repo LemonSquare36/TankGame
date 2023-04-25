@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework.Audio;
 using System.Diagnostics;
 using System.IO;
 using System.Collections;
+using TankGame.Tools;
 
 namespace TankGame
 {
@@ -43,7 +44,7 @@ namespace TankGame
 
         //Constructor
         public GameState()
-        {
+        {           
             #region Initialize the Screens
             mainMenu = new MainMenu();
             mainGame = new GameBoard();
@@ -103,10 +104,8 @@ namespace TankGame
         //Draws the images and textures we use
         public void Draw()
         {
-            //var viewMatrix = camera.Transform(Main.graphicsDevice);
-
             Main.graphicsDevice.Clear(color);
-
+            
             if (!loading)
             {
                 spriteBatch.Begin();
