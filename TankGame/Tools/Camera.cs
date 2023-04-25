@@ -20,6 +20,10 @@ namespace TankGame.Tools
     internal class Camera
     {
         private Viewport viewport;
+        public Viewport Viewport
+        {
+            get { return viewport; }
+        }
         Vector2 Pos;
         Vector2 Size;
 
@@ -41,12 +45,17 @@ namespace TankGame.Tools
         {
             return viewport.Bounds;
         }
-        public Viewport GetViewport()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scale">Set to 1 or 0 for defualt scaling</param>
+        /// <returns></returns>
+        public Matrix getScalingMatrix(float scale)
         {
-            return viewport;
-        }
-        public Matrix getScalingMatrix()
-        {
+            if (scale == 0)
+            {
+                scale = 1;
+            }
             getScale();
             //game is scaled to these amounts yo
              scaleX = (float)viewport.Width / Main.gameWindow.ClientBounds.Height;
@@ -54,7 +63,7 @@ namespace TankGame.Tools
 
             var translationMatrix = Matrix.CreateTranslation(new Vector3(Pos.X, Pos.Y, 0));
             var rotationMatrix = Matrix.CreateRotationZ(0);
-            var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 1));
+            var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, scale));
             var originMatrix = Matrix.CreateTranslation(new Vector3(Vector2.Zero.X, Vector2.Zero.Y, 0));
 
             return translationMatrix * rotationMatrix * scaleMatrix * originMatrix; ;

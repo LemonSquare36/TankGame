@@ -21,20 +21,21 @@ namespace TankGame
     {
         Board gameBoard;
         Tank testTank;
+        double imageScale;
 
         Camera gameView, sidebar;
         public override void Initialize()
         {
             //columns = Main.gameWindow.ClientBounds.Width / 10;
             //rows = Main.gameWindow.ClientBounds.Height / 10;
-
+            imageScale = 1;
 
             //initialize the cameras
             gameView = new Camera(new Point(0,0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height));
             //create new board
-            gameBoard = new Board(new Point(0, 0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height), 8, 12);
+            gameBoard = new Board(new Point(0, 0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height), 80, 15);
 
-            testTank = new Tank(gameBoard.getGridSquare(1, 4));
+            testTank = new Tank(gameBoard.getGridSquare(1, 1));
 
         }
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -42,10 +43,19 @@ namespace TankGame
             spriteBatch = spriteBatchmain;
             gameBoard.LoadContent();
             testTank.LoadContent();
+
+            if (gameView.Viewport.Width % gameBoard.Rows == 0)
+            {
+                imageScale = 0.99;
+            }
+            if (gameView.Viewport.Height % gameBoard.Columns == 0)
+            {
+                imageScale = 0.99;
+            }
         }
         public override void Update()
         {
-            base.Update();
+
         }
 
         public override void Draw()
@@ -55,11 +65,12 @@ namespace TankGame
 
             //get the camera factors for scaling the screen
             gameView.scaleCameraStart();
-            Main.graphicsDevice.Viewport = gameView.GetViewport();
+            Main.graphicsDevice.Viewport = gameView.Viewport;
 
             //end the current call and begin the one scaled properly
             spriteBatch.End();
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, gameView.getScalingMatrix());
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, 
+                gameView.getScalingMatrix((float)imageScale));
 
 
             gameBoard.draw(spriteBatch, Color.Black);

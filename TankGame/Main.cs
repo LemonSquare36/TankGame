@@ -60,7 +60,7 @@ namespace TankGame
         {
             //window size for game on start up
             graphicsManager.PreferredBackBufferWidth = 1344;
-            graphicsManager.PreferredBackBufferHeight = 756;
+            graphicsManager.PreferredBackBufferHeight = 800;
             graphicsManager.ApplyChanges();
 
             //initialize my Graphics Device and SpriteBatch 
