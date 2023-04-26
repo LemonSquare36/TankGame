@@ -13,14 +13,14 @@ using Microsoft.Xna.Framework.Audio;
 using System.Diagnostics;
 using System.IO;
 using System.Collections;
-using TankGame.Tools;
+using TankGame.Objects;
 
-namespace TankGame
+namespace TankGame.Tools
 {
     internal class GameBoard : GameScreenManager
     {
         Board gameBoard;
-        Tank testTank;
+        //Tank testTank;
         float imageScaleX, imageScaleY;
 
         Camera gameView, sidebar;
@@ -32,9 +32,9 @@ namespace TankGame
             imageScaleY = 1;
 
             //initialize the cameras
-            gameView = new Camera(new Point(2,2), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height));
+            gameView = new Camera(new Point(0,0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height));
             //create new board
-            gameBoard = new Board(new Vector2(0, 0), new Vector2(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height), 20, 80);
+            gameBoard = new Board(new Vector2(0, 0), new Vector2(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height), 80, 80, 4);
 
             //testTank = new Tank(gameBoard.getGridSquare(1, 1));
 
@@ -42,10 +42,8 @@ namespace TankGame
             gameView.ScaleToViewport();
 
             //get the amount to scale the board to fit the outline
-            Vector2 boardEdge = gameBoard.getRealBoardSize();
-            Vector2 outlineinnerEdge = gameBoard.getOutlineSize();
-            imageScaleX = outlineinnerEdge.X / boardEdge.X;
-            imageScaleY = outlineinnerEdge.Y / (boardEdge.Y+8);
+            RectangleF inner = gameBoard.getInnerRectangle();
+            imageScaleX = 756 / (inner.Width-4);
 
         }
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -71,7 +69,7 @@ namespace TankGame
             //end the current call and begin the one scaled properly
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, 
-                gameView.getScalingMatrix(1, 1));
+                gameView.getScalingMatrix(imageScaleX,756,756));
 
 
             gameBoard.draw(spriteBatch, Color.Red);

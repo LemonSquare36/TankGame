@@ -46,9 +46,10 @@ namespace TankGame.Tools
             return viewport.Bounds;
         }
         #region Scaling Matrix
+        ///<summary>Scales the batch to the </summary>
         /// <param name="scale">Set to 1 or 0 for defualt scaling</param>
         /// <returns></returns>
-        public Matrix getScalingMatrix(float scale)
+        public Matrix getScalingMatrix(float scale, float width, float height)
         {
             if (scale == 0)
             {
@@ -56,8 +57,8 @@ namespace TankGame.Tools
             }
             getScale();
             //game is scaled to these amounts yo
-             scaleX = ((float)viewport.Width / Main.gameWindow.ClientBounds.Height)*scale;
-             scaleY = ((float)viewport.Height / Main.gameWindow.ClientBounds.Height)*scale;
+             scaleX = ((float)viewport.Width / width) *scale;
+             scaleY = ((float)viewport.Height / height) *scale;
 
             var translationMatrix = Matrix.CreateTranslation(new Vector3(Pos.X, Pos.Y, 0));
             var rotationMatrix = Matrix.CreateRotationZ(0);
@@ -69,7 +70,7 @@ namespace TankGame.Tools
         /// <param name="scaleX">Sets additional percatage scaling on the X</param>
         /// <param name="scaleY">Sets additional percatage scaling on the Y</param>
         /// <returns></returns>
-        public Matrix getScalingMatrix(float scaleX, float scaleY)
+        public Matrix getScalingMatrix(float scaleX, float scaleY,float width, float height)
         {
             if (scaleX == 0)
             {
@@ -81,12 +82,12 @@ namespace TankGame.Tools
             }
             getScale();
             //game is scaled to these amounts yo
-            scaleX = ((float)viewport.Width / Main.gameWindow.ClientBounds.Height) * scaleX;
-            scaleY = ((float)viewport.Height / Main.gameWindow.ClientBounds.Height) * scaleY;
+            scaleX = ((float)viewport.Width / width) * scaleX;
+            scaleY = ((float)viewport.Height / height) * scaleY;
 
             var translationMatrix = Matrix.CreateTranslation(new Vector3(Pos.X, Pos.Y, 0));
             var rotationMatrix = Matrix.CreateRotationZ(0);
-            var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 0));
+            var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 1));
             var originMatrix = Matrix.CreateTranslation(new Vector3(Vector2.Zero.X, Vector2.Zero.Y, 0));
 
             return translationMatrix * rotationMatrix * scaleMatrix * originMatrix; ;

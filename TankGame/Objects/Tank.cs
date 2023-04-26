@@ -14,7 +14,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 
-namespace TankGame
+namespace TankGame.Objects
 {
     internal class Tank
     {
