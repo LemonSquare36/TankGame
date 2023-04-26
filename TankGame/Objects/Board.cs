@@ -22,6 +22,7 @@ namespace TankGame
         Rectangle[,] gridarray;
         Point TopLeft, BottomRight;
         Point realBoardSize;
+        Rectangle[,] gridLines;
 
         int Col, Row;
         public int Columns
@@ -49,44 +50,43 @@ namespace TankGame
         {
             Outline = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
             Border = Main.GameContent.Load<Texture2D>("GameSprites/WhiteRectangle");
+
+            gridLines = getGridLines(gridarray);
+
+           
         }
 
         //draws each rectangle through for loops to make the grid
         public void draw(SpriteBatch spriteBatch, Color color)
         {
-
-            //draws an outline for the board creating a thicker border
-            Rectangle horizontalOutline = new Rectangle(new Point(TopLeft.X - 1, TopLeft.Y - 1), new Point(realBoardSize.X, 4));
-            Rectangle verticalOutline = new Rectangle(new Point(TopLeft.X - 1, TopLeft.Y - 1), new Point(4, realBoardSize.Y));
-
-            spriteBatch.Draw(Outline, horizontalOutline, color);
-            spriteBatch.Draw(Outline, verticalOutline, color);
-
-            horizontalOutline.Y += realBoardSize.Y;
-            horizontalOutline.Width += 4;
-            verticalOutline.X += realBoardSize.X;
-
-            spriteBatch.Draw(Outline, horizontalOutline, color);
-            spriteBatch.Draw(Outline, verticalOutline, color);
-
-
-            for (int i = 0; i <= gridarray.GetUpperBound(0); i++)
+            for (int i = 0; i <= gridLines.GetUpperBound(0); i++)
             {
-                for (int j = 0; j <= gridarray.GetUpperBound(1); j++)
+                for (int j = 0; j <= gridLines.GetUpperBound(1); j++)
                 {
-                    Rectangle horizontalBorder = new Rectangle(gridarray[i, j].Location, new Point(gridarray[i,j].Width,2));
-                    Rectangle verticalBorder = new Rectangle(gridarray[i, j].Location, new Point(2, gridarray[i, j].Height));
-
-                    spriteBatch.Draw(Outline, horizontalBorder, color);
-                    spriteBatch.Draw(Outline, verticalBorder, color);
-
-                    horizontalBorder.Y += gridarray[i, j].Height;
-                    verticalBorder.X += gridarray[i, j].Width;
-
-                    spriteBatch.Draw(Outline, horizontalBorder, color);
-                    spriteBatch.Draw(Outline, verticalBorder, color);
+                    spriteBatch.Draw(Outline, gridLines[i,j], color);
+                    spriteBatch.Draw(Outline, gridLines[i, j], color);                  
+                    spriteBatch.Draw(Outline, gridLines[i, j], color);
+                    spriteBatch.Draw(Outline, gridLines[i, j], color);
                 }
             }
+        }
+        public void DrawOutline(SpriteBatch spriteBatch, Color color)
+        {
+
+            //draws an outline for the board creating a thicker border
+            Rectangle horizontalOutline = new Rectangle(new Point(TopLeft.X, TopLeft.Y), new Point(BottomRight.X+1, 4));
+            Rectangle verticalOutline = new Rectangle(new Point(TopLeft.X, TopLeft.Y), new Point(4, BottomRight.Y));
+
+            spriteBatch.Draw(Outline, horizontalOutline, color);
+            spriteBatch.Draw(Outline, verticalOutline, color);
+
+            horizontalOutline.Y += BottomRight.Y-4;
+            horizontalOutline.Width += 3;
+            verticalOutline.X += BottomRight.X;
+
+            spriteBatch.Draw(Outline, horizontalOutline, color);
+            spriteBatch.Draw(Outline, verticalOutline, color);
+
         }
 
         //creates the rectangles that go into the array - populates it
@@ -124,6 +124,36 @@ namespace TankGame
         public Point getRealBoardSize()
         {
             return realBoardSize;
+        }
+        //this gets the lines to draw to make the rectangles on the grid. 
+        private static Rectangle[,] getGridLines(Rectangle[,] grid)
+        {
+            int k = 0;
+            Rectangle[,] Lines = new Rectangle[grid.LongLength, 4];
+            //itertae through grides to find lines for each rectangle
+            for (int i = 0; i <= grid.GetUpperBound(0); i++)
+            {
+                for (int j = 0; j <= grid.GetUpperBound(1); j++)
+                {
+                    //get top and left walls
+                    Rectangle horizontalBorder = new Rectangle(grid[i, j].Location, new Point(grid[i, j].Width, 1));
+                    Rectangle verticalBorder = new Rectangle(grid[i, j].Location, new Point(1, grid[i, j].Height));
+                    //apply those walls to thier proper posistion and grid rectangle
+                    Lines[k, 0] = horizontalBorder;
+                    Lines[k, 1] = verticalBorder;
+
+                    //get bottom and right walls
+                    horizontalBorder.Y += grid[i, j].Height;
+                    verticalBorder.X += grid[i, j].Width;
+                    //apply those walls to thier proper posistion and grid rectangle
+                    Lines[k, 2] = horizontalBorder;
+                    Lines[k, 3] = verticalBorder;
+
+                    //K is the postion in lines that follows gridarray. Adds one each time J increases to indicate a new grid needs lines
+                    k++;
+                }
+            }
+            return Lines;
         }
     }
 }

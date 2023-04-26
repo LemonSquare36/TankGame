@@ -33,9 +33,12 @@ namespace TankGame
             //initialize the cameras
             gameView = new Camera(new Point(0,0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height));
             //create new board
-            gameBoard = new Board(new Point(0, 0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height), 80, 15);
+            gameBoard = new Board(new Point(0, 0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height), 80, 80);
 
             testTank = new Tank(gameBoard.getGridSquare(1, 1));
+
+            //get the camera factors for scaling the screen
+            gameView.scaleCameraStart();
 
         }
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -43,15 +46,6 @@ namespace TankGame
             spriteBatch = spriteBatchmain;
             gameBoard.LoadContent();
             testTank.LoadContent();
-
-            if (gameView.Viewport.Width % gameBoard.Rows == 0)
-            {
-                imageScale = 0.99;
-            }
-            if (gameView.Viewport.Height % gameBoard.Columns == 0)
-            {
-                imageScale = 0.99;
-            }
         }
         public override void Update()
         {
@@ -63,9 +57,9 @@ namespace TankGame
             //spriteBatch.Draw(Outline,new Rectangle(new Point(100, 100), new Point(600, 600)) , Color.Blue);
             //rectangle - first point is the top left corner, second point is the bottom right corner based on the position of point 1
 
-            //get the camera factors for scaling the screen
-            gameView.scaleCameraStart();
+            //set viewport for play zone
             Main.graphicsDevice.Viewport = gameView.Viewport;
+            
 
             //end the current call and begin the one scaled properly
             spriteBatch.End();
@@ -75,6 +69,13 @@ namespace TankGame
 
             gameBoard.draw(spriteBatch, Color.Black);
             testTank.Draw(spriteBatch);
+            //end scalling and call again for next classes/objects
+            spriteBatch.End();
+            //reset viewport to regular client
+            Main.graphicsDevice.Viewport = new Viewport(new Rectangle(new Point(0,0), new Point(Main.gameWindow.ClientBounds.Width, Main.gameWindow.ClientBounds.Height)));
+            spriteBatch.Begin();
+            //draw the outline of the board over the old viewport
+            gameBoard.DrawOutline(spriteBatch, Color.Black);
         }
        
     }
