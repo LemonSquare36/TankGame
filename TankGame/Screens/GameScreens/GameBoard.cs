@@ -21,31 +21,38 @@ namespace TankGame
     {
         Board gameBoard;
         Tank testTank;
-        double imageScale;
+        float imageScaleX, imageScaleY;
 
         Camera gameView, sidebar;
         public override void Initialize()
         {
             //columns = Main.gameWindow.ClientBounds.Width / 10;
             //rows = Main.gameWindow.ClientBounds.Height / 10;
-            imageScale = 1;
+            imageScaleX = 1;
+            imageScaleY = 1;
 
             //initialize the cameras
-            gameView = new Camera(new Point(0,0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height));
+            gameView = new Camera(new Point(2,2), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height));
             //create new board
-            gameBoard = new Board(new Point(0, 0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height), 80, 80);
+            gameBoard = new Board(new Vector2(0, 0), new Vector2(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height), 20, 80);
 
-            testTank = new Tank(gameBoard.getGridSquare(1, 1));
+            //testTank = new Tank(gameBoard.getGridSquare(1, 1));
 
             //get the camera factors for scaling the screen
-            gameView.scaleCameraStart();
+            gameView.ScaleToViewport();
+
+            //get the amount to scale the board to fit the outline
+            Vector2 boardEdge = gameBoard.getRealBoardSize();
+            Vector2 outlineinnerEdge = gameBoard.getOutlineSize();
+            imageScaleX = outlineinnerEdge.X / boardEdge.X;
+            imageScaleY = outlineinnerEdge.Y / (boardEdge.Y+8);
 
         }
         public override void LoadContent(SpriteBatch spriteBatchmain)
         {
             spriteBatch = spriteBatchmain;
             gameBoard.LoadContent();
-            testTank.LoadContent();
+            //testTank.LoadContent();
         }
         public override void Update()
         {
@@ -64,11 +71,11 @@ namespace TankGame
             //end the current call and begin the one scaled properly
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, 
-                gameView.getScalingMatrix((float)imageScale));
+                gameView.getScalingMatrix(1, 1));
 
 
-            gameBoard.draw(spriteBatch, Color.Black);
-            testTank.Draw(spriteBatch);
+            gameBoard.draw(spriteBatch, Color.Red);
+            //testTank.Draw(spriteBatch);
             //end scalling and call again for next classes/objects
             spriteBatch.End();
             //reset viewport to regular client

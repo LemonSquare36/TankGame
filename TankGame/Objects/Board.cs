@@ -19,10 +19,10 @@ namespace TankGame
     internal class Board
     {
         Texture2D Outline, Border;
-        Rectangle[,] gridarray;
-        Point TopLeft, BottomRight;
-        Point realBoardSize;
-        Rectangle[,] gridLines;
+        RectangleF[,] gridarray;
+        Vector2 TopLeft, BottomRight;
+        Vector2 realBoardSize;
+        RectangleF[,] gridLines;
 
         int Col, Row;
         public int Columns
@@ -35,7 +35,7 @@ namespace TankGame
         }
 
         //gets the information needs to create a 2d array that makes up the board
-        public Board(Point topLeft, Point bottomRight, int col, int rows)
+        public Board(Vector2 topLeft, Vector2 bottomRight, int col, int rows)
         {
             TopLeft = topLeft;
             BottomRight = bottomRight;
@@ -63,10 +63,7 @@ namespace TankGame
             {
                 for (int j = 0; j <= gridLines.GetUpperBound(1); j++)
                 {
-                    spriteBatch.Draw(Outline, gridLines[i,j], color);
-                    spriteBatch.Draw(Outline, gridLines[i, j], color);                  
-                    spriteBatch.Draw(Outline, gridLines[i, j], color);
-                    spriteBatch.Draw(Outline, gridLines[i, j], color);
+                    spriteBatch.Draw(Outline, gridLines[i, j].Location,null, color,0,Vector2.Zero, gridLines[i, j].Size, SpriteEffects.None, 0);
                 }
             }
         }
@@ -74,34 +71,34 @@ namespace TankGame
         {
 
             //draws an outline for the board creating a thicker border
-            Rectangle horizontalOutline = new Rectangle(new Point(TopLeft.X, TopLeft.Y), new Point(BottomRight.X+1, 4));
-            Rectangle verticalOutline = new Rectangle(new Point(TopLeft.X, TopLeft.Y), new Point(4, BottomRight.Y));
+            RectangleF horizontalOutline = new RectangleF(new Vector2(TopLeft.X, TopLeft.Y), new Vector2(BottomRight.X+1, 4));
+            RectangleF verticalOutline = new RectangleF(new Vector2(TopLeft.X, TopLeft.Y), new Vector2(4, BottomRight.Y));
 
-            spriteBatch.Draw(Outline, horizontalOutline, color);
-            spriteBatch.Draw(Outline, verticalOutline, color);
+            spriteBatch.Draw(Outline, horizontalOutline.Location, null, color, 0, Vector2.Zero, horizontalOutline.Size, SpriteEffects.None, 0);
+            spriteBatch.Draw(Outline, verticalOutline.Location, null, color, 0, Vector2.Zero, verticalOutline.Size, SpriteEffects.None, 0);
 
             horizontalOutline.Y += BottomRight.Y-4;
             horizontalOutline.Width += 3;
             verticalOutline.X += BottomRight.X;
 
-            spriteBatch.Draw(Outline, horizontalOutline, color);
-            spriteBatch.Draw(Outline, verticalOutline, color);
+            spriteBatch.Draw(Outline, horizontalOutline.Location, null, color, 0, Vector2.Zero, horizontalOutline.Size, SpriteEffects.None, 0);
+            spriteBatch.Draw(Outline, verticalOutline.Location, null, color, 0, Vector2.Zero, verticalOutline.Size, SpriteEffects.None, 0);
 
         }
 
         //creates the rectangles that go into the array - populates it
-        private Rectangle[,] getBoard()
+        private RectangleF[,] getBoard()
         {
-            Point size = new Point(BottomRight.X / Col, BottomRight.Y / Row);
-            Point location = TopLeft;
+            Vector2 size = new Vector2((BottomRight.X) / Col, (BottomRight.Y-9) / Row);
+            Vector2 location = TopLeft;
 
-            Rectangle[,] rectangles = new Rectangle[Row, Col];
+            RectangleF[,] rectangles = new RectangleF[Row, Col];
 
             for (int i = 0; i <= rectangles.GetUpperBound(0); i++)
             {
                 for (int j = 0; j <= rectangles.GetUpperBound(1); j++)
                 {
-                    rectangles[i, j] = new Rectangle(location, size);
+                    rectangles[i, j] = new RectangleF(location, size);
 
                     location.X += size.X;
                 }          
@@ -109,45 +106,52 @@ namespace TankGame
                 location.Y += size.Y;
             }
             var last = rectangles[Row-1, Col-1];
-            realBoardSize = last.Location + new Point(last.Width+1, last.Height+1);
+            realBoardSize = last.Location + new Vector2(last.Width+1, last.Height+1);
 
             return rectangles;
         }
-        public Rectangle[,] getGrid()
+        public RectangleF[,] getGrid()
         {
             return gridarray;
         }
-        public Rectangle getGridSquare(int Col, int Row)
+        public RectangleF getGridSquare(int Col, int Row)
         {
             return gridarray[Row, Col];
         }
-        public Point getRealBoardSize()
+        public Vector2 getRealBoardSize()
         {
             return realBoardSize;
         }
+        public Vector2 getOutlineSize()
+        {
+            var inner = BottomRight;
+            inner.X -= 4;
+            return inner;
+        }
         //this gets the lines to draw to make the rectangles on the grid. 
-        private static Rectangle[,] getGridLines(Rectangle[,] grid)
+        private static RectangleF[,] getGridLines(RectangleF[,] grid)
         {
             int k = 0;
-            Rectangle[,] Lines = new Rectangle[grid.LongLength, 4];
+            RectangleF[,] Lines = new RectangleF[grid.LongLength, 4];
             //itertae through grides to find lines for each rectangle
             for (int i = 0; i <= grid.GetUpperBound(0); i++)
             {
                 for (int j = 0; j <= grid.GetUpperBound(1); j++)
                 {
                     //get top and left walls
-                    Rectangle horizontalBorder = new Rectangle(grid[i, j].Location, new Point(grid[i, j].Width, 1));
-                    Rectangle verticalBorder = new Rectangle(grid[i, j].Location, new Point(1, grid[i, j].Height));
+                    RectangleF horizontalBorder = new RectangleF(grid[i, j].Location, new Vector2(grid[i, j].Width, 1));
+                    RectangleF verticalBorder = new RectangleF(grid[i, j].Location, new Vector2(1, grid[i, j].Height));
                     //apply those walls to thier proper posistion and grid rectangle
                     Lines[k, 0] = horizontalBorder;
                     Lines[k, 1] = verticalBorder;
 
                     //get bottom and right walls
-                    horizontalBorder.Y += grid[i, j].Height;
-                    verticalBorder.X += grid[i, j].Width;
+                    RectangleF horizontalBorder2 = new RectangleF(grid[i, j].Location.X, grid[i, j].Location.Y + grid[i, j].Height, grid[i, j].Width, 1);
+                    RectangleF verticalBorder2 = new RectangleF(grid[i, j].Location.X+ grid[i, j].Width, grid[i, j].Location.Y, 1, grid[i, j].Height);
+
                     //apply those walls to thier proper posistion and grid rectangle
-                    Lines[k, 2] = horizontalBorder;
-                    Lines[k, 3] = verticalBorder;
+                    Lines[k, 2] = horizontalBorder2;
+                    Lines[k, 3] = verticalBorder2;
 
                     //K is the postion in lines that follows gridarray. Adds one each time J increases to indicate a new grid needs lines
                     k++;

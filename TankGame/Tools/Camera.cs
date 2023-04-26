@@ -45,9 +45,7 @@ namespace TankGame.Tools
         {
             return viewport.Bounds;
         }
-        /// <summary>
-        /// 
-        /// </summary>
+        #region Scaling Matrix
         /// <param name="scale">Set to 1 or 0 for defualt scaling</param>
         /// <returns></returns>
         public Matrix getScalingMatrix(float scale)
@@ -58,17 +56,42 @@ namespace TankGame.Tools
             }
             getScale();
             //game is scaled to these amounts yo
-             scaleX = (float)viewport.Width / Main.gameWindow.ClientBounds.Height;
-             scaleY = (float)viewport.Height / Main.gameWindow.ClientBounds.Height;
+             scaleX = ((float)viewport.Width / Main.gameWindow.ClientBounds.Height)*scale;
+             scaleY = ((float)viewport.Height / Main.gameWindow.ClientBounds.Height)*scale;
 
             var translationMatrix = Matrix.CreateTranslation(new Vector3(Pos.X, Pos.Y, 0));
             var rotationMatrix = Matrix.CreateRotationZ(0);
-            var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, scale));
+            var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 0));
             var originMatrix = Matrix.CreateTranslation(new Vector3(Vector2.Zero.X, Vector2.Zero.Y, 0));
 
             return translationMatrix * rotationMatrix * scaleMatrix * originMatrix; ;
         }
-        public void scaleCameraStart()
+        /// <param name="scaleX">Sets additional percatage scaling on the X</param>
+        /// <param name="scaleY">Sets additional percatage scaling on the Y</param>
+        /// <returns></returns>
+        public Matrix getScalingMatrix(float scaleX, float scaleY)
+        {
+            if (scaleX == 0)
+            {
+                scaleX = 1;
+            }
+            if (scaleY == 0)
+            {
+                scaleY = 1;
+            }
+            getScale();
+            //game is scaled to these amounts yo
+            scaleX = ((float)viewport.Width / Main.gameWindow.ClientBounds.Height) * scaleX;
+            scaleY = ((float)viewport.Height / Main.gameWindow.ClientBounds.Height) * scaleY;
+
+            var translationMatrix = Matrix.CreateTranslation(new Vector3(Pos.X, Pos.Y, 0));
+            var rotationMatrix = Matrix.CreateRotationZ(0);
+            var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 0));
+            var originMatrix = Matrix.CreateTranslation(new Vector3(Vector2.Zero.X, Vector2.Zero.Y, 0));
+
+            return translationMatrix * rotationMatrix * scaleMatrix * originMatrix; ;
+        }
+        public void ScaleToViewport()
         {
             getScale();
             viewport.X *= Convert.ToInt16(scaleX);
@@ -80,5 +103,6 @@ namespace TankGame.Tools
             scaleY = (float)viewport.Height / Main.gameWindow.ClientBounds.Height;
             return new Vector2(scaleX, scaleY);
         }
+        #endregion
     }
 }
