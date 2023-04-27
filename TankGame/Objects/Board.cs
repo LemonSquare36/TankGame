@@ -44,13 +44,12 @@ namespace TankGame.Objects
         {
             Location = topLeft;
             TopLeft = new Vector2(topLeft.X, topLeft.Y);
-            BottomRight = new Vector2(bottomRight.X, bottomRight.Y - thickness);
+            BottomRight = new Vector2(bottomRight.X-thickness, bottomRight.Y - thickness);
             Col = col;
             Row = rows;
 
             borderThickness = thickness;
-
-            gridarray = getBoard();
+            getBoard();
         }
 
         //loads the texture for the gameboard
@@ -64,13 +63,46 @@ namespace TankGame.Objects
         }
 
         //draws each rectangle through for loops to make the grid
-        public void draw(SpriteBatch spriteBatch, Color color)
+        public void drawGrid(SpriteBatch spriteBatch, Color color)
         {
             for (int i = 0; i <= gridLines.GetUpperBound(0); i++)
             {
                 for (int j = 0; j <= gridLines.GetUpperBound(1); j++)
                 {
                     spriteBatch.Draw(Outline, gridLines[i, j].Location,null, color,0,Vector2.Zero, gridLines[i, j].Size, SpriteEffects.None, 0);
+                }
+            }
+        }
+        public void drawCheckers(SpriteBatch spriteBatch, Color color, Color color2)
+        {
+
+            for (int i = 0; i <= gridarray.GetUpperBound(0); i++)
+            {
+                for (int j = 0; j <= gridarray.GetUpperBound(1); j++)
+                {
+                    if (i % 2 == 0 || i == 0)
+                    {
+                        if (j % 2 == 0 || j == 0)
+                        {
+                            spriteBatch.Draw(Outline, gridarray[i, j].Location, null, color, 0, Vector2.Zero, gridarray[i, j].Size, SpriteEffects.None, 0);
+                        }
+                        else
+                        {
+                            spriteBatch.Draw(Outline, gridarray[i, j].Location, null, color2, 0, Vector2.Zero, gridarray[i, j].Size, SpriteEffects.None, 0);
+                        }
+                    }
+                    else
+                    {
+                        if (j % 2 == 0 || j == 0)
+                        {
+                            spriteBatch.Draw(Outline, gridarray[i, j].Location, null, color2, 0, Vector2.Zero, gridarray[i, j].Size, SpriteEffects.None, 0);
+                            
+                        }
+                        else
+                        {
+                            spriteBatch.Draw(Outline, gridarray[i, j].Location, null, color, 0, Vector2.Zero, gridarray[i, j].Size, SpriteEffects.None, 0);
+                        }
+                    }
                 }
             }
         }
@@ -85,28 +117,27 @@ namespace TankGame.Objects
         }
 
         //creates the rectangles that go into the array - populates it
-        private RectangleF[,] getBoard()
+        public void getBoard()
         {
-            Vector2 size = new Vector2((BottomRight.X-(borderThickness+1)) / Col, (BottomRight.Y-((borderThickness+2))) / Row);
             Vector2 location = TopLeft + new Vector2(borderThickness, borderThickness);
+            Vector2 size = new Vector2((BottomRight.X-borderThickness+1) / Col, (BottomRight.Y-borderThickness+1) / Row);
+            
             InnerRectangle = new RectangleF(TopLeft + new Vector2(borderThickness, borderThickness), new Vector2((BottomRight.X - (borderThickness + 1)), (BottomRight.Y - (borderThickness + 1))));
 
-            RectangleF[,] rectangles = new RectangleF[Row, Col];
+            gridarray = new RectangleF[Row, Col];
 
-            for (int i = 0; i <= rectangles.GetUpperBound(0); i++)
+            for (int i = 0; i <= gridarray.GetUpperBound(0); i++)
             {
-                for (int j = 0; j <= rectangles.GetUpperBound(1); j++)
+                for (int j = 0; j <= gridarray.GetUpperBound(1); j++)
                 {
-                    rectangles[i, j] = new RectangleF(location, size);
+                    gridarray[i, j] = new RectangleF(location, size);
 
                     location.X += size.X;
                 }          
                 location.X = TopLeft.X + (borderThickness);
                 location.Y += size.Y;
             }
-            var last = rectangles[Row-1, Col-1];
-
-            return rectangles;
+            //var last = gridarray[Row-1, Col-1];
         }
         public RectangleF[,] getGrid()
         {

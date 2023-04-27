@@ -40,7 +40,12 @@ namespace TankGame.Tools
         {
             get { return camPosition; }  set { camPosition = value; }
         }
-
+        private static Vector2 viewboxScale;
+        public static Vector2 ViewboxScale
+        {
+            get { return viewboxScale; }
+            set { viewboxScale = value; }
+        }
         ///<summary>Scales the batch to the proper resolution within the bounds. Call setBounds() First </summary>
         /// <param name="scaleX">The Scale on the X axis for drawing</param>
         /// <param name="scaleY">The Scale on the Y axis for drawing</param>
@@ -91,7 +96,10 @@ namespace TankGame.Tools
         /// <summary>gets the game scale, resolution vs bounds</summary>
         private static Vector2 ScaleToResolution()
         {
-            return new Vector2((float)Main.gameWindow.ClientBounds.Width / (float)resolution.X, (float)Main.gameWindow.ClientBounds.Height / (float)resolution.Y);
+            //the scale of the viewbox vs client size
+            ViewboxScale = new Vector2((float)Bounds.X / (float)Main.gameWindow.ClientBounds.Width, (float)Bounds.Y / (float)Main.gameWindow.ClientBounds.Height);
+            ViewboxScale *= resolution;
+            return new Vector2((float)Bounds.X / (float)ViewboxScale.X, (float)Bounds.Y / (float)ViewboxScale.Y);
         }
         /// <summary>gets the bounds of the current active viewport</summary>
         public static void setBound(Viewport view)
