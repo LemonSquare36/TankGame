@@ -14,63 +14,38 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 using System.Threading;
+using System.ComponentModel.Design;
 
 namespace TankGame.Tools
 {
     internal class Camera
     {
-        private Viewport viewport;
-        public Viewport Viewport
+        //the current resolution of the game
+        private static Vector2 Resolution;
+        public static Vector2 resolution
         {
-            get { return viewport; }
+            get { return Resolution; } set { Resolution = value; }          
         }
-        Vector2 Pos;
-        Vector2 Size;
+        private static Vector2 bounds;
+        private static Vector2 Bounds
+        {
+            get { return bounds; }  set { bounds = value; }
+        }
+        public static Vector2 ResolutionScale
+        {
+            get { return ScaleToResolution(); }           
+        }
+        private static Vector2 camPosition;
+        private static Vector2 CamPosition
+        {
+            get { return camPosition; }  set { camPosition = value; }
+        }
 
-        float scaleX, scaleY; 
-       
-        public Camera()
-        {
-            
-        }
-        /// <param name="pos">Top left position of the viewport</param>
-        /// <param name="size">Size of the viewport</param>
-        public Camera(Point pos, Point size)
-        {
-            viewport = new Viewport(new Rectangle(pos, size));
-            Pos = new Vector2(pos.X, pos.Y);
-            Size = new Vector2(size.X, size.Y);
-        }
-        public Rectangle getBounds()
-        {
-            return viewport.Bounds;
-        }
-        #region Scaling Matrix
-        ///<summary>Scales the batch to the </summary>
-        /// <param name="scale">Set to 1 or 0 for defualt scaling</param>
-        /// <returns></returns>
-        public Matrix getScalingMatrix(float scale, float width, float height)
-        {
-            if (scale == 0)
-            {
-                scale = 1;
-            }
-            getScale();
-            //game is scaled to these amounts yo
-             scaleX = ((float)viewport.Width / width) *scale;
-             scaleY = ((float)viewport.Height / height) *scale;
-
-            var translationMatrix = Matrix.CreateTranslation(new Vector3(Pos.X, Pos.Y, 0));
-            var rotationMatrix = Matrix.CreateRotationZ(0);
-            var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 0));
-            var originMatrix = Matrix.CreateTranslation(new Vector3(Vector2.Zero.X, Vector2.Zero.Y, 0));
-
-            return translationMatrix * rotationMatrix * scaleMatrix * originMatrix; ;
-        }
-        /// <param name="scaleX">Sets additional percatage scaling on the X</param>
-        /// <param name="scaleY">Sets additional percatage scaling on the Y</param>
-        /// <returns></returns>
-        public Matrix getScalingMatrix(float scaleX, float scaleY,float width, float height)
+        ///<summary>Scales the batch to the proper resolution within the bounds. Call setBounds() First </summary>
+        /// <param name="scaleX">The Scale on the X axis for drawing</param>
+        /// <param name="scaleY">The Scale on the Y axis for drawing</param>
+        /// <returns></returns>  
+        public static Matrix getScalingMatrix(float scaleX, float scaleY)
         {
             if (scaleX == 0)
             {
@@ -80,30 +55,49 @@ namespace TankGame.Tools
             {
                 scaleY = 1;
             }
-            getScale();
-            //game is scaled to these amounts yo
-            scaleX = ((float)viewport.Width / width) * scaleX;
-            scaleY = ((float)viewport.Height / height) * scaleY;
 
-            var translationMatrix = Matrix.CreateTranslation(new Vector3(Pos.X, Pos.Y, 0));
+            var translationMatrix = Matrix.CreateTranslation(new Vector3(CamPosition.X, CamPosition.Y, 0));
             var rotationMatrix = Matrix.CreateRotationZ(0);
-            var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 1));
+            var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 0));
             var originMatrix = Matrix.CreateTranslation(new Vector3(Vector2.Zero.X, Vector2.Zero.Y, 0));
 
             return translationMatrix * rotationMatrix * scaleMatrix * originMatrix; ;
         }
-        public void ScaleToViewport()
+        ///<summary>Scales the batch to the proper resolution within the bounds. Call setBounds() First </summary>
+        /// <param name="scaleX">The Scale on the X axis for drawing</param>
+        /// <param name="scaleY">The Scale on the Y axis for drawing</param>
+        /// <param name="scale">Additional Scaling for special cases</param>
+        public static Matrix getScalingMatrix(float scaleX, float scaleY, float scale)
         {
-            getScale();
-            viewport.X *= Convert.ToInt16(scaleX);
-            viewport.Y *= Convert.ToInt16(scaleY);
+            if (scaleX == 0)
+            {
+                scaleX = 1;
+            }
+            if (scaleY == 0)
+            {
+                scaleY = 1;
+            }
+            scaleX *= scale;
+            scaleY *= scale;
+            var translationMatrix = Matrix.CreateTranslation(new Vector3(CamPosition.X, CamPosition.Y, 0));
+            var rotationMatrix = Matrix.CreateRotationZ(0);
+            var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 0));
+            var originMatrix = Matrix.CreateTranslation(new Vector3(Vector2.Zero.X, Vector2.Zero.Y, 0));
+
+            return translationMatrix * rotationMatrix * scaleMatrix * originMatrix; ;
         }
-        private Vector2 getScale()
+
+
+        /// <summary>gets the game scale, resolution vs bounds</summary>
+        private static Vector2 ScaleToResolution()
         {
-            scaleX = (float)viewport.Width / Main.gameWindow.ClientBounds.Width;
-            scaleY = (float)viewport.Height / Main.gameWindow.ClientBounds.Height;
-            return new Vector2(scaleX, scaleY);
+            return new Vector2((float)Main.gameWindow.ClientBounds.Width / (float)resolution.X, (float)Main.gameWindow.ClientBounds.Height / (float)resolution.Y);
         }
-        #endregion
+        /// <summary>gets the bounds of the current active viewport</summary>
+        public static void setBound(Viewport view)
+        {
+            Bounds = new Vector2(view.Width, view.Height);
+            CamPosition = new Vector2(view.X, view.Y);
+        }
     }
 }

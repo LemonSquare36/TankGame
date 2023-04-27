@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using TankGame.Tools;
 
 namespace TankGame
 {
@@ -12,6 +13,7 @@ namespace TankGame
 
         SpriteBatch spriteBatch;
         GraphicsDeviceManager graphicsManager;
+        
 
         //private FrameCounter framC = new FrameCounter();
         //SpriteFont spritefont;
@@ -62,6 +64,9 @@ namespace TankGame
             graphicsManager.PreferredBackBufferWidth = 1344;
             graphicsManager.PreferredBackBufferHeight = 756;
             graphicsManager.ApplyChanges();
+
+            //defualt resolution of the game
+            Camera.resolution = new Vector2(1920, 1080);
 
             //initialize my Graphics Device and SpriteBatch 
             graphics = GraphicsDevice;

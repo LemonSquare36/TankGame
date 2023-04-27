@@ -28,6 +28,7 @@ namespace TankGame.Objects
 
         float borderThickness;
         int Col, Row;
+        public Point Location;
 
         public int Columns
         {
@@ -39,10 +40,11 @@ namespace TankGame.Objects
         }
 
         //gets the information needs to create a 2d array that makes up the board
-        public Board(Vector2 topLeft, Vector2 bottomRight, int col, int rows, float thickness)
+        public Board(Point topLeft, Point bottomRight, int col, int rows, int thickness)
         {
-            TopLeft = topLeft;
-            BottomRight = bottomRight- new Vector2(0,thickness);
+            Location = topLeft;
+            TopLeft = new Vector2(topLeft.X, topLeft.Y);
+            BottomRight = new Vector2(bottomRight.X, bottomRight.Y - thickness);
             Col = col;
             Row = rows;
 
@@ -77,15 +79,15 @@ namespace TankGame.Objects
             //draws an outline for the board creating a thicker border
             spriteBatch.Draw(Outline, horizontalOutline.Location, null, color, 0, Vector2.Zero, horizontalOutline.Size, SpriteEffects.None, 0);
             spriteBatch.Draw(Outline, verticalOutline.Location, null, color, 0, Vector2.Zero, verticalOutline.Size, SpriteEffects.None, 0);
-            spriteBatch.Draw(Outline, horizontalOutline2.Location, null, color, 0, Vector2.Zero, horizontalOutline.Size, SpriteEffects.None, 0);
-            spriteBatch.Draw(Outline, verticalOutline2.Location, null, color, 0, Vector2.Zero, verticalOutline.Size, SpriteEffects.None, 0);
+            spriteBatch.Draw(Outline, horizontalOutline2.Location, null, color, 0, Vector2.Zero, horizontalOutline2.Size, SpriteEffects.None, 0);
+            spriteBatch.Draw(Outline, verticalOutline2.Location, null, color, 0, Vector2.Zero, verticalOutline2.Size, SpriteEffects.None, 0);
 
         }
 
         //creates the rectangles that go into the array - populates it
         private RectangleF[,] getBoard()
         {
-            Vector2 size = new Vector2((BottomRight.X-(borderThickness+1)) / Col, (BottomRight.Y-(borderThickness+1)) / Row);
+            Vector2 size = new Vector2((BottomRight.X-(borderThickness+1)) / Col, (BottomRight.Y-((borderThickness+2))) / Row);
             Vector2 location = TopLeft + new Vector2(borderThickness, borderThickness);
             InnerRectangle = new RectangleF(TopLeft + new Vector2(borderThickness, borderThickness), new Vector2((BottomRight.X - (borderThickness + 1)), (BottomRight.Y - (borderThickness + 1))));
 

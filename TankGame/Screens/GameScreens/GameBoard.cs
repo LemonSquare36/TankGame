@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 using TankGame.Objects;
+using System.Reflection;
 
 namespace TankGame.Tools
 {
@@ -21,29 +22,21 @@ namespace TankGame.Tools
     {
         Board gameBoard;
         //Tank testTank;
-        float imageScaleX, imageScaleY;
 
-        Camera gameView, sidebar;
+        float imageScale;
         public override void Initialize()
         {
             //columns = Main.gameWindow.ClientBounds.Width / 10;
             //rows = Main.gameWindow.ClientBounds.Height / 10;
-            imageScaleX = 1;
-            imageScaleY = 1;
 
-            //initialize the cameras
-            gameView = new Camera(new Point(0,0), new Point(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height));
             //create new board
-            gameBoard = new Board(new Vector2(0, 0), new Vector2(Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height), 80, 80, 4);
+            gameBoard = new Board(new Point(0, 0), new Point(Convert.ToInt16(Camera.resolution.Y), Convert.ToInt16(Camera.resolution.Y)), 80, 80, 4);
 
             //testTank = new Tank(gameBoard.getGridSquare(1, 1));
 
-            //get the camera factors for scaling the screen
-            gameView.ScaleToViewport();
-
             //get the amount to scale the board to fit the outline
             RectangleF inner = gameBoard.getInnerRectangle();
-            imageScaleX = 756 / (inner.Width-4);
+            imageScale = Camera.resolution.Y / (inner.Width - 4);
 
         }
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -63,24 +56,30 @@ namespace TankGame.Tools
             //rectangle - first point is the top left corner, second point is the bottom right corner based on the position of point 1
 
             //set viewport for play zone
-            Main.graphicsDevice.Viewport = gameView.Viewport;
+            Main.graphicsDevice.Viewport =  new Viewport(gameBoard.Location.X, gameBoard.Location.Y, Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height);
+            Camera.setBound(Main.graphicsDevice.Viewport);
             
 
             //end the current call and begin the one scaled properly
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, 
-                gameView.getScalingMatrix(imageScaleX,756,756));
+                Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y, imageScale));
 
 
             gameBoard.draw(spriteBatch, Color.Red);
             //testTank.Draw(spriteBatch);
             //end scalling and call again for next classes/objects
             spriteBatch.End();
+
             //reset viewport to regular client
             Main.graphicsDevice.Viewport = new Viewport(new Rectangle(new Point(0,0), new Point(Main.gameWindow.ClientBounds.Width, Main.gameWindow.ClientBounds.Height)));
-            spriteBatch.Begin();
+            Camera.setBound(Main.graphicsDevice.Viewport);
+
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null,
+                Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y));
             //draw the outline of the board over the old viewport
             gameBoard.DrawOutline(spriteBatch, Color.Black);
+
         }
        
     }

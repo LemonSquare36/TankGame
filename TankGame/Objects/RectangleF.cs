@@ -16,7 +16,7 @@ using System.Collections;
 
 namespace TankGame.Objects
 {
-    internal class RectangleF
+    internal struct RectangleF
     {
         //Properties that make up the rectangle
         //Location of the rectangle, the topleft corner
@@ -84,8 +84,11 @@ namespace TankGame.Objects
         /// <param name="height">The height of the created <see cref="Rectangle"/>.</param>
         public RectangleF(Vector2 location, Vector2 size)
         {
-            this.Location = location;
-            this.Size = size;
+            this.X = location.X;
+            this.Y = location.Y;
+            this.Width = size.X;
+            this.Height = size.Y;
+
         }
 
         //contains. Used to see if something is in the rectangle
