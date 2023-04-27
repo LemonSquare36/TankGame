@@ -14,7 +14,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 using TankGame.Objects;
-using System.Reflection;
 
 namespace TankGame.Tools
 {
@@ -31,7 +30,7 @@ namespace TankGame.Tools
         {
             //columns = Main.gameWindow.ClientBounds.Width / 10;
             //rows = Main.gameWindow.ClientBounds.Height / 10;
-            boarderThickness = 4;
+            boarderThickness = 8;
             boardPos = new Point(0, 0);
 
             //create new board
@@ -39,7 +38,11 @@ namespace TankGame.Tools
             Camera.setBound(boardView);
             boardMatrix = Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y);
 
-            gameBoard = new Board(boardPos, new Point(Convert.ToInt16(Camera.ViewboxScale.Y), Convert.ToInt16(Camera.ViewboxScale.Y)), 100, 100, boarderThickness);
+            gameBoard = new Board(boardPos, new Point(Convert.ToInt16(Camera.ViewboxScale.Y), Convert.ToInt16(Camera.ViewboxScale.Y)), 10, 10, boarderThickness);
+
+            RegView = new Viewport(new Rectangle(new Point(0, 0), new Point(Main.gameWindow.ClientBounds.Width, Main.gameWindow.ClientBounds.Height)));
+            Camera.setBound(RegView);
+            RegMatrix = Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y);
             //testTank = new Tank(gameBoard.getGridSquare(1, 1));
 
             //get the amount to scale the board to fit the outline
@@ -57,29 +60,20 @@ namespace TankGame.Tools
         }
 
         public override void Draw()
-        {
-            //spriteBatch.Draw(Outline,new Rectangle(new Point(100, 100), new Point(600, 600)) , Color.Blue);
-            //rectangle - first point is the top left corner, second point is the bottom right corner based on the position of point 1
-       
+        {       
             //end the current call and begin the one scaled properly
             spriteBatch.End();
             //set viewport for play zone
             Main.graphicsDevice.Viewport = boardView;
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, boardMatrix);
 
-            
             gameBoard.drawCheckers(spriteBatch, Color.Red, Color.DarkRed);
            // gameBoard.drawGrid(spriteBatch, Color.CornflowerBlue);
-            //testTank.Draw(spriteBatch);
             //end scalling and call again for next classes/objects
             spriteBatch.End();
-
             //reset viewport to regular client
-            Main.graphicsDevice.Viewport = new Viewport(new Rectangle(new Point(0,0), new Point(Main.gameWindow.ClientBounds.Width, Main.gameWindow.ClientBounds.Height)));
-            Camera.setBound(Main.graphicsDevice.Viewport);
-
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null,
-                Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y));
+            Main.graphicsDevice.Viewport = RegView;
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, RegMatrix);
             //draw the outline of the board over the old viewport
             gameBoard.DrawOutline(spriteBatch, Color.Black);
 
