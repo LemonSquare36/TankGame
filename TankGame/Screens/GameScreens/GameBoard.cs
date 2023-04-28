@@ -31,7 +31,7 @@ namespace TankGame.Tools
             //columns = Main.gameWindow.ClientBounds.Width / 10;
             //rows = Main.gameWindow.ClientBounds.Height / 10;
             boarderThickness = 8;
-            boardPos = new Point(1000, 500);
+            boardPos = new Point(50, 50);
 
             //create new board
             boardView = new Viewport(boardPos.X, boardPos.Y, Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height);

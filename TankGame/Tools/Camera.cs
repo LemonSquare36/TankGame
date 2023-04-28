@@ -61,7 +61,7 @@ namespace TankGame.Tools
                 scaleY = 1;
             }
 
-            var translationMatrix = Matrix.CreateTranslation(new Vector3(CamPosition.X, CamPosition.Y, 0));
+            var translationMatrix = Matrix.CreateTranslation(new Vector3(0, 0, 0));
             var rotationMatrix = Matrix.CreateRotationZ(0);
             var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 0));
             var originMatrix = Matrix.CreateTranslation(new Vector3(Vector2.Zero.X, Vector2.Zero.Y, 0));
@@ -84,7 +84,7 @@ namespace TankGame.Tools
             }
             scaleX *= scale;
             scaleY *= scale;
-            var translationMatrix = Matrix.CreateTranslation(new Vector3(CamPosition.X, CamPosition.Y, 0));
+            var translationMatrix = Matrix.CreateTranslation(new Vector3(Vector2.Zero.X, Vector2.Zero.Y, 0));
             var rotationMatrix = Matrix.CreateRotationZ(0);
             var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 0));
             var originMatrix = Matrix.CreateTranslation(new Vector3(Vector2.Zero.X, Vector2.Zero.Y, 0));
@@ -113,9 +113,7 @@ namespace TankGame.Tools
         {
             Bounds = new Vector2(view.Width, view.Height);
             Vector2 scale = ResolutionScale;
-            Point scaledPos = new Point(view.X - (Convert.ToInt16(view.X * scale.X)), view.Y - (Convert.ToInt16(view.Y * scale.Y)));
-            scaledPos = new Point(scaledPos.X + Convert.ToInt16(view.X*.111F), scaledPos.Y +Convert.ToInt16(view.X * .111F));
-            //Point scaledPos = new Point(205,205);
+            Point scaledPos = new Point((Convert.ToInt16(view.X * scale.X)), (Convert.ToInt16(view.Y * scale.Y)));
             CamPosition = new Vector2(scaledPos.X, scaledPos.Y);
             V = new Viewport(scaledPos.X, scaledPos.Y, view.Width, view.Height);
         }
