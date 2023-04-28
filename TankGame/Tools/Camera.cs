@@ -66,7 +66,7 @@ namespace TankGame.Tools
             var scaleMatrix = Matrix.CreateScale(new Vector3(scaleX, scaleY, 0));
             var originMatrix = Matrix.CreateTranslation(new Vector3(Vector2.Zero.X, Vector2.Zero.Y, 0));
 
-            return translationMatrix * rotationMatrix * scaleMatrix * originMatrix; ;
+            return translationMatrix * rotationMatrix * scaleMatrix * originMatrix; 
         }
         ///<summary>Scales the batch to the proper resolution within the bounds. Call setBounds() First </summary>
         /// <param name="scaleX">The Scale on the X axis for drawing</param>
@@ -105,7 +105,19 @@ namespace TankGame.Tools
         public static void setBound(Viewport view)
         {
             Bounds = new Vector2(view.Width, view.Height);
-            CamPosition = new Vector2(view.X, view.Y);
+            Vector2 scale = ResolutionScale;
+            Point scaledPos = new Point(view.X - (Convert.ToInt16(view.X * scale.X)), view.Y - (Convert.ToInt16(view.Y * scale.Y)));
+            CamPosition = new Vector2(scaledPos.X, scaledPos.Y);
+        }
+        public static void setBound(Viewport view, out Viewport V)
+        {
+            Bounds = new Vector2(view.Width, view.Height);
+            Vector2 scale = ResolutionScale;
+            Point scaledPos = new Point(view.X - (Convert.ToInt16(view.X * scale.X)), view.Y - (Convert.ToInt16(view.Y * scale.Y)));
+            scaledPos = new Point(scaledPos.X + Convert.ToInt16(view.X*.111F), scaledPos.Y +Convert.ToInt16(view.X * .111F));
+            //Point scaledPos = new Point(205,205);
+            CamPosition = new Vector2(scaledPos.X, scaledPos.Y);
+            V = new Viewport(scaledPos.X, scaledPos.Y, view.Width, view.Height);
         }
     }
 }

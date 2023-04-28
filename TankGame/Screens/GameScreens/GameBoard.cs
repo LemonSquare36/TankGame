@@ -31,14 +31,14 @@ namespace TankGame.Tools
             //columns = Main.gameWindow.ClientBounds.Width / 10;
             //rows = Main.gameWindow.ClientBounds.Height / 10;
             boarderThickness = 8;
-            boardPos = new Point(0, 0);
+            boardPos = new Point(1000, 500);
 
             //create new board
             boardView = new Viewport(boardPos.X, boardPos.Y, Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height);
-            Camera.setBound(boardView);
+            Camera.setBound(boardView, out boardView);
             boardMatrix = Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y);
 
-            gameBoard = new Board(boardPos, new Point(Convert.ToInt16(Camera.ViewboxScale.Y), Convert.ToInt16(Camera.ViewboxScale.Y)), 10, 10, boarderThickness);
+            gameBoard = new Board(boardPos, new Point(Convert.ToInt16(Camera.ViewboxScale.Y*.70F), Convert.ToInt16(Camera.ViewboxScale.Y * .70F)), 20, 20, boarderThickness);
 
             RegView = new Viewport(new Rectangle(new Point(0, 0), new Point(Main.gameWindow.ClientBounds.Width, Main.gameWindow.ClientBounds.Height)));
             Camera.setBound(RegView);
@@ -68,7 +68,7 @@ namespace TankGame.Tools
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, boardMatrix);
 
             gameBoard.drawCheckers(spriteBatch, Color.Red, Color.DarkRed);
-           // gameBoard.drawGrid(spriteBatch, Color.CornflowerBlue);
+            //gameBoard.drawGrid(spriteBatch, Color.Black);
             //end scalling and call again for next classes/objects
             spriteBatch.End();
             //reset viewport to regular client

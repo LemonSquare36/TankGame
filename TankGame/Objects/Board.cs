@@ -119,10 +119,10 @@ namespace TankGame.Objects
         //creates the rectangles that go into the array - populates it
         public void getBoard()
         {
-            Vector2 location = TopLeft + new Vector2(borderThickness, borderThickness);
+            Vector2 location = Vector2.Zero + new Vector2(borderThickness, borderThickness);
             Vector2 size = new Vector2((BottomRight.X-borderThickness+1) / Col, (BottomRight.Y-borderThickness+1) / Row);
             
-            InnerRectangle = new RectangleF(TopLeft + new Vector2(borderThickness, borderThickness), new Vector2((BottomRight.X - (borderThickness + 1)), (BottomRight.Y - (borderThickness + 1))));
+            InnerRectangle = new RectangleF(Vector2.Zero + new Vector2(borderThickness, borderThickness), new Vector2((BottomRight.X - (borderThickness + 1)), (BottomRight.Y - (borderThickness + 1))));
 
             gridarray = new RectangleF[Row, Col];
 
@@ -134,7 +134,7 @@ namespace TankGame.Objects
 
                     location.X += size.X;
                 }          
-                location.X = TopLeft.X + (borderThickness);
+                location.X = Vector2.Zero.X + (borderThickness);
                 location.Y += size.Y;
             }
             //var last = gridarray[Row-1, Col-1];
