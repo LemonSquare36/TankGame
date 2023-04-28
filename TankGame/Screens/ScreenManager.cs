@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework.Audio;
 using System.Diagnostics;
 using System.IO;
 using System.Collections;
+using TankGame.Tools;
 
 namespace TankGame
 {
@@ -21,29 +22,36 @@ namespace TankGame
         //protected SoundManager Music;
         //Random rand = new Random();
 
-        protected KeyboardState Key;
-        protected SpriteBatch spriteBatch;
         //gets sent to GameState to inform the manager which screen to load
         protected string nextScreen;   
         //puases the game when true
         protected bool pause = false;
+        //mouse that every screen uses
+        protected MouseState mouse;
+        protected Vector2 worldPosition;
+        //keystate every screen uses and keystate to calculate if a key is held
+        protected KeyboardState keyState;
+        protected KeyboardState keyHeldState;
+        //spriteBatch for all the screens
+        protected SpriteBatch spriteBatch;
 
         #region Held functions
 
         //Holds Initialize
         public virtual void Initialize()
         {
-
+            keyState = new KeyboardState();
         }
         //Holds LoadContent and the font if called
         public virtual void LoadContent(SpriteBatch spriteBatchmain)
         {
-
+            spriteBatch = spriteBatchmain;
         }
         //Holds Update
         public virtual void Update()
         {
-
+            getKeyState(out keyHeldState);
+            worldPosition = MousePos();
         }
         //Holds Draw
         public virtual void Draw()
@@ -63,15 +71,9 @@ namespace TankGame
         {
             return nextScreen;
         }
-        //gets current keyboardstate
-        public void getKey()
-        {
-            Key = Keyboard.GetState();
-        }
 
         #region Manager
 
-        protected MouseState mouse;
 
         //ButtonCLicked leads Here
         /*protected void ButtonClicked(object sender, EventArgs e)
@@ -98,17 +100,23 @@ namespace TankGame
         }
 
         //calculates the accurate mouse position so the screen can scale
-        protected Vector2 MousePos()
+        private Vector2 MousePos()
         {
-            Vector2 worldPosition = Vector2.Zero;
+            Vector2 pos = Vector2.Zero;
             mouse = Mouse.GetState();
             try
             {
-                worldPosition.X = mouse.X / (float)(Main.gameWindow.ClientBounds.Width / 1920.0);
-                worldPosition.Y = mouse.Y / (float)(Main.gameWindow.ClientBounds.Height / 1080.0);
+                pos.X = mouse.X / ((float)(Main.graphicsDevice.Viewport.Width / Camera.resolution.X));
+                pos.Y = mouse.Y / ((float)(Main.graphicsDevice.Viewport.Height / Camera.resolution.Y));
             }
             catch { }
-            return worldPosition;
+            return pos;
+        }
+
+        private void getKeyState(out KeyboardState oldState)
+        {
+            oldState = keyState;
+            keyState = Keyboard.GetState();
         }
         #endregion
 

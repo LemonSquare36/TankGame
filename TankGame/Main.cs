@@ -10,6 +10,8 @@ namespace TankGame
     {
         //Create GameState which will handle what is showing on the screen - AKA the state of the game
         GameState gameState = new GameState();
+        private static Matrix defualtMatrix;
+        private static Viewport defualtView;
 
         SpriteBatch spriteBatch;
         GraphicsDeviceManager graphicsManager;
@@ -75,6 +77,10 @@ namespace TankGame
             gameState.Initialize();
             //initialize the defualt
             base.Initialize();
+            //get the defualt Matrix for the resolution. No special viewports
+            defualtView = Main.graphicsDevice.Viewport;
+            Camera.setBound(defualtView);
+            defualtMatrix = Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y);
         }
 
         protected override void LoadContent()
@@ -116,6 +122,14 @@ namespace TankGame
             //---------------------------------------------------------------------
 
             base.Draw(gameTime); ;
+        }
+        public static Matrix DefualtMatrix()
+        {
+            return defualtMatrix;
+        }
+        public static Viewport DefualtView()
+        {
+            return defualtView;
         }
     }
 }

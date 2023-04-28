@@ -40,6 +40,7 @@ namespace TankGame
         private ScreenManager CurrentScreen;
         private MainMenu mainMenu;
         private GameBoard mainGame;
+        private LevelEditor editor;
         #endregion
 
         //Constructor
@@ -48,6 +49,7 @@ namespace TankGame
             #region Initialize the Screens
             mainMenu = new MainMenu();
             mainGame = new GameBoard();
+            editor = new LevelEditor();
             #endregion
         }
         //Initialize things upon class creation
@@ -61,7 +63,7 @@ namespace TankGame
 
             if (CurrentScreen == null)
             {
-                CurrentScreen = mainGame;
+                CurrentScreen = editor;
             }
             CurrentScreen.Initialize();
 
@@ -108,7 +110,7 @@ namespace TankGame
             
             if (!loading)
             {
-                spriteBatch.Begin();
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, Main.DefualtMatrix());
                 CurrentScreen.Draw();
                 spriteBatch.End();
             }

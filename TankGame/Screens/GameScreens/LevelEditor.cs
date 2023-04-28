@@ -30,6 +30,8 @@ namespace TankGame
         //LoadContent
         public override void LoadContent(SpriteBatch spriteBatchmain)
         {
+            base.LoadContent(spriteBatchmain);
+
             #region load Textures
             LoadH = Main.GameContent.Load<Texture2D>("Buttons/Editor/LoadH");
             LoadUH = Main.GameContent.Load<Texture2D>("Buttons/Editor/LoadUH");
@@ -37,18 +39,23 @@ namespace TankGame
             SaveUH = Main.GameContent.Load<Texture2D>("Buttons/Editor/SaveUH");
             #endregion
             #region load buttons
-            //Load = new Button()
+            Load = new Button(new Vector2(1400, 100), 100, 50, LoadUH, LoadH, "load", 1);
+            Save = new Button(new Vector2(1600, 100), 100, 50, SaveUH, SaveH, "save", 1);
             #endregion
         }
         //Update
         public override void Update()
         {
+            base.Update();
 
+            Load.Update(mouse, worldPosition);
+            Save.Update(mouse, worldPosition);
         }
         //Draw
         public override void Draw()
         {
-
+            Load.Draw(spriteBatch);
+            Save.Draw(spriteBatch);
         }
     }
 }

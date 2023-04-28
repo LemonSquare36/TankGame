@@ -2,15 +2,16 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
+using TankGame.Objects;
 
 namespace TankGame
 {
     internal class Button
     {
-        Rectangle rectangle;
+        RectangleF rectangle;
         public Vector2 Pos = new Vector2();
         private Texture2D unPressed, pressed;
-        public Texture2D Texture, Cube;
+        public Texture2D Texture;
         private MouseState mouse;
         public ButtonState oldClick;
         public ButtonState curClick;
@@ -40,7 +41,7 @@ namespace TankGame
             oldClick = ButtonState.Pressed;
         }
 
-        //Create the Image and HitBox when calling the button in this Constructer
+        /// <summary>Create the Image, HitBox, and eventInformation when calling the button in this Constructer</summary>
         /// <param name="pos">Where the button is in the game world</param>
         /// <param name="width">How wide is the TEX</param>
         /// <param name="height">How tall is the TEX</param>
@@ -48,12 +49,12 @@ namespace TankGame
         /// <param name="Pressed">Its  pressed (highlighted) TEX</param>
         /// <param name="ButtonName">For a switch case. Name tells it what event to call</param>
         /// <param name="ButtonPurpose">0 for changeScreen, 1 for other</param>
-        public Button(Vector2 pos, int width, int height, Texture2D Unpressed, Texture2D Pressed, string ButtonName, int ButtonPurpose)//Button Name is super important becuase it determines what it does
+        public Button(Vector2 pos, float width, float height, Texture2D Unpressed, Texture2D Pressed, string ButtonName, int ButtonPurpose)//Button Name is super important becuase it determines what it does
         {
             curClick = ButtonState.Pressed;
             oldClick = ButtonState.Pressed;
             Pos = pos;
-            rectangle = new Rectangle((int)pos.X, (int)pos.Y, width, height);
+            rectangle = new RectangleF(pos.X, pos.Y, width, height);
             unPressed = Unpressed;
             pressed = Pressed;
             Bname = ButtonName;
@@ -68,7 +69,7 @@ namespace TankGame
             Texture = unPressed;
             oldClick = curClick;
             curClick = mouse.LeftButton;
-            if (rectangle.Contains(worldMousePosition.X, worldMousePosition.Y))
+            if (rectangle.Contains(worldMousePosition))
             {
                 Texture = pressed;
                 //Edge Detection

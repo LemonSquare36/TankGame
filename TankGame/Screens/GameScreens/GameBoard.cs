@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 using TankGame.Objects;
+using TankGame.Objects.Entities;
 
 namespace TankGame.Tools
 {
@@ -22,41 +23,39 @@ namespace TankGame.Tools
         Board gameBoard;
         int boarderThickness;
         Point boardPos;
-        Matrix boardMatrix, RegMatrix;
-        Viewport boardView, RegView;
-        //Tank testTank;
+        Matrix boardMatrix;
+        Viewport boardView;
+
+        Wall tw;
 
         public override void Initialize()
         {
+            base.Initialize();
             //columns = Main.gameWindow.ClientBounds.Width / 10;
             //rows = Main.gameWindow.ClientBounds.Height / 10;
             boarderThickness = 8;
-            boardPos = new Point(50, 50);
+            boardPos = new Point(0, 0);
 
             //create new board
             boardView = new Viewport(boardPos.X, boardPos.Y, Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height);
             Camera.setBound(boardView, out boardView);
             boardMatrix = Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y);
 
-            gameBoard = new Board(boardPos, new Point(Convert.ToInt16(Camera.ViewboxScale.Y*.70F), Convert.ToInt16(Camera.ViewboxScale.Y * .70F)), 20, 20, boarderThickness);
+            gameBoard = new Board(boardPos, new Point(Convert.ToInt16(Camera.ViewboxScale.Y), Convert.ToInt16(Camera.ViewboxScale.Y)), 20, 20, boarderThickness);
 
-            RegView = new Viewport(new Rectangle(new Point(0, 0), new Point(Main.gameWindow.ClientBounds.Width, Main.gameWindow.ClientBounds.Height)));
-            Camera.setBound(RegView);
-            RegMatrix = Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y);
-            //testTank = new Tank(gameBoard.getGridSquare(1, 1));
-
+            tw = new Wall(gameBoard.getGridSquare(5, 5));
             //get the amount to scale the board to fit the outline
 
         }
         public override void LoadContent(SpriteBatch spriteBatchmain)
         {
-            spriteBatch = spriteBatchmain;
+            base.LoadContent(spriteBatchmain);
             gameBoard.LoadContent();
-            //testTank.LoadContent();
+            tw.LoadContent();
         }
         public override void Update()
         {
-
+            base.Update();
         }
 
         public override void Draw()
@@ -68,12 +67,13 @@ namespace TankGame.Tools
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, boardMatrix);
 
             gameBoard.drawCheckers(spriteBatch, Color.Red, Color.DarkRed);
+            tw.Draw(spriteBatch);
             //gameBoard.drawGrid(spriteBatch, Color.Black);
             //end scalling and call again for next classes/objects
             spriteBatch.End();
             //reset viewport to regular client
-            Main.graphicsDevice.Viewport = RegView;
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, RegMatrix);
+            Main.graphicsDevice.Viewport = Main.DefualtView();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, Main.DefualtMatrix());
             //draw the outline of the board over the old viewport
             gameBoard.DrawOutline(spriteBatch, Color.Black);
 

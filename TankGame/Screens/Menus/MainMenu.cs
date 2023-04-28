@@ -30,7 +30,7 @@ namespace TankGame
         //Holds LoadContent and the font if called
         public override void LoadContent(SpriteBatch spriteBatchmain)
         {
-            spriteBatch = spriteBatchmain;
+            base.LoadContent(spriteBatchmain);
 
             //backTex = Main.GameContent.Load<Texture2D>("MenuImages/Starbackground");
             //titleTex = Main.GameContent.Load<Texture2D>("MenuImages/SapceUltimate");
@@ -48,7 +48,7 @@ namespace TankGame
         //Holds Update
         public override void Update()
         {
-            Vector2 worldPosition = MousePos();
+            base.Update();
 
             //Start.Update(mouse, worldPosition);
         }
