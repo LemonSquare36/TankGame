@@ -24,9 +24,17 @@ namespace TankGame.Objects.Entities
         protected string texFile;
         protected int hp;
 
-        public Entity(RectangleF CurrentSquare)
+        protected string type;
+        public string Type
+        {
+            get { return type; }
+        }
+        public Point gridLocation { get; set; }
+
+        public Entity(RectangleF CurrentSquare, Point GridLocation)
         {
             curSquare = CurrentSquare;
+            gridLocation = GridLocation;
         }
         public virtual void Initialize()
         {

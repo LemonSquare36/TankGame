@@ -19,10 +19,11 @@ namespace TankGame.Objects.Entities
 {
     internal class Wall : Entity
     {
-        public Wall(RectangleF CurrentSquare) : base(CurrentSquare)
+        public Wall(RectangleF CurrentSquare, Point GridLocation) : base(CurrentSquare, GridLocation)
         {
             curSquare = CurrentSquare;
-            texFile = "GameSprites/WhiteDot";          
+            texFile = "GameSprites/WhiteDot";
+            type = "wall";
         }
         public override void LoadContent()
         {

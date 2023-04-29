@@ -74,14 +74,14 @@ namespace TankGame
             //initialize my Graphics Device and SpriteBatch 
             graphics = GraphicsDevice;
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            //initialize the gamestate
-            gameState.Initialize();
-            //initialize the defualt
-            base.Initialize();
             //get the defualt Matrix for the resolution. No special viewports
             defualtView = Main.graphicsDevice.Viewport;
             Camera.setBound(defualtView);
             defualtMatrix = Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y);
+            //initialize the gamestate
+            gameState.Initialize();
+            //initialize the defualt
+            base.Initialize();
         }
 
         protected override void LoadContent()

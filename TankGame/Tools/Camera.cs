@@ -101,6 +101,11 @@ namespace TankGame.Tools
             ViewboxScale *= resolution;
             return new Vector2((float)Bounds.X / (float)ViewboxScale.X, (float)Bounds.Y / (float)ViewboxScale.Y);
         }
+        public static Vector2 getViewBoxScale()
+        {
+            
+            return ViewboxScale;
+        }
         /// <summary>gets the bounds of the current active viewport</summary>
         public static void setBound(Viewport view)
         {

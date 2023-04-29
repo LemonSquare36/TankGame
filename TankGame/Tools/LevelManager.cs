@@ -25,7 +25,7 @@ namespace TankGame.Tools
         StreamReader reader;
         StreamWriter writer;
         Board board;
-        List<Entity> entities;
+        List<Entity> entities = new List<Entity>();
 
         /// <summary>
         /// Loads the level information from the file selected when initializing the manager
@@ -35,11 +35,13 @@ namespace TankGame.Tools
             //
             string[] cords;
             //set reader to the file needing to load
-            reader = new StreamReader(fileLocation);
+            reader = new StreamReader(FileLocation);
             //read the lines with this
             string line = reader.ReadLine();
             //first line is a category call
             string category = line;
+            //reset the list
+            entities.Clear();
             //read until the file is at its end
             while (!reader.EndOfStream)
             {
@@ -52,14 +54,25 @@ namespace TankGame.Tools
                 else if (category == "GAMEBOARD")
                 {
                     //get the data need for making a board
-                    string[] pos = reader.ReadLine().Split(',');
-                    float size = (float)Convert.ToDouble(reader.ReadLine());
+                    //string[] pos = reader.ReadLine().Split(',');
+                    //float size = (float)Convert.ToDouble(reader.ReadLine());
                     string[] RowCol = reader.ReadLine().Split(',');
                     int border = Convert.ToInt16(reader.ReadLine());
+                    string[] color1 = reader.ReadLine().Split(',');
+                    string[] color2 = reader.ReadLine().Split(',');
+                    string[] color3 = reader.ReadLine().Split(',');
+
                     //create the board with the data
-                    board = new Board(new Point(Convert.ToInt16(pos[0]), Convert.ToInt16(pos[1])),
-                        new Point(Convert.ToInt16(Main.graphicsDevice.Viewport.Height * size), Convert.ToInt16(Main.graphicsDevice.Viewport.Height * size)),
+                    float size = Camera.ViewboxScale.Y * 0.9F;
+                    Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
+
+                    board = new Board(pos,
+                        new Point(Convert.ToInt16(size), Convert.ToInt16(size)),
                         Convert.ToInt16(RowCol[1]), Convert.ToInt16(RowCol[0]), border);
+                    //set the boards color
+                    board.setColor(new Color(Convert.ToInt16(color1[0]), Convert.ToInt16(color1[1]), Convert.ToInt16(color1[2])),
+                        new Color(Convert.ToInt16(color2[0]), Convert.ToInt16(color2[1]), Convert.ToInt16(color2[2])),
+                        new Color(Convert.ToInt16(color3[0]), Convert.ToInt16(color3[1]), Convert.ToInt16(color3[2])));
                     //sets line END after getting board info
                     line = reader.ReadLine();
                 }
@@ -67,24 +80,78 @@ namespace TankGame.Tools
                 {
                     //line reads looking for END and passes the data into an array split by the comma
                     line = reader.ReadLine();
-                    cords = line.Split(',');
-                    entities.Add(new Wall(board.getGridSquare(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1]))));
+                    if (line != "END")
+                    {
+                        cords = line.Split(',');
+                        entities.Add(new Wall(board.getGridSquare(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])), 
+                            new Point(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1]))));
+                    }
                 }
                 else if (category == "POWERUPS")
                 {
-
+                    line = reader.ReadLine();
                 }
-
-
-
                 }
+            reader.Close();
         }
         /// <summary>
         /// Saves the level information to a file selected when initializing the manager
         /// </summary>
-        public void SaveLevel(string FileLocation, GameBoard Board, Entity[] E)
+        public void SaveLevel(string FileLocation, Board board, List<Entity> E)
         {
+            //delete the file if it exists, to recreate it and make it empty
+            if(File.Exists(FileLocation))
+            { File.Delete(FileLocation); }
+           //createfile and then write to it
+            File.Create(FileLocation).Close();           
+            try
+            {
+                writer = new StreamWriter(FileLocation);
+            }
+            catch
+            {
+                return;
+            }
+            //write board info
+            writer.WriteLine("GAMEBOARD");
+            writer.WriteLine(Convert.ToString(board.Rows) + "," + Convert.ToString(board.Columns));
+            writer.WriteLine(board.BorderThickness);
+            //checkerboard colors
+            writer.WriteLine(Convert.ToString(board.Color1.R) + "," + Convert.ToString(board.Color1.G) + "," + Convert.ToString(board.Color1.B));
+            writer.WriteLine(Convert.ToString(board.Color2.R) + "," + Convert.ToString(board.Color2.G) + "," + Convert.ToString(board.Color2.B));
+            //border color
+            writer.WriteLine(Convert.ToString(board.Color3.R) + "," + Convert.ToString(board.Color3.G) + "," + Convert.ToString(board.Color3.B));
+            writer.WriteLine("END");
 
+
+            //write walls
+            writer.WriteLine("WALLS");
+            if (E.Count == 0)
+            {
+                writer.WriteLine("END");
+                writer.WriteLine("POWERUPS");
+                writer.WriteLine("END");
+            }
+            for (int i = 0; i < E.Count; i++)
+            {
+                if (E[i].Type == "wall")
+                {
+                    writer.WriteLine(E[i].gridLocation.X + "," + E[i].gridLocation.Y);
+                    if (i == E.Count - 1)
+                    {
+                        writer.WriteLine("END");
+                        writer.WriteLine("POWERUPS");
+                        writer.WriteLine("END");
+                    }
+                }
+                if (E[i].Type != "wall")
+                {
+                    writer.WriteLine("END");
+                    writer.WriteLine("POWERUPS");
+                    writer.WriteLine("END");
+                }
+            }
+            writer.Close();
         }
         public Board getGameBoard()
         {

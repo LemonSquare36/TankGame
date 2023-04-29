@@ -23,8 +23,6 @@ namespace TankGame.Tools
         Board gameBoard;
         int boarderThickness;
         Point boardPos;
-        Matrix boardMatrix;
-        Viewport boardView;
 
         Wall tw;
 
@@ -36,20 +34,16 @@ namespace TankGame.Tools
             boarderThickness = 8;
             boardPos = new Point(0, 0);
 
-            //create new board
-            boardView = new Viewport(boardPos.X, boardPos.Y, Main.gameWindow.ClientBounds.Height, Main.gameWindow.ClientBounds.Height);
-            Camera.setBound(boardView, out boardView);
-            boardMatrix = Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y);
-
             gameBoard = new Board(boardPos, new Point(Convert.ToInt16(Camera.ViewboxScale.Y), Convert.ToInt16(Camera.ViewboxScale.Y)), 20, 20, boarderThickness);
 
-            tw = new Wall(gameBoard.getGridSquare(5, 5));
+            tw = new Wall(gameBoard.getGridSquare(5, 5), new Point(5,5));
 
         }
         public override void LoadContent(SpriteBatch spriteBatchmain)
         {
             base.LoadContent(spriteBatchmain);
             gameBoard.LoadContent();
+            gameBoard.setColor(new Color(200,0,0), new Color(100,0,0), Color.Black);
             tw.LoadContent();
         }
         public override void Update()
@@ -59,22 +53,14 @@ namespace TankGame.Tools
 
         public override void Draw()
         {       
-            //end the current call and begin the one scaled properly
-            spriteBatch.End();
-            //set viewport for play zone
-            Main.graphicsDevice.Viewport = boardView;
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, boardMatrix);
 
-            gameBoard.drawCheckers(spriteBatch, Color.Red, Color.DarkRed);
+            gameBoard.drawCheckers(spriteBatch);
             tw.Draw(spriteBatch);
             //gameBoard.drawGrid(spriteBatch, Color.Black);
             //end scalling and call again for next classes/objects
-            spriteBatch.End();
-            //reset viewport to regular client
-            Main.graphicsDevice.Viewport = Main.DefualtView();
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, Main.DefualtMatrix());
+
             //draw the outline of the board over the old viewport
-            gameBoard.DrawOutline(spriteBatch, Color.Black);
+            gameBoard.DrawOutline(spriteBatch);
 
         }
        

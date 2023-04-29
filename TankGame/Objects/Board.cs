@@ -12,10 +12,10 @@ namespace TankGame.Objects
         RectangleF InnerRectangle, 
             horizontalOutline, horizontalOutline2,
             verticalOutline, verticalOutline2;
-
+        Color color, color2, borderColor;
         float borderThickness;
         int Col, Row;
-        public Point Location;
+        public Point Location, FullSize;
 
         public int Columns
         {
@@ -25,12 +25,40 @@ namespace TankGame.Objects
         {
             get { return Row;  }
         }
+        /// <summary>Checkerboard color 1</summary>
+        public Color Color1
+        {
+            get { return color; }
+        }
+        /// <summary>checkboard color 2</summary>
+        public Color Color2
+        {
+            get { return color2; }
+        }
+        /// <summary>Border Color</summary> 
+        public Color Color3
+        {
+            get { return borderColor; }
+        }
+        /// <summary>Border Thickness</summary> 
+        public float BorderThickness
+        {
+            get { return borderThickness; }
+        }
 
-        //gets the information needs to create a 2d array that makes up the board
+        /// <summary>
+        /// gets the information needs to create a 2d array that makes up the board
+        /// </summary>
+        /// <param name="topLeft">position to draw the board</param>
+        /// <param name="bottomRight">size of the board</param>
+        /// <param name="col">columns to draw</param>
+        /// <param name="rows">rows to draw</param>
+        /// <param name="thickness">border thickness</param>
         public Board(Point topLeft, Point bottomRight, int col, int rows, int thickness)
         {
             Location = topLeft;
             TopLeft = new Vector2(topLeft.X, topLeft.Y);
+            FullSize = bottomRight;
             BottomRight = new Vector2(bottomRight.X-thickness, bottomRight.Y - thickness);
             Col = col;
             Row = rows;
@@ -48,6 +76,18 @@ namespace TankGame.Objects
             setBorderDimensions();
            
         }
+        /// <summary>
+        /// sets the colors for the checkers and border
+        /// </summary>
+        /// <param name="C1">first checker color</param>
+        /// <param name="C2">second checker color</param>
+        /// <param name="C3">border color</param>
+        public void setColor(Color C1, Color C2, Color C3)
+        {
+            color = C1;
+            color2 = C2;
+            borderColor = C3;
+        }
 
         //draws each rectangle through for loops to make the grid
         public void drawGrid(SpriteBatch spriteBatch, Color color)
@@ -60,7 +100,7 @@ namespace TankGame.Objects
                 }
             }
         }
-        public void drawCheckers(SpriteBatch spriteBatch, Color color, Color color2)
+        public void drawCheckers(SpriteBatch spriteBatch)
         {
 
             for (int i = 0; i <= gridarray.GetUpperBound(0); i++)
@@ -93,20 +133,20 @@ namespace TankGame.Objects
                 }
             }
         }
-        public void DrawOutline(SpriteBatch spriteBatch, Color color)
+        public void DrawOutline(SpriteBatch spriteBatch)
         {
             //draws an outline for the board creating a thicker border
-            spriteBatch.Draw(Outline, horizontalOutline.Location, null, color, 0, Vector2.Zero, horizontalOutline.Size, SpriteEffects.None, 0);
-            spriteBatch.Draw(Outline, verticalOutline.Location, null, color, 0, Vector2.Zero, verticalOutline.Size, SpriteEffects.None, 0);
-            spriteBatch.Draw(Outline, horizontalOutline2.Location, null, color, 0, Vector2.Zero, horizontalOutline2.Size, SpriteEffects.None, 0);
-            spriteBatch.Draw(Outline, verticalOutline2.Location, null, color, 0, Vector2.Zero, verticalOutline2.Size, SpriteEffects.None, 0);
+            spriteBatch.Draw(Outline, horizontalOutline.Location, null, borderColor, 0, Vector2.Zero, horizontalOutline.Size, SpriteEffects.None, 0);
+            spriteBatch.Draw(Outline, verticalOutline.Location, null, borderColor, 0, Vector2.Zero, verticalOutline.Size, SpriteEffects.None, 0);
+            spriteBatch.Draw(Outline, horizontalOutline2.Location, null, borderColor, 0, Vector2.Zero, horizontalOutline2.Size, SpriteEffects.None, 0);
+            spriteBatch.Draw(Outline, verticalOutline2.Location, null, borderColor, 0, Vector2.Zero, verticalOutline2.Size, SpriteEffects.None, 0);
 
         }
 
         //creates the rectangles that go into the array - populates it
         public void getBoard()
         {
-            Vector2 location = Vector2.Zero + new Vector2(borderThickness, borderThickness);
+            Vector2 location = TopLeft + new Vector2(borderThickness, borderThickness);
             Vector2 size = new Vector2((BottomRight.X-borderThickness+1) / Col, (BottomRight.Y-borderThickness+1) / Row);
             
             InnerRectangle = new RectangleF(Vector2.Zero + new Vector2(borderThickness, borderThickness), new Vector2((BottomRight.X - (borderThickness + 1)), (BottomRight.Y - (borderThickness + 1))));
@@ -121,7 +161,7 @@ namespace TankGame.Objects
 
                     location.X += size.X;
                 }          
-                location.X = Vector2.Zero.X + (borderThickness);
+                location.X = TopLeft.X + (borderThickness);
                 location.Y += size.Y;
             }
             //var last = gridarray[Row-1, Col-1];
