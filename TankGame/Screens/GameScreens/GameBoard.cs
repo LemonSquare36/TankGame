@@ -44,7 +44,6 @@ namespace TankGame.Tools
             gameBoard = new Board(boardPos, new Point(Convert.ToInt16(Camera.ViewboxScale.Y), Convert.ToInt16(Camera.ViewboxScale.Y)), 20, 20, boarderThickness);
 
             tw = new Wall(gameBoard.getGridSquare(5, 5));
-            //get the amount to scale the board to fit the outline
 
         }
         public override void LoadContent(SpriteBatch spriteBatchmain)

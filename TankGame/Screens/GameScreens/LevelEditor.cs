@@ -14,6 +14,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 using TankGame.Objects;
+using System.Windows.Forms;
+using System.Threading;
 
 namespace TankGame
 {
@@ -21,11 +23,17 @@ namespace TankGame
     {
         Texture2D LoadH, LoadUH, SaveH, SaveUH;
         Button Load, Save;
-        
+        OpenFileDialog openDialog;
         //Initialize
         public override void Initialize()
         {
+            base.Initialize();
+            //create the thread needed to run the file browser
 
+            //create the browser for searching for levels
+            openDialog = new OpenFileDialog();
+            openDialog.Title = "Select A File";
+            openDialog.Filter = "Level Files (*.lvl)|*.lvl";
         }
         //LoadContent
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -42,6 +50,9 @@ namespace TankGame
             Load = new Button(new Vector2(1400, 100), 100, 50, LoadUH, LoadH, "load", 1);
             Save = new Button(new Vector2(1600, 100), 100, 50, SaveUH, SaveH, "save", 1);
             #endregion
+            #region Button Events
+            Load.ButtonClicked += LoadPressed;
+            #endregion
         }
         //Update
         public override void Update()
@@ -56,6 +67,21 @@ namespace TankGame
         {
             Load.Draw(spriteBatch);
             Save.Draw(spriteBatch);
+        }
+        //Events for saving and loading
+        public void LoadPressed(object sender, EventArgs e)
+        {
+            Thread explorerThread = new Thread(() => exploreForFile());
+            explorerThread.SetApartmentState(ApartmentState.STA);
+            explorerThread.Start();
+            explorerThread.Interrupt();
+        }
+        private void exploreForFile()
+        {
+            if (openDialog.ShowDialog() == DialogResult.OK)
+            {
+                string file = openDialog.FileName;
+            }
         }
     }
 }

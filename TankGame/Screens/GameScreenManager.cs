@@ -8,5 +8,6 @@ namespace TankGame
 {
     internal class GameScreenManager : ScreenManager
     {
+
     }
 }
