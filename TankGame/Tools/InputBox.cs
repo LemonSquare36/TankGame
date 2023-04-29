@@ -16,8 +16,6 @@ using System.Collections;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
 using TankGame.Objects;
-using Microsoft.VisualBasic.Devices;
-using System.Drawing;
 
 namespace TankGame.Tools
 {
@@ -26,17 +24,23 @@ namespace TankGame.Tools
         Texture2D tex;
         Color color;
         new Vector2 pos, size;
-        string curText, titleText;
+        RectangleF rectangle;
         //mouse stuff for clicking the textbox (selecting it)
         private MouseState mouse;
         public ButtonState oldClick;
         public ButtonState curClick;
+        
+        bool active = false;
+        string curKeys;
+        StringBuilder curText = new StringBuilder();
+        public string Text { get { return curText.ToString();  } }
 
         public InputBox(Color color, Vector2 Pos, Vector2 Size)
         {
             this.color = color;
             this.pos = Pos;
             this.size = Size;
+            rectangle = new RectangleF(pos, size);
         }
         public void Initialize()
         {
@@ -46,7 +50,7 @@ namespace TankGame.Tools
         {
             tex = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
         }
-        public void Update(MouseState Mouse, Vector2 worldMousePosition)
+        public void Update(MouseState Mouse, Vector2 worldMousePosition, KeyboardState keystate)
         {
             mouse = Mouse;
             oldClick = curClick;
@@ -56,8 +60,18 @@ namespace TankGame.Tools
                 //Edge Detection
                 if (curClick == ButtonState.Pressed && oldClick == ButtonState.Released)
                 {
-                    
+                    active = true;
                 }
+            }
+            if (active)
+            {
+                var keys = keystate.GetPressedKeys();
+                if (keys.Length > 0)
+                {
+                    curKeys = keys[0].ToString();
+                    curText.Append(curKeys);
+                }
+                
             }
         }
         public void Draw(SpriteBatch spriteBatch)
