@@ -38,6 +38,8 @@ namespace TankGame
         bool levelLoaded = false;
         bool threadActive = false;
         string file;
+        //input box
+        InputBox nameField;
         //Initialize
         public override void Initialize()
         {
@@ -47,6 +49,8 @@ namespace TankGame
             openDialog = new OpenFileDialog();
             openDialog.Title = "Select A File";
             openDialog.Filter = "Level Files (*.lvl)|*.lvl";
+            //create the text field
+            nameField = new InputBox(Color.White, Color.Black, new Vector2(1300,500), new Vector2(300,100));
         }
         //LoadContent
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -76,6 +80,8 @@ namespace TankGame
             Buttons.Add(Save);
             Buttons.Add(New);
             #endregion 
+
+            nameField.LoadContent();
         }
         //Update
         public override void Update()
@@ -86,10 +92,14 @@ namespace TankGame
             {
                 b.Update(mouse, worldPosition);
             }
+            //
+            nameField.Update(mouse, worldPosition, keyState, keyHeldState);
+            //if the level is loaded
             if (levelLoaded)
             {
 
             }
+
         }
         //Draw
         public override void Draw()
@@ -112,6 +122,8 @@ namespace TankGame
             {
                 b.Draw(spriteBatch);
             }
+            //
+            nameField.Draw(spriteBatch);
         }
         #region Load and Save and New
         //Events for saving and loading
@@ -163,7 +175,7 @@ namespace TankGame
             file = "D:\\Projects\\TankGame\\TankGame\\Content\\New.lvl";
             float size = Camera.ViewboxScale.Y * 0.9F;
             Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
-            curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 10, 10, 8);
+            curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 20, 20, 8);
             entities.Clear();
             curBoard.LoadContent();
             curBoard.setColor(new Color(200, 0, 0), new Color(100, 0, 0), Color.Black);

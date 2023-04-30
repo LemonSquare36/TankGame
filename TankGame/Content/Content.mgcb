@@ -85,6 +85,13 @@
 /processorParam:TextureFormat=Color
 /build:Buttons/Editor/SaveUH.jpg
 
+#begin Fonts/DefualtFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/DefualtFont.spritefont
+
 #begin GameSprites/Blackdot.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
