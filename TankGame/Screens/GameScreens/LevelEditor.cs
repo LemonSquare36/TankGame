@@ -111,7 +111,7 @@ namespace TankGame
                 {
                     if(mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
                     {
-                        Vector2 gridPos = worldPosition/curBoard.IndividualSize;
+                        Vector2 gridPos = (worldPosition - curBoard.Location) / curBoard.IndividualSize;
                         Wall newWall = new Wall(curBoard.getGridSquare(gridPos.X, gridPos.Y), new Point(Convert.ToInt16(gridPos.X), Convert.ToInt16(gridPos.Y)));
                         newWall.LoadContent();
                         entities.Add(newWall);
