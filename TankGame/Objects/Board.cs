@@ -151,7 +151,7 @@ namespace TankGame.Objects
         public void getBoard()
         {
             Vector2 location = TopLeft + new Vector2(borderThickness, borderThickness);
-            InnerRectangle = new RectangleF(Vector2.Zero + new Vector2(borderThickness, borderThickness), new Vector2((BottomRight.X - (borderThickness + 1)), (BottomRight.Y - (borderThickness + 1))));
+            InnerRectangle = new RectangleF(Location + new Vector2(borderThickness, borderThickness), new Vector2((BottomRight.X - (borderThickness + 1)), (BottomRight.Y - (borderThickness + 1))));
 
             gridarray = new RectangleF[Row, Col];
 
@@ -174,7 +174,7 @@ namespace TankGame.Objects
         }
         public RectangleF getGridSquare(float Col, float Row)
         {
-            return gridarray[Convert.ToInt16(Row), Convert.ToInt16(Col)];
+            return gridarray[Convert.ToInt16(Math.Floor(Convert.ToDouble(Row))), Convert.ToInt16(Math.Floor(Convert.ToDouble(Col)))];
         }
         public Vector2 getOutlineSize()
         {

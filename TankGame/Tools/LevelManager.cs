@@ -99,8 +99,13 @@ namespace TankGame.Tools
         /// </summary>
         public void SaveLevel(string FileLocation, Board board, List<Entity> E)
         {
+            string relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\TankGame";
+            if (!System.IO.Directory.Exists(relativePath))
+            {
+                System.IO.Directory.CreateDirectory(relativePath);
+            }
             //delete the file if it exists, to recreate it and make it empty
-            if(File.Exists(FileLocation))
+            if (File.Exists(FileLocation))
             { File.Delete(FileLocation); }
            //createfile and then write to it
             File.Create(FileLocation).Close();           

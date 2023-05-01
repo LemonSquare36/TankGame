@@ -18,7 +18,6 @@ using TankGame.Tools;
 using System.Windows.Forms;
 using System.Threading;
 using TankGame.Objects.Entities;
-using System.Reflection.Metadata;
 
 namespace TankGame
 {
@@ -41,7 +40,7 @@ namespace TankGame
         Board curBoard;
         //level loading logic
         bool levelLoaded = false, threadActive = false;
-        string file;
+        string file, relativePath;
         //objects selected logic
         bool wallSelected = false, powerSelected = false, eraseSelected = false;
         new Vector2 size, posOffset;
@@ -58,6 +57,8 @@ namespace TankGame
             openDialog.Filter = "Level Files (*.lvl)|*.lvl";
             //create the text field
             nameField = new InputBox(new Color(235,235,235), Color.Black, new Vector2(1350,200), new Vector2(300,50));
+
+            relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         }
         //LoadContent
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -107,12 +108,12 @@ namespace TankGame
             //if the level is loaded
             if (levelLoaded)
             {
-                if (new RectangleF(curBoard.Location, curBoard.FullSize).Contains(worldPosition))
+                if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
                 {
                     if(mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
                     {
-                        Vector2 gridPos = (worldPosition - curBoard.Location) / curBoard.IndividualSize;
-                        Wall newWall = new Wall(curBoard.getGridSquare(gridPos.X, gridPos.Y), new Point(Convert.ToInt16(gridPos.X), Convert.ToInt16(gridPos.Y)));
+                        Vector2 gridPos = (worldPosition - curBoard.getInnerRectangle().Location) / curBoard.IndividualSize;
+                        Wall newWall = new Wall(curBoard.getGridSquare(gridPos.X, gridPos.Y), new Point(Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.X))), Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.Y)))));
                         newWall.LoadContent();
                         entities.Add(newWall);
                     }
@@ -198,7 +199,7 @@ namespace TankGame
                 }
                 else
                 {
-                    file = "D:\\Projects\\TankGame\\TankGame\\Content\\" + nameField.Text + ".lvl";
+                    file = relativePath + "\\TankGame\\" + nameField.Text + ".lvl";
                     levelManager.SaveLevel(file, curBoard, entities);
                 }
             }
@@ -206,7 +207,7 @@ namespace TankGame
         //creates a fresh new board
         public void NewPressed(object sender, EventArgs e)
         {
-            file = "D:\\Projects\\TankGame\\TankGame\\Content\\New.lvl";
+            file = relativePath + "\\TankGame\\";
             float size = Camera.ViewboxScale.Y * 0.9F;
             Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
             curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 20, 20, 8);
