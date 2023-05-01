@@ -25,28 +25,37 @@ namespace TankGame.Tools
         Texture2D tex;
         SpriteFont font;
         Color bgColor, textColor, selectedColor;
-        new Vector2 pos, size;
+        Vector2 pos, size, textSize;
         RectangleF rectangle;
         //mouse stuff for clicking the textbox (selecting it)
         private MouseState mouse;
         public ButtonState oldClick;
         public ButtonState curClick;
-
         bool active = false;
+        //used to keep the text in the box
+        Rectangle cutOff;
+        RasterizerState r = new RasterizerState();
 
 
         KeyStrokeHandler KeyHandler = new KeyStrokeHandler();
-
-        public string text = "";
+        private string text;
+        public string Text
+        {
+            get { return text; }
+            set { text = value; KeyHandler.CurText.Clear(); KeyHandler.CurText.Append(value); }
+        }
 
         public InputBox(Color backgroundColor, Color TextColor, Vector2 Pos, Vector2 Size)
         {
             bgColor = backgroundColor;
-            selectedColor = new Color(backgroundColor.R - 50, backgroundColor.G - 50, backgroundColor.B - 50);
+            selectedColor = new Color(backgroundColor.R + 50, backgroundColor.G + 50, backgroundColor.B + 50);
             textColor = TextColor;
             pos = Pos;
             size = Size;
             rectangle = new RectangleF(pos, size);
+            cutOff = new Rectangle(new Point(Convert.ToInt16(pos.X * Camera.ResolutionScale.X), Convert.ToInt16(pos.Y * Camera.ResolutionScale.Y)), 
+                new Point(Convert.ToInt16(Size.X * Camera.ResolutionScale.X), Convert.ToInt16(Size.Y * Camera.ResolutionScale.Y)));
+            text = "";
         }
         public void Initialize()
         {
@@ -60,6 +69,8 @@ namespace TankGame.Tools
             font = Main.GameContent.Load<SpriteFont>("Fonts/DefualtFont");
             //prepare the dictionary
             KeyStrokeHandler.populateAlphabet();
+
+            r.ScissorTestEnable = true;
         }
         public void Update(MouseState Mouse, Vector2 worldMousePosition, KeyboardState keystate, KeyboardState keyHeldState)
         {
@@ -92,6 +103,12 @@ namespace TankGame.Tools
         }
         public void Draw(SpriteBatch spriteBatch)
         {
+            //activate a new spritebatch.begin with the rasterizer cutoff
+            spriteBatch.End();
+            spriteBatch.GraphicsDevice.RasterizerState = r;
+            spriteBatch.GraphicsDevice.ScissorRectangle = cutOff;
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, r, null, Main.DefualtMatrix());
+
             if (active)
             {
                 spriteBatch.Draw(tex, pos, null, selectedColor, 0, Vector2.Zero, size, SpriteEffects.None, 0);
@@ -100,8 +117,20 @@ namespace TankGame.Tools
             {
                 spriteBatch.Draw(tex, pos, null, bgColor, 0, Vector2.Zero, size, SpriteEffects.None, 0);
             }
-            
-            spriteBatch.DrawString(font, text, pos + new Vector2(5, size.Y * 0.1F), textColor);
+            textSize = font.MeasureString(text);
+            if (textSize.X > size.X)
+            {
+                textSize.X -= size.X-20;
+            }
+            else
+            {
+                textSize.X = 0;
+            }
+            spriteBatch.DrawString(font, text, pos + new Vector2(5 - textSize.X, size.Y * 0.1F), textColor);           
+            //reset how it draws back to normal
+            spriteBatch.End();
+            spriteBatch.GraphicsDevice.ScissorRectangle = Main.gameWindow.ClientBounds;
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, Main.DefualtMatrix());
         }
     }
 }

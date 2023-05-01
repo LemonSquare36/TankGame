@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace TankGame.Objects
 {
@@ -15,7 +16,9 @@ namespace TankGame.Objects
         Color color, color2, borderColor;
         float borderThickness;
         int Col, Row;
-        public Point Location, FullSize;
+        public Vector2 Location, FullSize;
+        private Vector2 individualSize;
+        public Vector2 IndividualSize { get { return individualSize; } }
 
         public int Columns
         {
@@ -56,14 +59,15 @@ namespace TankGame.Objects
         /// <param name="thickness">border thickness</param>
         public Board(Point topLeft, Point bottomRight, int col, int rows, int thickness)
         {
-            Location = topLeft;
+            Location = new Vector2(topLeft.X, topLeft.Y);
             TopLeft = new Vector2(topLeft.X, topLeft.Y);
-            FullSize = bottomRight;
+            FullSize = new Vector2(bottomRight.X, bottomRight.Y);
             BottomRight = new Vector2(bottomRight.X-thickness, bottomRight.Y - thickness);
             Col = col;
-            Row = rows;
+            Row = rows;         
 
             borderThickness = thickness;
+            individualSize = new Vector2((BottomRight.X - borderThickness + 1) / Col, (BottomRight.Y - borderThickness + 1) / Row);
             getBoard();
         }
 
@@ -147,8 +151,6 @@ namespace TankGame.Objects
         public void getBoard()
         {
             Vector2 location = TopLeft + new Vector2(borderThickness, borderThickness);
-            Vector2 size = new Vector2((BottomRight.X-borderThickness+1) / Col, (BottomRight.Y-borderThickness+1) / Row);
-            
             InnerRectangle = new RectangleF(Vector2.Zero + new Vector2(borderThickness, borderThickness), new Vector2((BottomRight.X - (borderThickness + 1)), (BottomRight.Y - (borderThickness + 1))));
 
             gridarray = new RectangleF[Row, Col];
@@ -157,12 +159,12 @@ namespace TankGame.Objects
             {
                 for (int j = 0; j <= gridarray.GetUpperBound(1); j++)
                 {
-                    gridarray[i, j] = new RectangleF(location, size);
+                    gridarray[i, j] = new RectangleF(location, individualSize);
 
-                    location.X += size.X;
+                    location.X += individualSize.X;
                 }          
                 location.X = TopLeft.X + (borderThickness);
-                location.Y += size.Y;
+                location.Y += individualSize.Y;
             }
             //var last = gridarray[Row-1, Col-1];
         }
@@ -170,9 +172,9 @@ namespace TankGame.Objects
         {
             return gridarray;
         }
-        public RectangleF getGridSquare(int Col, int Row)
+        public RectangleF getGridSquare(float Col, float Row)
         {
-            return gridarray[Row, Col];
+            return gridarray[Convert.ToInt16(Row), Convert.ToInt16(Col)];
         }
         public Vector2 getOutlineSize()
         {
@@ -225,6 +227,5 @@ namespace TankGame.Objects
             horizontalOutline2.Width += borderThickness;
             verticalOutline2.X += BottomRight.X;
         }
-
     }
 }

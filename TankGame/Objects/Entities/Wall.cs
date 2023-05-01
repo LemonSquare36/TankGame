@@ -19,11 +19,13 @@ namespace TankGame.Objects.Entities
 {
     internal class Wall : Entity
     {
+        Vector2 wallSize = new Vector2(50, 50);
         public Wall(RectangleF CurrentSquare, Point GridLocation) : base(CurrentSquare, GridLocation)
         {
             curSquare = CurrentSquare;
-            texFile = "GameSprites/WhiteDot";
+            texFile = "GameSprites/Wall";
             type = "wall";
+            wallSize = curSquare.Size / wallSize;
         }
         public override void LoadContent()
         {
@@ -31,7 +33,7 @@ namespace TankGame.Objects.Entities
         }
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(tex, curSquare.Location, null, Color.Black, 0, Vector2.Zero, curSquare.Size, SpriteEffects.None, 0);
+            spriteBatch.Draw(tex, curSquare.Location, null, Color.White, 0, Vector2.Zero, wallSize, SpriteEffects.None, 0);
         }
     }
 }

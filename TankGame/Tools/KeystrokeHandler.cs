@@ -10,6 +10,7 @@ namespace TankGame.Tools
     {
         //holds the text typed
         StringBuilder curText = new StringBuilder();
+        public StringBuilder CurText { get { return curText;  } set { curText = value; } }
         //backspace timer
         int backspaceHold = 0;
         //list of strings held
@@ -87,7 +88,7 @@ namespace TankGame.Tools
                             {
 
                                 //check for shift pressed
-                                if (newKeys[i].ToLower() == "leftshift" || newKeys[0].ToLower() == "rightshift")
+                                if (newKeys[i].ToLower() == "leftshift" || newKeys[i].ToLower() == "rightshift")
                                 {
                                     try
                                     {

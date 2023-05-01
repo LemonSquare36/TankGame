@@ -24,9 +24,14 @@ namespace TankGame
 {
     internal class LevelEditor : GameScreenManager
     {
+        //for words
+        SpriteFont font;
         //button declares
-        Texture2D LoadH, LoadUH, SaveH, SaveUH, NewH, NewUH;
+        Texture2D wallTex;
+        //generic buttons
         Button Load, Save, New;
+        //add object buttons
+        Button addWall, addPower, erase;
         List<Button> Buttons = new List<Button>();
         //file loading decalres
         OpenFileDialog openDialog;
@@ -35,9 +40,11 @@ namespace TankGame
         List<Entity> entities = new List<Entity>();
         Board curBoard;
         //level loading logic
-        bool levelLoaded = false;
-        bool threadActive = false;
+        bool levelLoaded = false, threadActive = false;
         string file;
+        //objects selected logic
+        bool wallSelected = false, powerSelected = false, eraseSelected = false;
+        new Vector2 size, posOffset;
         //input box
         InputBox nameField;
         //Initialize
@@ -50,7 +57,7 @@ namespace TankGame
             openDialog.Title = "Select A File";
             openDialog.Filter = "Level Files (*.lvl)|*.lvl";
             //create the text field
-            nameField = new InputBox(Color.White, Color.Black, new Vector2(1300,500), new Vector2(300,100));
+            nameField = new InputBox(new Color(235,235,235), Color.Black, new Vector2(1350,200), new Vector2(300,50));
         }
         //LoadContent
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -58,27 +65,30 @@ namespace TankGame
             base.LoadContent(spriteBatchmain);
 
             #region load Textures
-            LoadH = Main.GameContent.Load<Texture2D>("Buttons/Editor/LoadH");
-            LoadUH = Main.GameContent.Load<Texture2D>("Buttons/Editor/LoadUH");
-            SaveH = Main.GameContent.Load<Texture2D>("Buttons/Editor/SaveH");
-            SaveUH = Main.GameContent.Load<Texture2D>("Buttons/Editor/SaveUH");
-            NewH = Main.GameContent.Load<Texture2D>("Buttons/Editor/NewH");
-            NewUH = Main.GameContent.Load<Texture2D>("Buttons/Editor/NewUH");
+            //font
+            font = Main.GameContent.Load<SpriteFont>("Fonts/DefualtFont");
+            //textures
+            wallTex = Main.GameContent.Load<Texture2D>("GameSprites/Wall");
             #endregion
             #region load buttons
-            Load = new Button(new Vector2(1300, 100), 100, 50, LoadUH, LoadH, "load", 1);
-            Save = new Button(new Vector2(1450, 100), 100, 50, SaveUH, SaveH, "save", 1);
-            New = new Button(new Vector2(1600, 100), 100, 50, NewUH, NewH, "new", 1);
+            Load = new Button(new Vector2(1300, 100), 100, 50, "Buttons/Editor/Load", "load");
+            Save = new Button(new Vector2(1450, 100), 100, 50, "Buttons/Editor/Save", "save");
+            New = new Button(new Vector2(1600, 100), 100, 50, "Buttons/Editor/New", "new");
+
+            addWall = new Button(new Vector2(1350, 400), 50, 50, "Buttons/Editor/Wall", "addWall", "toggle");
             #endregion
             #region Button Events
             Load.ButtonClicked += LoadPressed;
             Save.ButtonClicked += SavePressed;
             New.ButtonClicked += NewPressed;
+
+            addWall.ButtonClicked += AddWall;
             #endregion
             #region ButtonList
             Buttons.Add(Load);
             Buttons.Add(Save);
             Buttons.Add(New);
+            Buttons.Add(addWall);
             #endregion 
 
             nameField.LoadContent();
@@ -96,6 +106,19 @@ namespace TankGame
             nameField.Update(mouse, worldPosition, keyState, keyHeldState);
             //if the level is loaded
             if (levelLoaded)
+            {
+                if (new RectangleF(curBoard.Location, curBoard.FullSize).Contains(worldPosition))
+                {
+                    if(mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                    {
+                        Vector2 gridPos = worldPosition/curBoard.IndividualSize;
+                        Wall newWall = new Wall(curBoard.getGridSquare(gridPos.X, gridPos.Y), new Point(Convert.ToInt16(gridPos.X), Convert.ToInt16(gridPos.Y)));
+                        newWall.LoadContent();
+                        entities.Add(newWall);
+                    }
+                }
+            }
+            if (wallSelected)
             {
 
             }
@@ -124,6 +147,7 @@ namespace TankGame
             }
             //
             nameField.Draw(spriteBatch);
+            spriteBatch.DrawString(font, "Add an Object", new Vector2(1350,300), Color.Black);
         }
         #region Load and Save and New
         //Events for saving and loading
@@ -132,6 +156,7 @@ namespace TankGame
             if (!threadActive)
             {
                 threadActive = true;
+                levelLoaded = false;
                 //thread created so I can run the form in STA - required
                 Thread explorerThread = new Thread(() => exploreForFile());
                 explorerThread.SetApartmentState(ApartmentState.STA);
@@ -158,6 +183,7 @@ namespace TankGame
             {
                 e.LoadContent();
             }
+            nameField.Text = "test";
             //level can be drawn and updated now. New thread can be made
             levelLoaded = true;
             threadActive = false;
@@ -166,7 +192,15 @@ namespace TankGame
         {
             if (levelLoaded)
             {
-                levelManager.SaveLevel(file, curBoard, entities);
+                if (nameField.Text == "")
+                {
+                    nameField.Text = "Needs a file name";
+                }
+                else
+                {
+                    file = "D:\\Projects\\TankGame\\TankGame\\Content\\" + nameField.Text + ".lvl";
+                    levelManager.SaveLevel(file, curBoard, entities);
+                }
             }
         }
         //creates a fresh new board
@@ -178,9 +212,27 @@ namespace TankGame
             curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 20, 20, 8);
             entities.Clear();
             curBoard.LoadContent();
-            curBoard.setColor(new Color(200, 0, 0), new Color(100, 0, 0), Color.Black);
+            curBoard.setColor(new Color(235, 235, 235), new Color(200,200,200), Color.Black);
+            nameField.Text = "New";
             levelLoaded = true;
         }
         #endregion
+        #region Add Objects Events
+        private void AddWall(object sender, EventArgs e)
+        {
+            wallSelected = true;
+            powerSelected = false;
+            eraseSelected = false;
+            /*
+            if (addPower.Texture == addPower.Pressed)
+            {
+                addPower.toggleTexture();
+            }
+            if (erase.Texture == erase.Pressed)
+            {
+                erase.toggleTexture();
+            }*/
+        }
+        #endregion 
     }
 }
