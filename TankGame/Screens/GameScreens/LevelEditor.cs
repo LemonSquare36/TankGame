@@ -18,6 +18,7 @@ using TankGame.Tools;
 using System.Windows.Forms;
 using System.Threading;
 using TankGame.Objects.Entities;
+using System.Text.RegularExpressions;
 
 namespace TankGame
 {
@@ -37,6 +38,7 @@ namespace TankGame
         LevelManager levelManager;
         //board info declares
         List<Entity> entities = new List<Entity>();
+        List<Point> gridLocations = new List<Point>();
         Board curBoard;
         //level loading logic
         bool levelLoaded = false, threadActive = false;
@@ -108,22 +110,38 @@ namespace TankGame
             //if the level is loaded
             if (levelLoaded)
             {
-                if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
+                if (wallSelected)
                 {
-                    if(mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                    if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
                     {
-                        Vector2 gridPos = (worldPosition - curBoard.getInnerRectangle().Location) / curBoard.IndividualSize;
-                        Wall newWall = new Wall(curBoard.getGridSquare(gridPos.X, gridPos.Y), new Point(Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.X))), Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.Y)))));
-                        newWall.LoadContent();
-                        entities.Add(newWall);
+                        if (mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                        {
+                            Vector2 gridPos = (worldPosition - curBoard.getInnerRectangle().Location) / curBoard.IndividualSize;
+                            Wall newWall = new Wall(curBoard.getGridSquare(gridPos.X, gridPos.Y), new Point(Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.X))), Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.Y)))));
+                            if (gridLocations.Contains(newWall.gridLocation))
+                            {
+                                for (int i = 0; i < entities.Count; i++)
+                                {
+                                    if (entities[i].gridLocation == newWall.gridLocation)
+                                    {
+                                        entities.Remove(entities[i]);
+                                        newWall.LoadContent();
+                                        entities.Add(newWall);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                newWall.LoadContent();
+                                entities.Add(newWall);
+                                gridLocations.Add(newWall.gridLocation);
+                            }
+                            
+                            
+                        }
                     }
                 }
             }
-            if (wallSelected)
-            {
-
-            }
-
         }
         //Draw
         public override void Draw()
@@ -183,6 +201,7 @@ namespace TankGame
             foreach (Entity e in entities)
             {
                 e.LoadContent();
+                gridLocations.Add(e.gridLocation);
             }
             nameField.Text = "test";
             //level can be drawn and updated now. New thread can be made
@@ -199,7 +218,8 @@ namespace TankGame
                 }
                 else
                 {
-                    file = relativePath + "\\TankGame\\" + nameField.Text + ".lvl";
+                    string fileName = nameField.Text.Replace(" ", "");
+                    file = relativePath + "\\TankGame\\" + fileName + ".lvl";
                     levelManager.SaveLevel(file, curBoard, entities);
                 }
             }
@@ -212,16 +232,24 @@ namespace TankGame
             Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
             curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 20, 20, 8);
             entities.Clear();
+            gridLocations.Clear();
             curBoard.LoadContent();
             curBoard.setColor(new Color(235, 235, 235), new Color(200,200,200), Color.Black);
-            nameField.Text = "New";
+            nameField.Text = "New";           
             levelLoaded = true;
         }
         #endregion
         #region Add Objects Events
         private void AddWall(object sender, EventArgs e)
         {
-            wallSelected = true;
+            if (!wallSelected)
+            {
+                wallSelected = true;
+            }
+            else
+            {
+                wallSelected = false;
+            }
             powerSelected = false;
             eraseSelected = false;
             /*
