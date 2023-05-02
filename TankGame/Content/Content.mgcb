@@ -13,6 +13,30 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Buttons/Editor/ItemBoxH.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Buttons/Editor/ItemBoxH.jpg
+
+#begin Buttons/Editor/ItemBoxUH.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Buttons/Editor/ItemBoxUH.jpg
+
 #begin Buttons/Editor/LoadH.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -128,7 +152,7 @@
 /processorParam:TextureFormat=Color
 /build:GameSprites/Blackdot.jpg
 
-#begin GameSprites/test.png
+#begin GameSprites/ItemBox.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -138,7 +162,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:GameSprites/test.png
+/build:GameSprites/ItemBox.jpg
 
 #begin GameSprites/Wall.jpg
 /importer:TextureImporter

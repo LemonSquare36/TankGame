@@ -87,9 +87,15 @@ namespace TankGame.Tools
                             new Point(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1]))));
                     }
                 }
-                else if (category == "POWERUPS")
+                else if (category == "ITEMBOXS")
                 {
                     line = reader.ReadLine();
+                    if (line != "END")
+                    {
+                        cords = line.Split(',');
+                        entities.Add(new ItemBox(board.getGridSquare(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])),
+                            new Point(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1]))));
+                    }
                 }
                 }
             reader.Close();
@@ -134,7 +140,7 @@ namespace TankGame.Tools
             if (E.Count == 0)
             {
                 writer.WriteLine("END");
-                writer.WriteLine("POWERUPS");
+                writer.WriteLine("ITEMBOXS");
                 writer.WriteLine("END");
             }
             for (int i = 0; i < E.Count; i++)
@@ -145,14 +151,14 @@ namespace TankGame.Tools
                     if (i == E.Count - 1)
                     {
                         writer.WriteLine("END");
-                        writer.WriteLine("POWERUPS");
+                        writer.WriteLine("ITEMBOXS");
                         writer.WriteLine("END");
                     }
                 }
                 if (E[i].Type != "wall")
                 {
                     writer.WriteLine("END");
-                    writer.WriteLine("POWERUPS");
+                    writer.WriteLine("ITEMBOXS");
                     writer.WriteLine("END");
                 }
             }

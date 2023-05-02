@@ -18,7 +18,6 @@ using TankGame.Tools;
 using System.Windows.Forms;
 using System.Threading;
 using TankGame.Objects.Entities;
-using System.Text.RegularExpressions;
 
 namespace TankGame
 {
@@ -31,7 +30,7 @@ namespace TankGame
         //generic buttons
         Button Load, Save, New;
         //add object buttons
-        Button addWall, addPower, erase;
+        Button addWall, addItem, erase;
         List<Button> Buttons = new List<Button>();
         //file loading decalres
         OpenFileDialog openDialog;
@@ -44,8 +43,7 @@ namespace TankGame
         bool levelLoaded = false, threadActive = false;
         string file, relativePath;
         //objects selected logic
-        bool wallSelected = false, powerSelected = false, eraseSelected = false;
-        new Vector2 size, posOffset;
+        bool wallSelected = false, itemSelected = false, eraseSelected = false;
         //input box
         InputBox nameField;
         //Initialize
@@ -58,7 +56,7 @@ namespace TankGame
             openDialog.Title = "Select A File";
             openDialog.Filter = "Level Files (*.lvl)|*.lvl";
             //create the text field
-            nameField = new InputBox(new Color(235,235,235), Color.Black, new Vector2(1350,200), new Vector2(300,50));
+            nameField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1350, 200), new Vector2(300, 50));
 
             relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         }
@@ -79,19 +77,22 @@ namespace TankGame
             New = new Button(new Vector2(1600, 100), 100, 50, "Buttons/Editor/New", "new");
 
             addWall = new Button(new Vector2(1350, 400), 50, 50, "Buttons/Editor/Wall", "addWall", "toggle");
+            addItem = new Button(new Vector2(1450, 400), 50, 50, "Buttons/Editor/ItemBox", "addItem", "toggle");
             #endregion
             #region Button Events
             Load.ButtonClicked += LoadPressed;
             Save.ButtonClicked += SavePressed;
             New.ButtonClicked += NewPressed;
 
-            addWall.ButtonClicked += AddWall;
+            addWall.ButtonClicked += SelectWall;
+            addItem.ButtonClicked += SelectItem;
             #endregion
             #region ButtonList
             Buttons.Add(Load);
             Buttons.Add(Save);
             Buttons.Add(New);
             Buttons.Add(addWall);
+            Buttons.Add(addItem);
             #endregion 
 
             nameField.LoadContent();
@@ -110,36 +111,10 @@ namespace TankGame
             //if the level is loaded
             if (levelLoaded)
             {
+                //if walls are selected this code allows for the addition of walls
                 if (wallSelected)
                 {
-                    if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
-                    {
-                        if (mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
-                        {
-                            Vector2 gridPos = (worldPosition - curBoard.getInnerRectangle().Location) / curBoard.IndividualSize;
-                            Wall newWall = new Wall(curBoard.getGridSquare(gridPos.X, gridPos.Y), new Point(Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.X))), Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.Y)))));
-                            if (gridLocations.Contains(newWall.gridLocation))
-                            {
-                                for (int i = 0; i < entities.Count; i++)
-                                {
-                                    if (entities[i].gridLocation == newWall.gridLocation)
-                                    {
-                                        entities.Remove(entities[i]);
-                                        newWall.LoadContent();
-                                        entities.Add(newWall);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                newWall.LoadContent();
-                                entities.Add(newWall);
-                                gridLocations.Add(newWall.gridLocation);
-                            }
-                            
-                            
-                        }
-                    }
+                    AddWall();
                 }
             }
         }
@@ -166,8 +141,48 @@ namespace TankGame
             }
             //
             nameField.Draw(spriteBatch);
-            spriteBatch.DrawString(font, "Add an Object", new Vector2(1350,300), Color.Black);
+            spriteBatch.DrawString(font, "Add an Object", new Vector2(1350, 300), Color.Black);
         }
+        #region Adding objects functions
+        //if walls are selected this code allows the placing of them. 
+        private void AddWall()
+        {
+            //find out if the mouse is inside the board
+            if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
+            {
+                //if the mouse is clicked once inside the board
+                if (mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                {
+                    //get the current rectangle the mouse is within
+                    Point curGridLocation;
+                    RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);
+                    Wall newWall = new Wall(curGrid, curGridLocation);
+                    //if the grid has been used before then remove the current object there and add the new one
+                    if (gridLocations.Contains(newWall.gridLocation))
+                    {
+                        for (int i = 0; i < entities.Count; i++)
+                        {
+                            if (entities[i].gridLocation == newWall.gridLocation)
+                            {
+                                entities.Remove(entities[i]);
+                                newWall.LoadContent();
+                                entities.Add(newWall);
+                            }
+                        }
+                    }
+                    //otherwise just add the object. Also tell gridlocations that that spot is now used
+                    else
+                    {
+                        newWall.LoadContent();
+                        entities.Add(newWall);
+                        gridLocations.Add(newWall.gridLocation);
+                    }
+                }
+            }
+        }
+        #endregion
+
+
         #region Load and Save and New
         //Events for saving and loading
         public void LoadPressed(object sender, EventArgs e)
@@ -239,8 +254,10 @@ namespace TankGame
             levelLoaded = true;
         }
         #endregion
+
+
         #region Add Objects Events
-        private void AddWall(object sender, EventArgs e)
+        private void SelectWall(object sender, EventArgs e)
         {
             if (!wallSelected)
             {
@@ -250,14 +267,36 @@ namespace TankGame
             {
                 wallSelected = false;
             }
-            powerSelected = false;
+            itemSelected = false;
             eraseSelected = false;
-            /*
-            if (addPower.Texture == addPower.Pressed)
+            
+            if (addItem.Texture == addItem.Pressed)
             {
-                addPower.toggleTexture();
+                addItem.toggleTexture();
             }
-            if (erase.Texture == erase.Pressed)
+            /*if (erase.Texture == erase.Pressed)
+            {
+                erase.toggleTexture();
+            }*/
+        }
+        private void SelectItem(object sender, EventArgs e)
+        {
+            if (!itemSelected)
+            {
+                itemSelected = true;
+            }
+            else
+            {
+                itemSelected = false;
+            }
+            wallSelected = false;
+            eraseSelected = false;
+
+            if (addWall.Texture == addWall.Pressed)
+            {
+                addWall.toggleTexture();
+            }
+            /*if (erase.Texture == erase.Pressed)
             {
                 erase.toggleTexture();
             }*/

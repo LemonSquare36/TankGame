@@ -104,6 +104,7 @@ namespace TankGame.Objects
                 }
             }
         }
+        //draws all the rectangles in a checkboard pattern
         public void drawCheckers(SpriteBatch spriteBatch)
         {
 
@@ -137,6 +138,7 @@ namespace TankGame.Objects
                 }
             }
         }
+        //draws the border
         public void DrawOutline(SpriteBatch spriteBatch)
         {
             //draws an outline for the board creating a thicker border
@@ -168,13 +170,31 @@ namespace TankGame.Objects
             }
             //var last = gridarray[Row-1, Col-1];
         }
+        /// <summary>
+        /// returns the array that the board uses for its smaller rectangles
+        /// </summary>
         public RectangleF[,] getGrid()
         {
             return gridarray;
         }
-        public RectangleF getGridSquare(float Col, float Row)
+        /// <summary>Gets the specific rectangle from grid array with Col and Row</summary>
+        public RectangleF getGridSquare(int Row, int Col)
         {
-            return gridarray[Convert.ToInt16(Math.Floor(Convert.ToDouble(Row))), Convert.ToInt16(Math.Floor(Convert.ToDouble(Col)))];
+            return gridarray[Col,Row];
+        }
+        /// <summary>Gets the specific rectangle from grid array with Vector2 Position</summary>
+        public RectangleF getGridSquare(Vector2 Position)
+        {
+            Vector2 gridPos = Position - getInnerRectangle().Location / IndividualSize;
+            return gridarray[Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.X))), Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.Y)))];
+        }
+        /// <summary>Gets the specific rectangle from grid array with Vector2 Position, and returns the grid loction</summary>
+        public RectangleF getGridSquare(Vector2 Position, out Point gridLocation)
+        {
+            Vector2 gridPos = (Position - getInnerRectangle().Location) / IndividualSize;
+            gridLocation.X = Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.X)));
+            gridLocation.Y = Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.Y)));
+            return gridarray[gridLocation.Y, gridLocation.X];
         }
         public Vector2 getOutlineSize()
         {
