@@ -48,6 +48,8 @@ namespace TankGame
         //input box
         InputBox nameField, sizeField, tankField, mineField;
         List<InputBox> Fields = new List<InputBox>();
+        //List Box
+        Tools.ListBox levelSelection;
         //the rows and columns
         int RowsCol;
         Point TanksAndMines;
@@ -71,6 +73,8 @@ namespace TankGame
             sizeField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1250, 650), new Vector2(80, 70), 2);
             tankField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1450, 650), new Vector2(80, 70), 2);
             mineField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1650, 650), new Vector2(80, 70), 2);
+
+            levelSelection = new Tools.ListBox(new Vector2(1300, 700), new Vector2(200, 380), 4, Color.White, Color.Black, 2);
             #endregion
 
             #region default font colors
@@ -142,6 +146,7 @@ namespace TankGame
             {
                 box.LoadContent();
             }
+            levelSelection.LoadContent(Directory.GetFiles(relativePath + "\\TankGame"));
             
         }
         //Update
@@ -159,6 +164,7 @@ namespace TankGame
             {
                 box.Update(mouse, worldPosition, keyState, keyHeldState);
             }
+            levelSelection.Update(mouse, worldPosition);
 
             //check for changes in the text boxes
             //if changed but not set, change the color to red to indicated unset changes
@@ -229,11 +235,14 @@ namespace TankGame
             {
                 b.Draw(spriteBatch);
             }
-            //
+            //input box list draw
             foreach (InputBox box in Fields)
             {
                 box.Draw(spriteBatch);
             }
+            levelSelection.Draw(spriteBatch);
+
+
             #region drawing text to screen
             spriteBatch.DrawString(font, "Add an Object\nRight Click to Erase", new Vector2(1350, 300), Color.Black);
             spriteBatch.DrawString(font, "Walls", new Vector2(1300, 450), Color.Black);
@@ -385,7 +394,7 @@ namespace TankGame
                 e.LoadContent();
                 gridLocations.Add(e.gridLocation);
             }
-            nameField.Text = "test";
+            nameField.Text = Path.GetFileName(file).Split(".")[0];
             //level can be drawn and updated now. New thread can be made
             levelLoaded = true;
             threadActive = false;

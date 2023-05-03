@@ -33,61 +33,65 @@ namespace TankGame.Tools
             //read until the file is at its end
             while (!reader.EndOfStream)
             {
-                //if END is called, read the next line which is a category - to set the category
-                if (line == "END")
-                {
-                    line = reader.ReadLine();
-                    category = line;
-                }
-                else if (category == "GAMEBOARD")
-                {
-                    //get the data need for making a board
-                    //get the number of tanks and mines per side
-                    string[] TankMines = reader.ReadLine().Split(',');
-                    tanksMines = new Point(Convert.ToInt16(TankMines[0]), Convert.ToInt16(TankMines[1]));
-                    //get the board data
-                    string[] RowCol = reader.ReadLine().Split(',');
-                    int border = Convert.ToInt16(reader.ReadLine());
-                    string[] color1 = reader.ReadLine().Split(',');
-                    string[] color2 = reader.ReadLine().Split(',');
-                    string[] color3 = reader.ReadLine().Split(',');
-
-                    //create the board with the data
-                    float size = Camera.ViewboxScale.Y * 0.9F;
-                    Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
-
-                    board = new Board(pos,
-                        new Point(Convert.ToInt16(size), Convert.ToInt16(size)),
-                        Convert.ToInt16(RowCol[1]), Convert.ToInt16(RowCol[0]), border);
-                    //set the boards color
-                    board.setColor(new Color(Convert.ToInt16(color1[0]), Convert.ToInt16(color1[1]), Convert.ToInt16(color1[2])),
-                        new Color(Convert.ToInt16(color2[0]), Convert.ToInt16(color2[1]), Convert.ToInt16(color2[2])),
-                        new Color(Convert.ToInt16(color3[0]), Convert.ToInt16(color3[1]), Convert.ToInt16(color3[2])));
-                    //sets line END after getting board info
-                    line = reader.ReadLine();
-                }
-                else if (category == "WALLS")
-                {
-                    //line reads looking for END and passes the data into an array split by the comma
-                    line = reader.ReadLine();
-                    if (line != "END")
+                try {
+                    //if END is called, read the next line which is a category - to set the category
+                    if (line == "END")
                     {
-                        cords = line.Split(',');
-                        entities.Add(new Wall(board.getGridSquare(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])), 
-                            new Point(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1]))));
+                        line = reader.ReadLine();
+                        category = line;
+                    }
+                    else if (category == "GAMEBOARD")
+                    {
+
+                        //get the data need for making a board
+                        //get the number of tanks and mines per side
+                        string[] TankMines = reader.ReadLine().Split(',');
+                        tanksMines = new Point(Convert.ToInt16(TankMines[0]), Convert.ToInt16(TankMines[1]));
+                        //get the board data
+                        string[] RowCol = reader.ReadLine().Split(',');
+                        int border = Convert.ToInt16(reader.ReadLine());
+                        string[] color1 = reader.ReadLine().Split(',');
+                        string[] color2 = reader.ReadLine().Split(',');
+                        string[] color3 = reader.ReadLine().Split(',');
+
+                        //create the board with the data
+                        float size = Camera.ViewboxScale.Y * 0.9F;
+                        Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
+
+                        board = new Board(pos,
+                            new Point(Convert.ToInt16(size), Convert.ToInt16(size)),
+                            Convert.ToInt16(RowCol[1]), Convert.ToInt16(RowCol[0]), border);
+                        //set the boards color
+                        board.setColor(new Color(Convert.ToInt16(color1[0]), Convert.ToInt16(color1[1]), Convert.ToInt16(color1[2])),
+                            new Color(Convert.ToInt16(color2[0]), Convert.ToInt16(color2[1]), Convert.ToInt16(color2[2])),
+                            new Color(Convert.ToInt16(color3[0]), Convert.ToInt16(color3[1]), Convert.ToInt16(color3[2])));
+                        //sets line END after getting board info
+                        line = reader.ReadLine();
+                    }
+                    else if (category == "WALLS")
+                    {
+                        //line reads looking for END and passes the data into an array split by the comma
+                        line = reader.ReadLine();
+                        if (line != "END")
+                        {
+                            cords = line.Split(',');
+                            entities.Add(new Wall(board.getGridSquare(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])),
+                                new Point(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1]))));
+                        }
+                    }
+                    else if (category == "ITEMBOXS")
+                    {
+                        line = reader.ReadLine();
+                        if (line != "END")
+                        {
+                            cords = line.Split(',');
+                            entities.Add(new ItemBox(board.getGridSquare(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])),
+                                new Point(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1]))));
+                        }
                     }
                 }
-                else if (category == "ITEMBOXS")
-                {
-                    line = reader.ReadLine();
-                    if (line != "END")
-                    {
-                        cords = line.Split(',');
-                        entities.Add(new ItemBox(board.getGridSquare(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])),
-                            new Point(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1]))));
-                    }
-                }
-                }
+                catch { }
+            }
             reader.Close();
         }
         /// <summary>

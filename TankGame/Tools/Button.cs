@@ -15,7 +15,10 @@ namespace TankGame
         private MouseState mouse;
         public ButtonState oldClick;
         public ButtonState curClick;
-        private bool toggle = false;
+        private bool toggle = false, toggleOneTex = false;
+
+
+        Color buttonColor = Color.White, offSetColor = new Color(20,20,20);
 
         //Holds the Name or Function the button does
         private string Bname;
@@ -63,6 +66,7 @@ namespace TankGame
             Texture = unPressed;
             Purpose = ButtonPurpose;
         }
+       
         /// <summary>Create the Image, HitBox, and eventInformation when calling the button in this Constructer</summary>
         /// <param name="pos">Where the button is in the game world</param>
         /// <param name="width">How wide is the TEX</param>
@@ -80,13 +84,15 @@ namespace TankGame
             Bname = ButtonName;
             Texture = unPressed;
         }
+       
         /// <summary>Create the Image, HitBox, and eventInformation when calling the button in this Constructer</summary>
         /// <param name="pos">Where the button is in the game world</param>
         /// <param name="width">How wide is the TEX</param>
         /// <param name="height">How tall is the TEX</param>
         /// <param name="fileLocation">The location of the two files that make a button. Ex: load for loadUH and loadH</param>
         /// <param name="ButtonName">For a switch case. Name tells it what event to call</param>
-        /// <param name="buttonBehaviour">Determines abnormal button behavior - (toggle): Second texutre toggles by click / (oneTex): Texture only used one texture. Doesnt ad H\UH</param>
+        /// <param name="buttonBehaviour">Determines abnormal button behavior - (toggle): Second texutre toggles by click / (oneTex): Texture only used one texture. Doesnt ad H\UH
+        /// / (toggleOneTex) uses one Texture that it darkens while being a toggle button</param>
         public Button(Vector2 pos, float width, float height, string fileLocation, string ButtonName, string buttonBehaviour)//Button Name is super important becuase it determines what it does
         {
             curClick = ButtonState.Pressed;
@@ -96,6 +102,13 @@ namespace TankGame
             {
                 unPressed = Main.GameContent.Load<Texture2D>(fileLocation);
                 pressed = Main.GameContent.Load<Texture2D>(fileLocation);
+            }
+            else if (buttonBehaviour == "toggleOneTex")
+            {
+                unPressed = Main.GameContent.Load<Texture2D>(fileLocation);
+                pressed = Main.GameContent.Load<Texture2D>(fileLocation);
+                toggle = true;
+                toggleOneTex = true;
             }
             else
             {
@@ -111,8 +124,8 @@ namespace TankGame
             Bname = ButtonName;
             Texture = unPressed;
         }
-        //Reads for inputs of the mouse in correspondence for the button
 
+        //Reads for inputs of the mouse in correspondence for the button
         public void Update(MouseState Mouse, Vector2 worldMousePosition)
         {
             mouse = Mouse;       
@@ -154,37 +167,62 @@ namespace TankGame
             //if a texture is a different size when pressed, offset it approprietly
             if (Texture == pressed)
             {
-                if (unPressed.Bounds != pressed.Bounds)
+                if (!toggleOneTex)
                 {
-                    Vector2 tempPos = new Vector2();
-                    if (unPressed.Bounds.Size.X > pressed.Bounds.Size.X)
+                    if (unPressed.Bounds != pressed.Bounds)
                     {
-                        tempPos -= new Vector2(unPressed.Bounds.Width - pressed.Bounds.Width, unPressed.Bounds.Height - pressed.Bounds.Height)/2;
+                        Vector2 tempPos = new Vector2();
+                        if (unPressed.Bounds.Size.X > pressed.Bounds.Size.X)
+                        {
+                            tempPos -= new Vector2(unPressed.Bounds.Width - pressed.Bounds.Width, unPressed.Bounds.Height - pressed.Bounds.Height) / 2;
+                        }
+                        else if (unPressed.Bounds.Size.X < pressed.Bounds.Size.X)
+                        {
+                            tempPos -= new Vector2(pressed.Bounds.Width - unPressed.Bounds.Width, pressed.Bounds.Height - unPressed.Bounds.Height) / 2;
+                        }
+                        spriteBatch.Draw(Texture, Pos + tempPos, buttonColor);
                     }
-                    else if (unPressed.Bounds.Size.X < pressed.Bounds.Size.X)
-                    {
-                        tempPos -= new Vector2(pressed.Bounds.Width - unPressed.Bounds.Width, pressed.Bounds.Height - unPressed.Bounds.Height)/2;
-                    }
-                    spriteBatch.Draw(Texture, Pos + tempPos, Color.White);
+                    else { spriteBatch.Draw(Texture, Pos, buttonColor); }
                 }
-                else { spriteBatch.Draw(Texture, Pos, Color.White); }
+                else
+                {
+                    spriteBatch.Draw(Texture, Pos, new Color(buttonColor.R - offSetColor.R, buttonColor.G - offSetColor.G, buttonColor.B - offSetColor.B));
+                }
 
             }
             //draw normally if not pressed
-            else { spriteBatch.Draw(Texture, Pos, Color.White); }
+            else { spriteBatch.Draw(Texture, Pos, buttonColor); }
         }
 
         //Button Event
         private void OnButtonClicked()
         {
             buttonClicked?.Invoke(this, EventArgs.Empty);
-        }
+        }/// <summary>
+        /// allows for toggling the button texture between pressed and unpressed
+        /// </summary>
         public void toggleTexture()
         {                       
             if (Texture == pressed)
                 Texture = unPressed;
 
             else Texture = pressed;
+        }
+        /// <summary>
+        /// the color buttons draw with - defualt is white
+        /// </summary>
+        /// <param name="newColor"></param>
+        public void ChangeButtonColor(Color newColor)
+        {
+            buttonColor = newColor;
+        }
+        /// <summary>
+        /// This color is subtracted from the button color when its a toggleOneTex
+        /// </summary>
+        /// <param name="OffSetColor"></param>
+        public void ChangeOffSetColor(Color OffSetColor)
+        {
+            offSetColor = OffSetColor;
         }
     }
 }
