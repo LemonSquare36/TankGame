@@ -13,12 +13,22 @@ using Microsoft.Xna.Framework.Audio;
 using System.Diagnostics;
 using System.IO;
 using System.Collections;
+using System.Runtime.CompilerServices;
 
 namespace TankGame.Objects.Entities
 {
     internal class Entity
     {
-        public RectangleF curSquare { get; set; }
+        protected RectangleF curSquare;
+        public RectangleF CurSquare
+        {
+            get { return curSquare; }
+            set
+            {
+                curSquare = value;
+                Resize();
+            }
+        }
 
         protected Texture2D tex;
         protected string texFile;
@@ -51,6 +61,10 @@ namespace TankGame.Objects.Entities
         public virtual void Draw(SpriteBatch spriteBatch)
         {
             //spriteBatch.Draw(tex, curSquare.Location, null, Color.White, 0, Vector2.Zero, curSquare.Size, SpriteEffects.None, 0);
+        }
+        protected virtual void Resize()
+        {
+            
         }
     }
 }

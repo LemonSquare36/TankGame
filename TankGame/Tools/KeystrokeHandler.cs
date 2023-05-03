@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework.Input;
 
 namespace TankGame.Tools
@@ -29,164 +30,213 @@ namespace TankGame.Tools
         }
 
         //populate the dictionary with the alphabet. Value 1 is lower case and value 2 upper
-        public static void populateAlphabet()
+        public static void populateInformation()
         {
             for (char c = 'A'; c <= 'Z'; c++)
             {                
                 alphabet.Add(c.ToString().ToLower(), c.ToString().ToUpper());
             }
+            for (int i = 0; i < 10; i++)
+            {
+                alphabet.Add(Convert.ToString(i), Convert.ToString(i));
+            }
         }
-        public string TypingOnKeyBoard(KeyboardState keystate, KeyboardState keyHeldState)
+        public string TypingOnKeyBoard(KeyboardState keystate, KeyboardState keyHeldState, int charLimit)
         {
             var keys = keystate.GetPressedKeys();
             //check to see if the same key is held down
-            if (keystate != keyHeldState)
+            if (curText.Length < charLimit || charLimit == -1)
             {
-                if (keystate.IsKeyDown(Keys.Back))
+                if (keystate != keyHeldState)
                 {
-                    try
+                    if (keystate.IsKeyDown(Keys.Back))
                     {
-                        curText.Remove(curText.Length - 1, 1);
-                        backspaceHold = 0;
-                    }
-                    catch { }
-                }
-                else if (keystate.IsKeyDown(Keys.Space) && spaceRelease)
-                {
-                    try
-                    {
-                        curText.Append(" ");
-                        spaceRelease = false;
-                    }
-                    catch { }
-                }
-                else if (keystate.IsKeyDown(Keys.OemPeriod) && periodRelease)
-                {
-                    try
-                    {
-                        curText.Append(".");
-                        periodRelease = false;
-                    }
-                    catch { }
-                }
-                else if (keys.Length > 0)
-                {
-                    //get the currently pressed keys as newKeys
-                    string[] newKeys = new string[keystate.GetPressedKeys().Length];
-                    for (int i = 0; i < keystate.GetPressedKeys().Length; i++)
-                    {
-                        newKeys[i] = Convert.ToString(keystate.GetPressedKeys()[i]);
-                    }
-                    if (heldStrings != null)
-                    {
-                        //check the old strings vs the new. Heldstrings now only has the common factors
-                        heldStrings = heldStrings.Intersect(newKeys).ToArray();
-
-                        for (int i = 0; i < newKeys.Length; i++)
+                        try
                         {
-                            if (!heldStrings.Contains(newKeys[i]) && !release.Contains(newKeys[i]))
+                            curText.Remove(curText.Length - 1, 1);
+                            backspaceHold = 0;
+                        }
+                        catch { }
+                    }
+                    else if (keystate.IsKeyDown(Keys.Space) && spaceRelease)
+                    {
+                        try
+                        {
+                            curText.Append(" ");
+                            spaceRelease = false;
+                        }
+                        catch { }
+                    }
+                    else if (keystate.IsKeyDown(Keys.OemPeriod) && periodRelease)
+                    {
+                        try
+                        {
+                            curText.Append(".");
+                            periodRelease = false;
+                        }
+                        catch { }
+                    }
+                    else if (keys.Length > 0)
+                    {
+                        //get the currently pressed keys as newKeys
+                        string[] newKeys = new string[keystate.GetPressedKeys().Length];
+                        for (int i = 0; i < keystate.GetPressedKeys().Length; i++)
+                        {
+                            if (Convert.ToString(keystate.GetPressedKeys()[i]).Length == 1)
                             {
-
-                                //check for shift pressed
-                                if (newKeys[i].ToLower() == "leftshift" || newKeys[i].ToLower() == "rightshift")
+                                newKeys[i] = Convert.ToString(keystate.GetPressedKeys()[i]);
+                            }
+                            else
+                            {
+                                try
                                 {
-                                    try
-                                    {
-                                        temp = Alphabet[newKeys[i + 1].ToLower()];
-                                    }
-                                    catch { }
+                                    newKeys[i] = ConvertToNumber(Convert.ToString(keystate.GetPressedKeys()[i]));
                                 }
-                                else
-                                {
-                                    try
-                                    {
-                                        temp = Alphabet[newKeys[i].ToLower()];
+                                catch { }
+                            }
+                        }
+                        if (heldStrings != null)
+                        {
+                            //check the old strings vs the new. Heldstrings now only has the common factors
+                            heldStrings = heldStrings.Intersect(newKeys).ToArray();
 
+                            for (int i = 0; i < newKeys.Length; i++)
+                            {
+                                if (!heldStrings.Contains(newKeys[i]) && !release.Contains(newKeys[i]))
+                                {
+
+                                    //check for shift pressed
+                                    if (newKeys[i].ToLower() == "leftshift" || newKeys[i].ToLower() == "rightshift")
+                                    {
+                                        try
+                                        {
+                                            temp = Alphabet[newKeys[i + 1].ToLower()];
+                                        }
+                                        catch { }
                                     }
-                                    catch { }
+                                    else
+                                    {
+                                        try
+                                        {
+                                            temp = Alphabet[newKeys[i].ToLower()];
+
+                                        }
+                                        catch { }
+                                    }
                                 }
                             }
+                        }
+                        else
+                        {
+                            //check for shift pressed
+                            if (newKeys[0].ToLower() == "leftshift" || newKeys[0].ToLower() == "rightshift")
+                            {
+                                try
+                                {
+                                    temp = Alphabet[newKeys[1].ToLower()];
+                                }
+                                catch { }
+                            }
+                            else
+                            {
+                                try
+                                {
+
+                                    temp = Alphabet[newKeys[0].ToLower()];
+
+                                }
+                                catch { }
+                            }
+                        }
+                        if (temp != null)
+                        {
+                            // get upper or lower case key based on shift
+                            curText.Append(!keystate.IsKeyDown(Keys.LeftShift) && !keystate.IsKeyDown(Keys.RightShift) ? temp.ToLower() : temp.ToUpper());
+                            temp = null;
+                        }
+                        //sets the currently down keys as the pressed keys
+                        //gets second state back if first state isnt null
+                        if (heldStrings != null)
+                        {
+                            release.Clear();
+                            for (int i = 0; i < heldStrings.Length; i++)
+                            {
+                                if (!newKeys.Contains(heldStrings[i]))
+                                {
+                                    release.Add(heldStrings[i]);
+                                }
+                            }
+                        }
+                        //gets one state back
+                        heldStrings = new string[newKeys.Length];
+                        for (int i = 0; i < newKeys.Length; i++)
+                        {
+                            heldStrings[i] = newKeys[i];
                         }
                     }
                     else
                     {
-                        //check for shift pressed
-                        if (newKeys[0].ToLower() == "leftshift" || newKeys[0].ToLower() == "rightshift")
-                        {
-                            try
-                            {
-                                temp = Alphabet[newKeys[1].ToLower()];
-                            }
-                            catch { }
-                        }
-                        else
-                        {
-                            try
-                            {
-
-                                temp = Alphabet[newKeys[0].ToLower()];
-
-                            }
-                            catch { }
-                        }
-                    }
-                    if (temp != null)
-                    {
-                        // get upper or lower case key based on shift
-                        curText.Append(!keystate.IsKeyDown(Keys.LeftShift) && !keystate.IsKeyDown(Keys.RightShift) ? temp.ToLower() : temp.ToUpper());
-                        temp = null;
-                    }
-                    //sets the currently down keys as the pressed keys
-                    //gets second state back if first state isnt null
-                    if (heldStrings != null)
-                    {
                         release.Clear();
-                        for (int i = 0; i < heldStrings.Length; i++)
-                        {
-                            if (!newKeys.Contains(heldStrings[i]))
-                            {
-                                release.Add(heldStrings[i]);
-                            }
-                        }
+                        heldStrings = null;
                     }
-                    //gets one state back
-                    heldStrings = new string[keystate.GetPressedKeys().Length];
-                    for (int i = 0; i < keystate.GetPressedKeys().Length; i++)
+                    if (!keystate.IsKeyDown(Keys.Space))
                     {
-                        heldStrings[i] = Convert.ToString(keystate.GetPressedKeys()[i]);
+                        spaceRelease = true;
+                    }
+                    if (!keystate.IsKeyDown(Keys.OemPeriod))
+                    {
+                        periodRelease = true;
                     }
                 }
-                else
+                //allows for holding the backspace down to. Only key that can be held
+                else if (keystate.IsKeyDown(Keys.Back))
                 {
-                    release.Clear();
-                    heldStrings = null;
-                }
-                if (!keystate.IsKeyDown(Keys.Space))
-                {
-                    spaceRelease = true;
-                }
-                if (!keystate.IsKeyDown(Keys.OemPeriod))
-                {
-                    periodRelease = true;
+                    try
+                    {
+                        if (backspaceHold == 4)
+                        {
+                            curText.Remove(curText.Length - 1, 1);
+                            backspaceHold = 0;
+                        }
+                        backspaceHold++;
+                    }
+                    catch { }
                 }
             }
-
-
-            //allows for holding the backspace down to. Only key that can be held
-            else if (keystate.IsKeyDown(Keys.Back))
+            else
             {
-                try
+                if (keystate != keyHeldState)
                 {
-                    if (backspaceHold == 4)
+                    if (keystate.IsKeyDown(Keys.Back))
                     {
-                        curText.Remove(curText.Length - 1, 1);
-                        backspaceHold = 0;
+                        try
+                        {
+                            curText.Remove(curText.Length - 1, 1);
+                            backspaceHold = 0;
+                        }
+                        catch { }
                     }
-                    backspaceHold++;
+                    else if (keystate.IsKeyDown(Keys.Back))
+                    {
+                        try
+                        {
+                            if (backspaceHold == 4)
+                            {
+                                curText.Remove(curText.Length - 1, 1);
+                                backspaceHold = 0;
+                            }
+                            backspaceHold++;
+                        }
+                        catch { }
+                    }
                 }
-                catch { }
             }
             return curText.ToString();
+        }
+        private string ConvertToNumber(string key)
+        {
+            key = Regex.Match(key, @"\d+").Value;
+            return key;
         }
     }
 }

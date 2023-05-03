@@ -28,7 +28,7 @@ namespace TankGame
         //button declares
         Texture2D wallTex;
         //generic buttons
-        Button Load, Save, New;
+        Button Load, Save, New, Set;
         //add object buttons
         Button addWall, addItem, erase;
         List<Button> Buttons = new List<Button>();
@@ -45,7 +45,9 @@ namespace TankGame
         //objects selected logic
         bool wallSelected = false, itemSelected = false, eraseSelected = false;
         //input box
-        InputBox nameField;
+        InputBox nameField, sizeField;
+        //the rows and columns
+        int RowsCol;
         //Initialize
         public override void Initialize()
         {
@@ -57,6 +59,7 @@ namespace TankGame
             openDialog.Filter = "Level Files (*.lvl)|*.lvl";
             //create the text field
             nameField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1350, 200), new Vector2(300, 50));
+            sizeField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1350, 600), new Vector2(80, 70), 2);
 
             relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         }
@@ -75,17 +78,21 @@ namespace TankGame
             Load = new Button(new Vector2(1300, 100), 100, 50, "Buttons/Editor/Load", "load");
             Save = new Button(new Vector2(1450, 100), 100, 50, "Buttons/Editor/Save", "save");
             New = new Button(new Vector2(1600, 100), 100, 50, "Buttons/Editor/New", "new");
+            Set = new Button(new Vector2(1450, 600), 70, 50, "Buttons/Editor/Set", "set");
 
             addWall = new Button(new Vector2(1350, 400), 50, 50, "Buttons/Editor/Wall", "addWall", "toggle");
             addItem = new Button(new Vector2(1450, 400), 50, 50, "Buttons/Editor/ItemBox", "addItem", "toggle");
+            erase = new Button(new Vector2(1550, 400), 50, 50, "Buttons/Editor/Clear", "erase", "toggle");
             #endregion
             #region Button Events
             Load.ButtonClicked += LoadPressed;
             Save.ButtonClicked += SavePressed;
             New.ButtonClicked += NewPressed;
+            Set.ButtonClicked += SetPressed;
 
             addWall.ButtonClicked += SelectWall;
             addItem.ButtonClicked += SelectItem;
+            erase.ButtonClicked += SelectErase;
             #endregion
             #region ButtonList
             Buttons.Add(Load);
@@ -93,9 +100,12 @@ namespace TankGame
             Buttons.Add(New);
             Buttons.Add(addWall);
             Buttons.Add(addItem);
+            Buttons.Add(erase);
+            Buttons.Add(Set);
             #endregion 
 
             nameField.LoadContent();
+            sizeField.LoadContent();
         }
         //Update
         public override void Update()
@@ -108,6 +118,7 @@ namespace TankGame
             }
             //
             nameField.Update(mouse, worldPosition, keyState, keyHeldState);
+            sizeField.Update(mouse, worldPosition, keyState, keyHeldState);
             //if the level is loaded
             if (levelLoaded)
             {
@@ -115,6 +126,14 @@ namespace TankGame
                 if (wallSelected)
                 {
                     AddWall();
+                }
+                else if (itemSelected)
+                {
+                    AddItem();
+                }
+                else if (eraseSelected)
+                {
+                    EraserTool();
                 }
             }
         }
@@ -141,6 +160,7 @@ namespace TankGame
             }
             //
             nameField.Draw(spriteBatch);
+            sizeField.Draw(spriteBatch);
             spriteBatch.DrawString(font, "Add an Object", new Vector2(1350, 300), Color.Black);
         }
         #region Adding objects functions
@@ -180,12 +200,74 @@ namespace TankGame
                 }
             }
         }
+        //if items are selected this code will allow them to be added to the board
+        private void AddItem()
+        {
+            //find out if the mouse is inside the board
+            if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
+            {
+                oldClick = curClick;
+                curClick = mouse.LeftButton;
+                //if the mouse is clicked once inside the board
+                if (curClick == Microsoft.Xna.Framework.Input.ButtonState.Pressed && oldClick == Microsoft.Xna.Framework.Input.ButtonState.Released)
+                {
+                    //get the current rectangle the mouse is within
+                    Point curGridLocation;
+                    RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);
+                    ItemBox newItem = new ItemBox(curGrid, curGridLocation);
+                    //if the grid has been used before then remove the current object there and add the new one
+                    if (gridLocations.Contains(newItem.gridLocation))
+                    {
+                        for (int i = 0; i < entities.Count; i++)
+                        {
+                            if (entities[i].gridLocation == newItem.gridLocation)
+                            {
+                                entities.Remove(entities[i]);
+                                newItem.LoadContent();
+                                entities.Add(newItem);
+                            }
+                        }
+                    }
+                    //otherwise just add the object. Also tell gridlocations that that spot is now used
+                    else
+                    {
+                        newItem.LoadContent();
+                        entities.Add(newItem);
+                        gridLocations.Add(newItem.gridLocation);
+                    }
+                }
+            }
+        }
+        //if erase is selected this code allows the removing of objects. 
+        private void EraserTool()
+        {
+            //find out if the mouse is inside the board
+            if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
+            {
+                //if the mouse is clicked once inside the board
+                if (mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                {
+                    //get the current rectangle the mouse is within
+                    Point curGridLocation;
+                    RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);                    
+                    //if the grid has been used before then remove the current object there and add the new one
+                        for (int i = 0; i < entities.Count; i++)
+                        {
+                            if (entities[i].gridLocation == curGridLocation)
+                            {
+                                entities.Remove(entities[i]);
+                                gridLocations.Remove(curGridLocation);
+                            }
+                    }
+                }
+            }
+        }
         #endregion
 
 
         #region Load and Save and New
         //Events for saving and loading
-        public void LoadPressed(object sender, EventArgs e)
+        private void LoadPressed(object sender, EventArgs e)
         {
             if (!threadActive)
             {
@@ -222,8 +304,10 @@ namespace TankGame
             //level can be drawn and updated now. New thread can be made
             levelLoaded = true;
             threadActive = false;
+            RowsCol = curBoard.Rows;
+            sizeField.Text = Convert.ToString(RowsCol);
         }
-        public void SavePressed(object sender, EventArgs e)
+        private void SavePressed(object sender, EventArgs e)
         {
             if (levelLoaded)
             {
@@ -240,7 +324,7 @@ namespace TankGame
             }
         }
         //creates a fresh new board
-        public void NewPressed(object sender, EventArgs e)
+        private void NewPressed(object sender, EventArgs e)
         {
             file = relativePath + "\\TankGame\\";
             float size = Camera.ViewboxScale.Y * 0.9F;
@@ -252,11 +336,16 @@ namespace TankGame
             curBoard.setColor(new Color(235, 235, 235), new Color(200,200,200), Color.Black);
             nameField.Text = "New";           
             levelLoaded = true;
+            sizeField.Text = "20";
+            RowsCol = 20;
         }
         #endregion
 
 
         #region Add Objects Events
+        //all 3 events
+        //set there button to be the selected one and unselect the others
+        //toggle thier highlighted texture one and toggle the rest off
         private void SelectWall(object sender, EventArgs e)
         {
             if (!wallSelected)
@@ -274,10 +363,10 @@ namespace TankGame
             {
                 addItem.toggleTexture();
             }
-            /*if (erase.Texture == erase.Pressed)
+            if (erase.Texture == erase.Pressed)
             {
                 erase.toggleTexture();
-            }*/
+            }
         }
         private void SelectItem(object sender, EventArgs e)
         {
@@ -296,11 +385,65 @@ namespace TankGame
             {
                 addWall.toggleTexture();
             }
-            /*if (erase.Texture == erase.Pressed)
+            if (erase.Texture == erase.Pressed)
             {
                 erase.toggleTexture();
-            }*/
+            }
         }
-        #endregion 
+        private void SelectErase(object sender, EventArgs e)
+        {
+            if (!eraseSelected)
+            {
+                eraseSelected = true;
+            }
+            else
+            {
+                eraseSelected = false;
+            }
+            itemSelected = false;
+            wallSelected = false;
+
+            if (addItem.Texture == addItem.Pressed)
+            {
+                addItem.toggleTexture();
+            }
+            if (addWall.Texture == addWall.Pressed)
+            {
+                addWall.toggleTexture();
+            }
+        }
+        #endregion
+
+        #region other events
+        private void SetPressed(object sender, EventArgs e)
+        {
+            //get the number from the field
+            try
+            {
+                RowsCol = Convert.ToInt16(sizeField.Text);
+                float size = Camera.ViewboxScale.Y * 0.9F;
+                Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
+                curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), RowsCol, RowsCol, 8);
+                curBoard.LoadContent();
+                curBoard.setColor(new Color(235, 235, 235), new Color(200, 200, 200), Color.Black);
+                for (int i = 0; i < entities.Count; i++)
+                {
+                    try
+                    {
+                        entities[i].CurSquare = curBoard.getGridSquare(entities[i].gridLocation.X, entities[i].gridLocation.Y);
+                    }
+                    catch {
+                        gridLocations.Remove(entities[i].gridLocation);
+                        entities.Remove(entities[i]);
+                    }
+                    
+                }
+            }
+            //if not a number make it a numbe but dont scale anything
+            catch { sizeField.Text = Convert.ToString(RowsCol); }
+
+            
+        }
+        #endregion
     }
 }

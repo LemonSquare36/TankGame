@@ -28,6 +28,7 @@ namespace TankGame
         protected bool pause = false;
         //mouse that every screen uses
         protected MouseState mouse;
+        protected ButtonState curClick, oldClick;
         protected Vector2 worldPosition;
         //keystate every screen uses and keystate to calculate if a key is held
         protected KeyboardState keyState;

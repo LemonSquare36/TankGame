@@ -1,19 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Audio;
-using System.Diagnostics;
 using System.IO;
-using System.Collections;
-using TankGame.Tools;
 using TankGame.Objects.Entities;
 using TankGame.Objects;
 
@@ -21,7 +9,6 @@ namespace TankGame.Tools
 {
     internal class LevelManager
     {
-        string fileLocation;
         StreamReader reader;
         StreamWriter writer;
         Board board;
@@ -136,32 +123,24 @@ namespace TankGame.Tools
 
 
             //write walls
-            writer.WriteLine("WALLS");
-            if (E.Count == 0)
-            {
-                writer.WriteLine("END");
-                writer.WriteLine("ITEMBOXS");
-                writer.WriteLine("END");
-            }
+            writer.WriteLine("WALLS");            
             for (int i = 0; i < E.Count; i++)
             {
                 if (E[i].Type == "wall")
                 {
                     writer.WriteLine(E[i].gridLocation.X + "," + E[i].gridLocation.Y);
-                    if (i == E.Count - 1)
-                    {
-                        writer.WriteLine("END");
-                        writer.WriteLine("ITEMBOXS");
-                        writer.WriteLine("END");
-                    }
-                }
-                if (E[i].Type != "wall")
-                {
-                    writer.WriteLine("END");
-                    writer.WriteLine("ITEMBOXS");
-                    writer.WriteLine("END");
                 }
             }
+            writer.WriteLine("END");
+            writer.WriteLine("ITEMBOXS");
+            for (int i = 0; i < E.Count; i++)
+            {
+                if (E[i].Type == "itembox")
+                {
+                    writer.WriteLine(E[i].gridLocation.X + "," + E[i].gridLocation.Y);
+                }
+            }
+            writer.WriteLine("END");
             writer.Close();
         }
         public Board getGameBoard()

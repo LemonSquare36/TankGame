@@ -35,5 +35,9 @@ namespace TankGame.Objects.Entities
         {
             spriteBatch.Draw(tex, curSquare.Location, null, Color.White, 0, Vector2.Zero, wallSize, SpriteEffects.None, 0);
         }
+        protected override void Resize()
+        {
+            wallSize = curSquare.Size / wallSize;
+        }
     }
 }
