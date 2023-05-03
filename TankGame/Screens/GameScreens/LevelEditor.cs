@@ -23,12 +23,13 @@ namespace TankGame
 {
     internal class LevelEditor : GameScreenManager
     {
+        #region Declares (there are alot)
         //for words
         SpriteFont font;
         //button declares
         Texture2D wallTex;
         //generic buttons
-        Button Load, Save, New, Set;
+        Button Load, Save, New, SetRowCol, SetTankCount, SetMineCount;
         //add object buttons
         Button addWall, addItem, erase;
         List<Button> Buttons = new List<Button>();
@@ -45,9 +46,15 @@ namespace TankGame
         //objects selected logic
         bool wallSelected = false, itemSelected = false, eraseSelected = false;
         //input box
-        InputBox nameField, sizeField;
+        InputBox nameField, sizeField, tankField, mineField;
+        List<InputBox> Fields = new List<InputBox>();
         //the rows and columns
         int RowsCol;
+        Point TanksAndMines;
+        //colors for text
+        Color rowColColor, tankColor, MineColor;
+        #endregion
+
         //Initialize
         public override void Initialize()
         {
@@ -57,9 +64,20 @@ namespace TankGame
             openDialog = new OpenFileDialog();
             openDialog.Title = "Select A File";
             openDialog.Filter = "Level Files (*.lvl)|*.lvl";
+
             //create the text field
+            #region initializing textboxes
             nameField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1350, 200), new Vector2(300, 50));
-            sizeField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1350, 600), new Vector2(80, 70), 2);
+            sizeField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1250, 650), new Vector2(80, 70), 2);
+            tankField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1450, 650), new Vector2(80, 70), 2);
+            mineField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1650, 650), new Vector2(80, 70), 2);
+            #endregion
+
+            #region default font colors
+            rowColColor = Color.Black;
+            tankColor = Color.Black;
+            MineColor = Color.Black;
+            #endregion
 
             relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         }
@@ -74,26 +92,33 @@ namespace TankGame
             //textures
             wallTex = Main.GameContent.Load<Texture2D>("GameSprites/Wall");
             #endregion
+
             #region load buttons
             Load = new Button(new Vector2(1300, 100), 100, 50, "Buttons/Editor/Load", "load");
             Save = new Button(new Vector2(1450, 100), 100, 50, "Buttons/Editor/Save", "save");
             New = new Button(new Vector2(1600, 100), 100, 50, "Buttons/Editor/New", "new");
-            Set = new Button(new Vector2(1450, 600), 70, 50, "Buttons/Editor/Set", "set");
+            SetRowCol = new Button(new Vector2(1350, 660), 70, 50, "Buttons/Editor/Set", "setrowcol");
+            SetTankCount = new Button(new Vector2(1550, 660), 70, 50, "Buttons/Editor/Set", "settankcount");
+            SetMineCount = new Button(new Vector2(1750, 660), 70, 50, "Buttons/Editor/Set", "setminecount");
 
-            addWall = new Button(new Vector2(1350, 400), 50, 50, "Buttons/Editor/Wall", "addWall", "toggle");
-            addItem = new Button(new Vector2(1450, 400), 50, 50, "Buttons/Editor/ItemBox", "addItem", "toggle");
-            erase = new Button(new Vector2(1550, 400), 50, 50, "Buttons/Editor/Clear", "erase", "toggle");
+            addWall = new Button(new Vector2(1320, 400), 50, 50, "Buttons/Editor/Wall", "addWall", "toggle");
+            addItem = new Button(new Vector2(1470, 400), 50, 50, "Buttons/Editor/ItemBox", "addItem", "toggle");
+            erase = new Button(new Vector2(1620, 400), 50, 50, "Buttons/Editor/Clear", "erase", "toggle");
             #endregion
+
             #region Button Events
             Load.ButtonClicked += LoadPressed;
             Save.ButtonClicked += SavePressed;
             New.ButtonClicked += NewPressed;
-            Set.ButtonClicked += SetPressed;
+            SetRowCol.ButtonClicked += SetRowColPressed;
+            SetTankCount.ButtonClicked += SetTanksPressed;
+            SetMineCount.ButtonClicked += SetMinesPressed;
 
             addWall.ButtonClicked += SelectWall;
             addItem.ButtonClicked += SelectItem;
             erase.ButtonClicked += SelectErase;
             #endregion
+
             #region ButtonList
             Buttons.Add(Load);
             Buttons.Add(Save);
@@ -101,11 +126,23 @@ namespace TankGame
             Buttons.Add(addWall);
             Buttons.Add(addItem);
             Buttons.Add(erase);
-            Buttons.Add(Set);
-            #endregion 
+            Buttons.Add(SetRowCol);
+            Buttons.Add(SetTankCount);
+            Buttons.Add(SetMineCount);
+            #endregion
 
-            nameField.LoadContent();
-            sizeField.LoadContent();
+            #region input box list
+            Fields.Add(nameField);
+            Fields.Add(sizeField);
+            Fields.Add(tankField);
+            Fields.Add(mineField);
+            #endregion
+
+            foreach (InputBox box in Fields)
+            {
+                box.LoadContent();
+            }
+            
         }
         //Update
         public override void Update()
@@ -116,9 +153,37 @@ namespace TankGame
             {
                 b.Update(mouse, worldPosition);
             }
-            //
-            nameField.Update(mouse, worldPosition, keyState, keyHeldState);
-            sizeField.Update(mouse, worldPosition, keyState, keyHeldState);
+
+            //update to all the text boxes
+            foreach (InputBox box in Fields)
+            {
+                box.Update(mouse, worldPosition, keyState, keyHeldState);
+            }
+
+            //check for changes in the text boxes
+            //if changed but not set, change the color to red to indicated unset changes
+            #region color checks
+            try
+            {
+                if (Convert.ToInt16(sizeField.Text) != RowsCol)
+                {
+                    rowColColor = Color.Red;
+                }
+                else { rowColColor = Color.Black; }
+                if (Convert.ToInt16(tankField.Text) != TanksAndMines.X)
+                {
+                    tankColor = Color.Red;
+                }
+                else { tankColor = Color.Black; }
+                if (Convert.ToInt16(mineField.Text) != TanksAndMines.Y)
+                {
+                    MineColor = Color.Red;
+                }
+                else { MineColor = Color.Black; }
+            }
+            catch { }
+            #endregion
+
             //if the level is loaded
             if (levelLoaded)
             {
@@ -135,7 +200,13 @@ namespace TankGame
                 {
                     EraserTool();
                 }
+                if (mouse.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                {
+                    EraserTool();
+                }
             }
+
+
         }
         //Draw
         public override void Draw()
@@ -159,10 +230,23 @@ namespace TankGame
                 b.Draw(spriteBatch);
             }
             //
-            nameField.Draw(spriteBatch);
-            sizeField.Draw(spriteBatch);
-            spriteBatch.DrawString(font, "Add an Object", new Vector2(1350, 300), Color.Black);
+            foreach (InputBox box in Fields)
+            {
+                box.Draw(spriteBatch);
+            }
+            #region drawing text to screen
+            spriteBatch.DrawString(font, "Add an Object\nRight Click to Erase", new Vector2(1350, 300), Color.Black);
+            spriteBatch.DrawString(font, "Walls", new Vector2(1300, 450), Color.Black);
+            spriteBatch.DrawString(font, "ItemBoxes", new Vector2(1412, 450), Color.Black);
+            spriteBatch.DrawString(font, "Eraser", new Vector2(1600, 450), Color.Black);
+            spriteBatch.DrawString(font, "Level Name", new Vector2(1405, 155), Color.Black);
+            spriteBatch.DrawString(font, "Rows/Columns", new Vector2(1150, 600), rowColColor);
+            spriteBatch.DrawString(font, "# of Tanks", new Vector2(1410, 600), tankColor);
+            spriteBatch.DrawString(font, "# of Mines", new Vector2(1610, 600), MineColor);
+            spriteBatch.DrawString(font, "Red Text = Change Not Set", new Vector2(1250, 550), Color.Red);
+            #endregion
         }
+
         #region Adding objects functions
         //if walls are selected this code allows the placing of them. 
         private void AddWall()
@@ -245,7 +329,7 @@ namespace TankGame
             if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
             {
                 //if the mouse is clicked once inside the board
-                if (mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                if (mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed || mouse.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
                 {
                     //get the current rectangle the mouse is within
                     Point curGridLocation;
@@ -293,6 +377,7 @@ namespace TankGame
             //grab the informatin from the levelManager
             entities = levelManager.getEntities();
             curBoard = levelManager.getGameBoard();
+            TanksAndMines = levelManager.getTanksAndMines();
             //finish loading the board
             curBoard.LoadContent();
             foreach (Entity e in entities)
@@ -306,6 +391,12 @@ namespace TankGame
             threadActive = false;
             RowsCol = curBoard.Rows;
             sizeField.Text = Convert.ToString(RowsCol);
+            tankField.Text = Convert.ToString(TanksAndMines.X);
+            mineField.Text = Convert.ToString(TanksAndMines.Y);
+
+            rowColColor = Color.Black;
+            tankColor = Color.Black;
+            MineColor = Color.Black;
         }
         private void SavePressed(object sender, EventArgs e)
         {
@@ -319,7 +410,7 @@ namespace TankGame
                 {
                     string fileName = nameField.Text.Replace(" ", "");
                     file = relativePath + "\\TankGame\\" + fileName + ".lvl";
-                    levelManager.SaveLevel(file, curBoard, entities);
+                    levelManager.SaveLevel(file, curBoard, entities, TanksAndMines);
                 }
             }
         }
@@ -337,14 +428,21 @@ namespace TankGame
             nameField.Text = "New";           
             levelLoaded = true;
             sizeField.Text = "20";
+            tankField.Text = "3";
+            mineField.Text = "3";
             RowsCol = 20;
+            TanksAndMines = new Point(3, 3);
+
+            rowColColor = Color.Black;
+            tankColor = Color.Black;
+            MineColor = Color.Black;
         }
         #endregion
 
 
         #region Add Objects Events
         //all 3 events
-        //set there button to be the selected one and unselect the others
+        //set thier button to be the selected one and unselect the others
         //toggle thier highlighted texture one and toggle the rest off
         private void SelectWall(object sender, EventArgs e)
         {
@@ -414,8 +512,10 @@ namespace TankGame
         }
         #endregion
 
+
         #region other events
-        private void SetPressed(object sender, EventArgs e)
+        //button events for setting the fields
+        private void SetRowColPressed(object sender, EventArgs e)
         {
             //get the number from the field
             try
@@ -426,23 +526,34 @@ namespace TankGame
                 curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), RowsCol, RowsCol, 8);
                 curBoard.LoadContent();
                 curBoard.setColor(new Color(235, 235, 235), new Color(200, 200, 200), Color.Black);
-                for (int i = 0; i < entities.Count; i++)
+                int counter = entities.Count;
+                for (int i = 0; i < counter; i++)
                 {
                     try
-                    {
-                        entities[i].CurSquare = curBoard.getGridSquare(entities[i].gridLocation.X, entities[i].gridLocation.Y);
+                    {                        
+                        entities[i].Initialize(curBoard.getGridSquare(entities[i].gridLocation.X, entities[i].gridLocation.Y)); 
                     }
                     catch {
                         gridLocations.Remove(entities[i].gridLocation);
                         entities.Remove(entities[i]);
+                        i--;
                     }
                     
                 }
             }
             //if not a number make it a numbe but dont scale anything
             catch { sizeField.Text = Convert.ToString(RowsCol); }
-
-            
+            rowColColor = Color.Black;
+        }
+        private void SetTanksPressed(object sender, EventArgs e)
+        {
+            TanksAndMines.X = Convert.ToInt16(tankField.Text);
+            tankColor = Color.Black;
+        }
+        private void SetMinesPressed(object sender, EventArgs e)
+        {
+            TanksAndMines.Y = Convert.ToInt16(mineField.Text);
+            MineColor = Color.Black;
         }
         #endregion
     }

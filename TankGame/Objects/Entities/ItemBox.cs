@@ -27,6 +27,12 @@ namespace TankGame.Objects.Entities
             type = "itembox";
             size = curSquare.Size / size;
         }
+        public override void Initialize(RectangleF newRectangle)
+        {
+            size = new Vector2(50, 50);
+            curSquare = newRectangle;
+            size = curSquare.Size / size;
+        }
         public override void LoadContent()
         {
             tex = Main.GameContent.Load<Texture2D>(texFile);
@@ -34,10 +40,6 @@ namespace TankGame.Objects.Entities
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(tex, curSquare.Location, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        }
-        protected override void Resize()
-        {
-            size = curSquare.Size / size;
         }
     }
 }
