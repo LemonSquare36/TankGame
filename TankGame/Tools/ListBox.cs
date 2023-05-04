@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using TankGame.Objects;
+using System.Windows.Forms.Design.Behavior;
 
 namespace TankGame.Tools
 {
@@ -11,29 +12,26 @@ namespace TankGame.Tools
     {
         Texture2D tex;
         SpriteFont font;
+        RectangleF[] Borders;
 
-        Color bgColor, textColor, offSetColor = new Color(20,20,20);
+        Color bgColor, textColor, offSetColor = new Color(20,20,20), borderColor;
 
-        Vector2 pos, size, textSize, textPos;
+        Vector2 pos, size;
         int numSelections;
         RectangleF rectangle;
         string[] selections;
+        public string curSelection = "";
         float scale;
         int borderThickness;
         //information for the buttons that make up the list
         List<Button> ButtonsList = new List<Button>();
         Vector2 buttonPos, buttonSize;
 
-        //mouse stuff for clicking the textbox (selecting it)
-        private MouseState mouse;
-        public ButtonState oldClick;
-        public ButtonState curClick;
-
         //used to keep the text in the box
         Rectangle cutOff;
         RasterizerState r = new RasterizerState();
 
-        public ListBox(Vector2 Position, Vector2 Size, int NumSelections, Color backgroundColor, Color TextColor, int BorderThickness)
+        public ListBox(Vector2 Position, Vector2 Size, int NumSelections, Color backgroundColor, Color TextColor, Color BorderColor, int BorderThickness)
         {
             pos = Position;
             size = Size;
@@ -43,8 +41,9 @@ namespace TankGame.Tools
             textColor = TextColor;
             borderThickness = BorderThickness;
             cutOff = new Rectangle(Convert.ToInt16(rectangle.X), Convert.ToInt16(rectangle.Y), Convert.ToInt16(rectangle.Width), Convert.ToInt16(rectangle.Height));
+            borderColor = BorderColor;
         }
-        public ListBox(RectangleF Rectangle, int NumSelections, Color backgroundColor, Color TextColor, int BorderThickness)
+        public ListBox(RectangleF Rectangle, int NumSelections, Color backgroundColor, Color TextColor, Color BorderColor, int BorderThickness)
         {
             pos = Rectangle.Location;
             size = Rectangle.Size;
@@ -53,7 +52,9 @@ namespace TankGame.Tools
             bgColor = backgroundColor;
             textColor = TextColor;
             borderThickness = BorderThickness;
-            cutOff = new Rectangle(Convert.ToInt16(rectangle.X), Convert.ToInt16(rectangle.Y), Convert.ToInt16(rectangle.Width), Convert.ToInt16(rectangle.Height));
+            cutOff = new Rectangle(Convert.ToInt16(rectangle.X - BorderThickness), Convert.ToInt16(rectangle.Y - BorderThickness), 
+                Convert.ToInt16(rectangle.Width + BorderThickness), Convert.ToInt16(rectangle.Height + BorderThickness));
+            borderColor = BorderColor;
         }
         public void Initialize()
         {
@@ -62,8 +63,8 @@ namespace TankGame.Tools
         public void LoadContent(string[] Selections)
         {
             selections = Selections;
-            buttonSize = size / numSelections;
-            buttonPos = Vector2.Zero;
+            buttonSize = new Vector2(size.X ,size.Y / numSelections);            
+            buttonPos = pos;
             //load the font
             font = Main.GameContent.Load<SpriteFont>("Fonts/DefualtFont");
 
@@ -73,12 +74,16 @@ namespace TankGame.Tools
                 Button tempButton = new Button(buttonPos, buttonSize.X, buttonSize.Y, "GameSprites/WhiteDot", "", "toggleOneTex");
                 tempButton.ChangeButtonColor(bgColor);
                 tempButton.ChangeOffSetColor(offSetColor);
+                tempButton.ButtonClicked += ButtonPressed;
                 buttonPos.Y += buttonSize.Y;
                 ButtonsList.Add(tempButton);
             }
 
             scale = buttonSize.Y / 50;
             r.ScissorTestEnable = true;
+
+            tex = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
+            CreateBorder();
         }
         public void Update(MouseState Mouse, Vector2 WorldPos)
         {
@@ -97,18 +102,36 @@ namespace TankGame.Tools
             //draw the buttons under the text
             foreach (Button b in ButtonsList)
             {
-                b.Draw(spriteBatch);
+                b.Draw(spriteBatch, true);
             }
             //reset the text location
-            pos = rectangle.Location;
+            Vector2 textpos = rectangle.Location;
             //draw the text
             for (int i = 0; i < selections.Length; i++)
             {
-                //offset the text so it fits in the buttons
-                pos += ButtonsList[i].Pos;
-                spriteBatch.DrawString(font, selections[i], pos + new Vector2(5, size.Y * 0.1F), textColor, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                //offset the text so it fits in the buttons                
+                spriteBatch.DrawString(font, selections[i], textpos + new Vector2(5, buttonSize.Y * 0.1F), textColor, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                textpos.Y += buttonSize.Y;
             }
-
+            //draw the borders
+            for (int i = 0; i < ButtonsList.Count; i++)
+            {
+                if (i == 0)
+                {
+                    spriteBatch.Draw(tex, Borders[0].Location, null, borderColor, 0, Vector2.Zero, Borders[0].Size, SpriteEffects.None, 0);
+                }
+                else
+                {
+                    spriteBatch.Draw(tex, Borders[0].Location, null, borderColor, 0, Vector2.Zero, new Vector2(Borders[0].Size.X, Borders[0].Size.Y/2), SpriteEffects.None, 0);
+                }
+                spriteBatch.Draw(tex, Borders[1].Location, null, borderColor, 0, Vector2.Zero, Borders[1].Size, SpriteEffects.None, 0);
+                spriteBatch.Draw(tex, new Vector2(Borders[2].Location.X - borderThickness, Borders[2].Location.Y), null, borderColor, 0, Vector2.Zero, Borders[2].Size, SpriteEffects.None, 0);
+                if (i == ButtonsList.Count - 1)
+                {
+                    spriteBatch.Draw(tex, Borders[3].Location, null, borderColor, 0, Vector2.Zero, Borders[3].Size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(tex, pos + new Vector2(0, size.Y), null, borderColor, 0, Vector2.Zero, Borders[3].Size, SpriteEffects.None, 0);
+                }
+            }
             //reset how it draws back to normal
             spriteBatch.End();
             spriteBatch.GraphicsDevice.ScissorRectangle = Main.gameWindow.ClientBounds;
@@ -118,6 +141,39 @@ namespace TankGame.Tools
         public void SetSelections(string[] Selections)
         {
             selections = Selections;
+        }
+        private void CreateBorder()
+        {
+            Borders = new RectangleF[4];
+            //get the top border
+            Borders[0] = new RectangleF(pos.X, pos.Y, buttonSize.X, borderThickness);
+            //get the left border
+            Borders[1] = new RectangleF(pos.X, pos.Y, borderThickness, buttonSize.Y);
+            //get the right border             
+            Borders[2] = new RectangleF(pos.X + buttonSize.X, pos.Y, borderThickness, buttonSize.Y);
+            //get the bottom border
+            Borders[3] = new RectangleF(pos.X, pos.Y + buttonSize.Y, buttonSize.X, borderThickness);
+        }
+        private void ButtonPressed(object sender, EventArgs e)
+        {
+            for (int i = 0; i < ButtonsList.Count;i++)
+            {
+                if (ButtonsList[i] == sender as Button)
+                {
+                    if (ButtonsList[i].Texture == ButtonsList[i].UnPressed)
+                    {
+                        curSelection = "";
+                    }
+                    else { curSelection = selections[i]; }
+                }
+                else
+                {
+                    if (ButtonsList[i].OneTexPressed)
+                    {
+                        ButtonsList[i].toggleTexture();
+                    }                    
+                }
+            }
         }
     }
 }

@@ -8,14 +8,15 @@ namespace TankGame
 {
     internal class Button
     {
-        RectangleF rectangle;
+        public RectangleF rectangle;
         public Vector2 Pos = new Vector2();
         private Texture2D unPressed, pressed;
         public Texture2D Texture;
         private MouseState mouse;
         public ButtonState oldClick;
         public ButtonState curClick;
-        private bool toggle = false, toggleOneTex = false;
+        private bool toggle = false, toggleOneTex = false; 
+        public bool OneTexPressed = false;
 
 
         Color buttonColor = Color.White, offSetColor = new Color(20,20,20);
@@ -106,7 +107,7 @@ namespace TankGame
             else if (buttonBehaviour == "toggleOneTex")
             {
                 unPressed = Main.GameContent.Load<Texture2D>(fileLocation);
-                pressed = Main.GameContent.Load<Texture2D>(fileLocation);
+                OneTexPressed = false;
                 toggle = true;
                 toggleOneTex = true;
             }
@@ -151,10 +152,13 @@ namespace TankGame
                     //Edge Detection
                     if (curClick == ButtonState.Pressed && oldClick == ButtonState.Released)
                     {
-                        if (Texture == pressed)
+                        if (Texture == pressed || OneTexPressed)
+                        {
                             Texture = unPressed;
+                            OneTexPressed = false;
+                        }
 
-                        else Texture = pressed;
+                        else { Texture = pressed; OneTexPressed = true; }
                         OnButtonClicked();
                     }
                 }
@@ -193,20 +197,59 @@ namespace TankGame
             //draw normally if not pressed
             else { spriteBatch.Draw(Texture, Pos, buttonColor); }
         }
+        public void Draw(SpriteBatch spriteBatch, bool singlePixel)
+        {
+            //if a texture is a different size when pressed, offset it approprietly
+            if (Texture == pressed || OneTexPressed)
+            {
+                if (!toggleOneTex)
+                {
+                    if (unPressed.Bounds != pressed.Bounds)
+                    {
+                        Vector2 tempPos = new Vector2();
+                        if (unPressed.Bounds.Size.X > pressed.Bounds.Size.X)
+                        {
+                            tempPos -= new Vector2(unPressed.Bounds.Width - pressed.Bounds.Width, unPressed.Bounds.Height - pressed.Bounds.Height) / 2;
+                        }
+                        else if (unPressed.Bounds.Size.X < pressed.Bounds.Size.X)
+                        {
+                            tempPos -= new Vector2(pressed.Bounds.Width - unPressed.Bounds.Width, pressed.Bounds.Height - unPressed.Bounds.Height) / 2;
+                        }
+                        spriteBatch.Draw(Texture, Pos + tempPos, buttonColor);
+                    }
+                    else { spriteBatch.Draw(Texture, Pos, buttonColor); }
+                }
+                else
+                {
+                    Texture = unPressed;
+                    spriteBatch.Draw(Texture, Pos, null, new Color(buttonColor.R - offSetColor.R, buttonColor.G - offSetColor.G, buttonColor.B - offSetColor.B),
+                        0, Vector2.Zero, rectangle.Size, SpriteEffects.None, 0);
+                }
+
+            }
+            //draw normally if not pressed
+            else {
+                spriteBatch.Draw(Texture, Pos, null, buttonColor,
+                        0, Vector2.Zero, rectangle.Size, SpriteEffects.None, 0);
+            }
+        }
 
         //Button Event
         private void OnButtonClicked()
         {
             buttonClicked?.Invoke(this, EventArgs.Empty);
         }/// <summary>
-        /// allows for toggling the button texture between pressed and unpressed
-        /// </summary>
+         /// allows for toggling the button texture between pressed and unpressed
+         /// </summary>
         public void toggleTexture()
-        {                       
-            if (Texture == pressed)
+        {
+            if (Texture == pressed || OneTexPressed)
+            {
                 Texture = unPressed;
+                OneTexPressed = false;
+            }
 
-            else Texture = pressed;
+            else {Texture = pressed; OneTexPressed = true; }      
         }
         /// <summary>
         /// the color buttons draw with - defualt is white

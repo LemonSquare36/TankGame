@@ -74,7 +74,7 @@ namespace TankGame
             tankField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1450, 650), new Vector2(80, 70), 2);
             mineField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1650, 650), new Vector2(80, 70), 2);
 
-            levelSelection = new Tools.ListBox(new Vector2(1300, 700), new Vector2(200, 380), 4, Color.White, Color.Black, 2);
+            levelSelection = new Tools.ListBox(new Vector2(1300, 780), new Vector2(200, 300), 4, Color.White, Color.Black,Color.DarkGray, 2);
             #endregion
 
             #region default font colors
@@ -146,8 +146,14 @@ namespace TankGame
             {
                 box.LoadContent();
             }
-            levelSelection.LoadContent(Directory.GetFiles(relativePath + "\\TankGame"));
-            
+            string[] filepaths = Directory.GetFiles(relativePath + "\\TankGame");
+            for (int i = 0; i < filepaths.Length; i++)
+            {
+                filepaths[i] = Path.GetFileName(filepaths[i].Split(".")[0]);
+            }
+            levelSelection.LoadContent(filepaths);
+
+
         }
         //Update
         public override void Update()
