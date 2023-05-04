@@ -18,9 +18,8 @@ namespace TankGame
 {
     internal class MainMenu : ScreenManager
     {
-        Texture2D backTex, titleTex;
-        Texture2D startUH, startH;
-        //Button Start;
+        Button Play, Editor, Settings;
+        List<Button> buttonList = new List<Button>();
 
         //Holds Initialize
         public override void Initialize()
@@ -32,16 +31,22 @@ namespace TankGame
         {
             base.LoadContent(spriteBatchmain);
 
-            //backTex = Main.GameContent.Load<Texture2D>("MenuImages/Starbackground");
-            //titleTex = Main.GameContent.Load<Texture2D>("MenuImages/SapceUltimate");
+            #region Button Load
+            Play = new Button(new Vector2(800, 200), 300, 150, "Buttons/MainMenu/Play", "play", 0);
+            Editor = new Button(new Vector2(800, 400), 300, 150, "Buttons/MainMenu/Editor", "editor", 0);
+            Settings = new Button(new Vector2(800, 600), 300, 150, "Buttons/MainMenu/Settings", "settings", 0);
+            #endregion
 
-            #region ButtonStuff
-            //startUH = Main.GameContent.Load<Texture2D>("MenuImages/Buttons/StartUH");
-            //startH = Main.GameContent.Load<Texture2D>("MenuImages/Buttons/StartH");
+            #region Button Add
+            buttonList.Add(Play);
+            buttonList.Add(Editor);
+            buttonList.Add(Settings);
+            #endregion
 
-            //Start = new Button(new Vector2(815, 500), 300, 160, startUH, startH, "start", 0);
-
-            //Start.ButtonClicked += ButtonClicked;
+            #region Button Event
+            Play.ButtonClicked += ScreenChangeEvent;
+            Editor.ButtonClicked += ScreenChangeEvent;
+            Settings.ButtonClicked += ScreenChangeEvent;
             #endregion
 
         }
@@ -50,21 +55,28 @@ namespace TankGame
         {
             base.Update();
 
-            //Start.Update(mouse, worldPosition);
+            foreach (Button b in buttonList)
+            {
+                b.Update(mouse, worldPosition);
+            }
         }
         //Holds Draw
         public override void Draw()
         {
-            //spriteBatch.Draw(backTex, new Vector2(0, 0), Color.White);
-            //spriteBatch.Draw(titleTex, new Vector2(563, 100), Color.White);
-
-            //Start.Draw(spriteBatch);
+            foreach (Button b in buttonList)
+            {
+                b.Draw(spriteBatch);
+            }
         }
 
         //Holds the Function
         public override void ButtonReset()
         {
-            //Start.ButtonReset();
+            //resets everybutton to prevent unwanted button clicks
+            foreach (Button b in buttonList)
+            {
+                b.ButtonReset();
+            }
         }
     }
 }

@@ -77,7 +77,7 @@ namespace TankGame
 
 
         //ButtonCLicked leads Here
-        protected void ButtonClicked(object sender, EventArgs e)
+        protected void ScreenChangeEvent(object sender, EventArgs e)
         {
             //Sets next screen to button name and calls the event.
             switch (((Button)sender).purpose)
