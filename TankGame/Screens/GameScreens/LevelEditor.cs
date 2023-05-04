@@ -28,7 +28,8 @@ namespace TankGame
         //button declares
         Texture2D wallTex;
         //generic buttons
-        Button Load, Save, New, SetRowCol, SetTankCount, SetMineCount;
+        Button Load, Save, New, Delete;
+        Button SetRowCol, SetTankCount, SetMineCount;
         //add object buttons
         Button addWall, addItem, erase;
         List<Button> Buttons = new List<Button>();
@@ -91,9 +92,11 @@ namespace TankGame
             #endregion
 
             #region load buttons
-            Load = new Button(new Vector2(1300, 100), 100, 50, "Buttons/Editor/Load", "load");
-            Save = new Button(new Vector2(1450, 100), 100, 50, "Buttons/Editor/Save", "save");
-            New = new Button(new Vector2(1600, 100), 100, 50, "Buttons/Editor/New", "new");
+            Load = new Button(new Vector2(1200, 100), 100, 50, "Buttons/Editor/Load", "load");
+            Save = new Button(new Vector2(1350, 100), 100, 50, "Buttons/Editor/Save", "save");
+            New = new Button(new Vector2(1500, 100), 100, 50, "Buttons/Editor/New", "new");
+            Delete = new Button(new Vector2(1650, 100), 100, 50, "Buttons/Editor/Delete", "delete");
+
             SetRowCol = new Button(new Vector2(1350, 660), 70, 50, "Buttons/Editor/Set", "setrowcol");
             SetTankCount = new Button(new Vector2(1550, 660), 70, 50, "Buttons/Editor/Set", "settankcount");
             SetMineCount = new Button(new Vector2(1750, 660), 70, 50, "Buttons/Editor/Set", "setminecount");
@@ -107,6 +110,8 @@ namespace TankGame
             Load.ButtonClicked += LoadPressed;
             Save.ButtonClicked += SavePressed;
             New.ButtonClicked += NewPressed;
+            Delete.ButtonClicked += DeletePressed;
+
             SetRowCol.ButtonClicked += SetRowColPressed;
             SetTankCount.ButtonClicked += SetTanksPressed;
             SetMineCount.ButtonClicked += SetMinesPressed;
@@ -120,6 +125,7 @@ namespace TankGame
             Buttons.Add(Load);
             Buttons.Add(Save);
             Buttons.Add(New);
+            Buttons.Add(Delete);
             Buttons.Add(addWall);
             Buttons.Add(addItem);
             Buttons.Add(erase);
@@ -140,12 +146,7 @@ namespace TankGame
                 box.LoadContent();
             }
             //load the listBox for level selection
-            string[] filepaths = Directory.GetFiles(relativePath + "\\TankGame");
-            for (int i = 0; i < filepaths.Length; i++)
-            {
-                filepaths[i] = Path.GetFileName(filepaths[i].Split(".")[0]);
-            }
-            levelSelection.LoadContent(filepaths);
+            LevelListLaod();
 
 
         }
@@ -249,10 +250,10 @@ namespace TankGame
             spriteBatch.DrawString(font, "ItemBoxes", new Vector2(1412, 450), Color.Black);
             spriteBatch.DrawString(font, "Eraser", new Vector2(1600, 450), Color.Black);
             spriteBatch.DrawString(font, "Level Name", new Vector2(1405, 155), Color.Black);
-            spriteBatch.DrawString(font, "Rows/Columns", new Vector2(1150, 600), rowColColor);
-            spriteBatch.DrawString(font, "# of Tanks", new Vector2(1410, 600), tankColor);
-            spriteBatch.DrawString(font, "# of Mines", new Vector2(1610, 600), MineColor);
-            spriteBatch.DrawString(font, "Red Text = Change Not Set", new Vector2(1250, 550), Color.Red);
+            spriteBatch.DrawString(font, "Rows/Columns", new Vector2(1150, 580), rowColColor);
+            spriteBatch.DrawString(font, "# of Tanks", new Vector2(1410, 580), tankColor);
+            spriteBatch.DrawString(font, "# of Mines", new Vector2(1610, 580), MineColor);
+            spriteBatch.DrawString(font, "Red Text = Change Not Set", new Vector2(1250, 530), Color.Red);
             #endregion
         }
 
@@ -358,12 +359,12 @@ namespace TankGame
         #endregion
 
 
-        #region Load and Save and New
+        #region Load and Save and New and Delete
         //Events for saving and loading
         private void LoadPressed(object sender, EventArgs e)
         {
             file = relativePath + "\\TankGame\\" + levelSelection.curSelection + ".lvl";
-            if (file != "")
+            if (file != relativePath + "\\TankGame\\" + "" + ".lvl")
             {
                 try
                 {
@@ -412,12 +413,7 @@ namespace TankGame
                 }
             }
             //load the listBox for level selection
-            string[] filepaths = Directory.GetFiles(relativePath + "\\TankGame");
-            for (int i = 0; i < filepaths.Length; i++)
-            {
-                filepaths[i] = Path.GetFileName(filepaths[i].Split(".")[0]);
-            }
-            levelSelection.LoadContent(filepaths);
+            LevelListLaod();
         }
 
         //creates a fresh new board
@@ -464,6 +460,16 @@ namespace TankGame
             rowColColor = Color.Black;
             tankColor = Color.Black;
             MineColor = Color.Black;
+        }
+
+        private void DeletePressed(object sender, EventArgs e)
+        {
+            file = relativePath + "\\TankGame\\" + levelSelection.curSelection + ".lvl";
+            if (file != relativePath + "\\TankGame\\" + "" + ".lvl")
+            {
+                File.Delete(file);
+                LevelListLaod();
+            }
         }
         #endregion
 
@@ -584,5 +590,16 @@ namespace TankGame
             MineColor = Color.Black;
         }
         #endregion
+
+        private void LevelListLaod()
+        {
+            //gets all the files in the relative folder and sends them as an array to the listbox to populate the levels
+            string[] filepaths = Directory.GetFiles(relativePath + "\\TankGame");
+            for (int i = 0; i < filepaths.Length; i++)
+            {
+                filepaths[i] = Path.GetFileName(filepaths[i].Split(".")[0]);
+            }
+            levelSelection.LoadContent(filepaths);
+        }
     }
 }

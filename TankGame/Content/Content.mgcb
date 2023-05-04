@@ -37,6 +37,30 @@
 /processorParam:TextureFormat=Color
 /build:Buttons/Editor/ClearUH.jpg
 
+#begin Buttons/Editor/DeleteH.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Buttons/Editor/DeleteH.jpg
+
+#begin Buttons/Editor/DeleteUH.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Buttons/Editor/DeleteUH.jpg
+
 #begin Buttons/Editor/ItemBoxH.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
