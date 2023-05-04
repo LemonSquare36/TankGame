@@ -184,18 +184,18 @@ namespace TankGame
                         {
                             tempPos -= new Vector2(pressed.Bounds.Width - unPressed.Bounds.Width, pressed.Bounds.Height - unPressed.Bounds.Height) / 2;
                         }
-                        spriteBatch.Draw(Texture, Pos + tempPos, buttonColor);
+                        spriteBatch.Draw(Texture, rectangle.Location + tempPos, buttonColor);
                     }
-                    else { spriteBatch.Draw(Texture, Pos, buttonColor); }
+                    else { spriteBatch.Draw(Texture, rectangle.Location, buttonColor); }
                 }
                 else
                 {
-                    spriteBatch.Draw(Texture, Pos, new Color(buttonColor.R - offSetColor.R, buttonColor.G - offSetColor.G, buttonColor.B - offSetColor.B));
+                    spriteBatch.Draw(Texture, rectangle.Location, new Color(buttonColor.R - offSetColor.R, buttonColor.G - offSetColor.G, buttonColor.B - offSetColor.B));
                 }
 
             }
             //draw normally if not pressed
-            else { spriteBatch.Draw(Texture, Pos, buttonColor); }
+            else { spriteBatch.Draw(Texture, rectangle.Location, buttonColor); }
         }
         public void Draw(SpriteBatch spriteBatch, bool singlePixel)
         {
@@ -215,21 +215,21 @@ namespace TankGame
                         {
                             tempPos -= new Vector2(pressed.Bounds.Width - unPressed.Bounds.Width, pressed.Bounds.Height - unPressed.Bounds.Height) / 2;
                         }
-                        spriteBatch.Draw(Texture, Pos + tempPos, buttonColor);
+                        spriteBatch.Draw(Texture, rectangle.Location + tempPos, buttonColor);
                     }
-                    else { spriteBatch.Draw(Texture, Pos, buttonColor); }
+                    else { spriteBatch.Draw(Texture, rectangle.Location, buttonColor); }
                 }
                 else
                 {
                     Texture = unPressed;
-                    spriteBatch.Draw(Texture, Pos, null, new Color(buttonColor.R - offSetColor.R, buttonColor.G - offSetColor.G, buttonColor.B - offSetColor.B),
+                    spriteBatch.Draw(Texture, rectangle.Location, null, new Color(buttonColor.R - offSetColor.R, buttonColor.G - offSetColor.G, buttonColor.B - offSetColor.B),
                         0, Vector2.Zero, rectangle.Size, SpriteEffects.None, 0);
                 }
 
             }
             //draw normally if not pressed
             else {
-                spriteBatch.Draw(Texture, Pos, null, buttonColor,
+                spriteBatch.Draw(Texture, rectangle.Location, null, buttonColor,
                         0, Vector2.Zero, rectangle.Size, SpriteEffects.None, 0);
             }
         }

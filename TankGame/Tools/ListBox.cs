@@ -22,6 +22,7 @@ namespace TankGame.Tools
         public string curSelection = "";
         float scale;
         int borderThickness;
+        int oldScrollValue;
         //information for the buttons that make up the list
         List<Button> ButtonsList = new List<Button>();
         Vector2 buttonPos, buttonSize;
@@ -93,6 +94,39 @@ namespace TankGame.Tools
             {
                 b.Update(Mouse, WorldPos);
             }
+            //check for the mouse inside the box - before checking scroll values
+            if (rectangle.Contains(WorldPos))
+            {
+                //scroll up
+                if (Mouse.ScrollWheelValue > oldScrollValue)
+                {
+                    //make sure the last button isnt at the bottom. If it is dont scroll more
+                    if (ButtonsList[ButtonsList.Count - 1].rectangle.Location.Y != (rectangle.Y + rectangle.Height)-buttonSize.Y)
+                    {
+                        for (int i = 0; i < ButtonsList.Count; i++)
+                        {
+                            ButtonsList[i].rectangle.Y -= ButtonsList[i].rectangle.Height;
+
+                        }
+                    }
+                    
+                }
+                //scroll down
+                else if (Mouse.ScrollWheelValue < oldScrollValue)
+                {
+                    //make sure the top button isnt at the top. If it is dont scroll more
+                    if (ButtonsList[0].rectangle.Location.Y != rectangle.Y)
+                    {
+                        for (int i = 0; i < ButtonsList.Count; i++)
+                        {
+                            ButtonsList[i].rectangle.Y += ButtonsList[i].rectangle.Height;
+
+                        }
+                    }                  
+                }
+            }
+            //get the old value for comparisons
+            oldScrollValue = Mouse.ScrollWheelValue;
         }
         public void Draw(SpriteBatch spriteBatch)
         {
@@ -108,14 +142,11 @@ namespace TankGame.Tools
             {
                 b.Draw(spriteBatch, true);
             }
-            //reset the text location
-            Vector2 textpos = rectangle.Location;
             //draw the text
             for (int i = 0; i < selections.Length; i++)
             {
                 //offset the text so it fits in the buttons                
-                spriteBatch.DrawString(font, selections[i], textpos + new Vector2(5, buttonSize.Y * 0.1F), textColor, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
-                textpos.Y += buttonSize.Y;
+                spriteBatch.DrawString(font, selections[i], ButtonsList[i].rectangle.Location + new Vector2(5, buttonSize.Y * 0.1F), textColor, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
             }
             //draw the borders
             float borderOffSet = 0;
