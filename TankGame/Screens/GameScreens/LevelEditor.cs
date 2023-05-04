@@ -15,7 +15,6 @@ using System.IO;
 using System.Collections;
 using TankGame.Objects;
 using TankGame.Tools;
-using System.Windows.Forms;
 using System.Threading;
 using TankGame.Objects.Entities;
 
@@ -33,8 +32,6 @@ namespace TankGame
         //add object buttons
         Button addWall, addItem, erase;
         List<Button> Buttons = new List<Button>();
-        //file loading decalres
-        OpenFileDialog openDialog;
         LevelManager levelManager;
         //board info declares
         List<Entity> entities = new List<Entity>();
@@ -62,10 +59,6 @@ namespace TankGame
         {
             base.Initialize();
             levelManager = new LevelManager();
-            //create the browser for searching for levels
-            openDialog = new OpenFileDialog();
-            openDialog.Title = "Select A File";
-            openDialog.Filter = "Level Files (*.lvl)|*.lvl";
 
             //create the text field
             #region initializing textboxes
@@ -74,7 +67,7 @@ namespace TankGame
             tankField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1450, 650), new Vector2(80, 70), 2);
             mineField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1650, 650), new Vector2(80, 70), 2);
 
-            levelSelection = new Tools.ListBox(new Vector2(1300, 780), new Vector2(200, 300), 4, Color.White, Color.Black,Color.DarkGray, 2);
+            levelSelection = new Tools.ListBox(new Vector2(1170, 770), new Vector2(630, 300), 8, Color.White, Color.Black,Color.DarkGray, 2);
             #endregion
 
             #region default font colors
@@ -146,6 +139,7 @@ namespace TankGame
             {
                 box.LoadContent();
             }
+            //load the listBox for level selection
             string[] filepaths = Directory.GetFiles(relativePath + "\\TankGame");
             for (int i = 0; i < filepaths.Length; i++)
             {
@@ -368,50 +362,39 @@ namespace TankGame
         //Events for saving and loading
         private void LoadPressed(object sender, EventArgs e)
         {
-            if (!threadActive)
+            file = relativePath + "\\TankGame\\" + levelSelection.curSelection + ".lvl";
+            if (file != "")
             {
-                threadActive = true;
-                levelLoaded = false;
-                //thread created so I can run the form in STA - required
-                Thread explorerThread = new Thread(() => exploreForFile());
-                explorerThread.SetApartmentState(ApartmentState.STA);
-                explorerThread.Start();
-            }
-        }
-        private void exploreForFile()
-        {
-            if (openDialog.ShowDialog() == DialogResult.OK)
-            {
-                file = openDialog.FileName;
-                levelManager.LoadLevel(file);
-                loadLevel();
-            }
-        }
-        private void loadLevel()
-        {
-            //grab the informatin from the levelManager
-            entities = levelManager.getEntities();
-            curBoard = levelManager.getGameBoard();
-            TanksAndMines = levelManager.getTanksAndMines();
-            //finish loading the board
-            curBoard.LoadContent();
-            foreach (Entity e in entities)
-            {
-                e.LoadContent();
-                gridLocations.Add(e.gridLocation);
-            }
-            nameField.Text = Path.GetFileName(file).Split(".")[0];
-            //level can be drawn and updated now. New thread can be made
-            levelLoaded = true;
-            threadActive = false;
-            RowsCol = curBoard.Rows;
-            sizeField.Text = Convert.ToString(RowsCol);
-            tankField.Text = Convert.ToString(TanksAndMines.X);
-            mineField.Text = Convert.ToString(TanksAndMines.Y);
+                try
+                {
+                    levelManager.LoadLevel(file);
+                    //grab the informatin from the levelManager
+                    entities = levelManager.getEntities();
+                    curBoard = levelManager.getGameBoard();
+                    TanksAndMines = levelManager.getTanksAndMines();
+                    //finish loading the board
+                    curBoard.LoadContent();
+                    for (int i = 0; i <entities.Count; i++)
+                    {
+                        entities[i].LoadContent();
+                        gridLocations.Add(entities[i].gridLocation);
+                    }
+                    nameField.Text = Path.GetFileName(file).Split(".")[0];
+                    //level can be drawn and updated now. New thread can be made
+                    levelLoaded = true;
+                    threadActive = false;
+                    RowsCol = curBoard.Rows;
+                    sizeField.Text = Convert.ToString(RowsCol);
+                    tankField.Text = Convert.ToString(TanksAndMines.X);
+                    mineField.Text = Convert.ToString(TanksAndMines.Y);
 
-            rowColColor = Color.Black;
-            tankColor = Color.Black;
-            MineColor = Color.Black;
+                    rowColColor = Color.Black;
+                    tankColor = Color.Black;
+                    MineColor = Color.Black;
+                }
+                catch { NewPressed(); }
+            }
+            else { NewPressed(); }
         }
         private void SavePressed(object sender, EventArgs e)
         {
@@ -428,7 +411,15 @@ namespace TankGame
                     levelManager.SaveLevel(file, curBoard, entities, TanksAndMines);
                 }
             }
+            //load the listBox for level selection
+            string[] filepaths = Directory.GetFiles(relativePath + "\\TankGame");
+            for (int i = 0; i < filepaths.Length; i++)
+            {
+                filepaths[i] = Path.GetFileName(filepaths[i].Split(".")[0]);
+            }
+            levelSelection.LoadContent(filepaths);
         }
+
         //creates a fresh new board
         private void NewPressed(object sender, EventArgs e)
         {
@@ -441,6 +432,28 @@ namespace TankGame
             curBoard.LoadContent();
             curBoard.setColor(new Color(235, 235, 235), new Color(200,200,200), Color.Black);
             nameField.Text = "New";           
+            levelLoaded = true;
+            sizeField.Text = "20";
+            tankField.Text = "3";
+            mineField.Text = "3";
+            RowsCol = 20;
+            TanksAndMines = new Point(3, 3);
+
+            rowColColor = Color.Black;
+            tankColor = Color.Black;
+            MineColor = Color.Black;
+        }
+        private void NewPressed()
+        {
+            file = relativePath + "\\TankGame\\";
+            float size = Camera.ViewboxScale.Y * 0.9F;
+            Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
+            curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 20, 20, 8);
+            entities.Clear();
+            gridLocations.Clear();
+            curBoard.LoadContent();
+            curBoard.setColor(new Color(235, 235, 235), new Color(200, 200, 200), Color.Black);
+            nameField.Text = "New";
             levelLoaded = true;
             sizeField.Text = "20";
             tankField.Text = "3";

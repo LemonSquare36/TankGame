@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using TankGame.Objects;
-using System.Windows.Forms.Design.Behavior;
 
 namespace TankGame.Tools
 {
@@ -62,6 +61,7 @@ namespace TankGame.Tools
         }
         public void LoadContent(string[] Selections)
         {
+            ButtonsList.Clear();
             selections = Selections;
             buttonSize = new Vector2(size.X ,size.Y / numSelections);            
             buttonPos = pos;
@@ -80,7 +80,9 @@ namespace TankGame.Tools
             }
 
             scale = buttonSize.Y / 50;
-            r.ScissorTestEnable = true;
+            try { r.ScissorTestEnable = true; }
+            catch { }
+           
 
             tex = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
             CreateBorder();
@@ -99,6 +101,8 @@ namespace TankGame.Tools
             spriteBatch.GraphicsDevice.RasterizerState = r;
             spriteBatch.GraphicsDevice.ScissorRectangle = cutOff;
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, r, null, Main.DefualtMatrix());
+            //draw the full box
+            spriteBatch.Draw(tex, pos, null, bgColor, 0, Vector2.Zero, size, SpriteEffects.None, 0);
             //draw the buttons under the text
             foreach (Button b in ButtonsList)
             {
@@ -114,23 +118,22 @@ namespace TankGame.Tools
                 textpos.Y += buttonSize.Y;
             }
             //draw the borders
-            for (int i = 0; i < ButtonsList.Count; i++)
+            float borderOffSet = 0;
+            for (int i = 0; i < numSelections; i++)
             {
+                
                 if (i == 0)
                 {
                     spriteBatch.Draw(tex, Borders[0].Location, null, borderColor, 0, Vector2.Zero, Borders[0].Size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(tex, Borders[1].Location, null, borderColor, 0, Vector2.Zero, Borders[1].Size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(tex, Borders[2].Location - new Vector2(borderThickness, 0), null, borderColor, 0, Vector2.Zero, Borders[2].Size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(tex, Borders[3].Location - new Vector2(0, borderThickness), null, borderColor, 0, Vector2.Zero, Borders[3].Size, SpriteEffects.None, 0);
                 }
-                else
-                {
-                    spriteBatch.Draw(tex, Borders[0].Location, null, borderColor, 0, Vector2.Zero, new Vector2(Borders[0].Size.X, Borders[0].Size.Y/2), SpriteEffects.None, 0);
-                }
-                spriteBatch.Draw(tex, Borders[1].Location, null, borderColor, 0, Vector2.Zero, Borders[1].Size, SpriteEffects.None, 0);
-                spriteBatch.Draw(tex, new Vector2(Borders[2].Location.X - borderThickness, Borders[2].Location.Y), null, borderColor, 0, Vector2.Zero, Borders[2].Size, SpriteEffects.None, 0);
-                if (i == ButtonsList.Count - 1)
-                {
-                    spriteBatch.Draw(tex, Borders[3].Location, null, borderColor, 0, Vector2.Zero, Borders[3].Size, SpriteEffects.None, 0);
-                    spriteBatch.Draw(tex, pos + new Vector2(0, size.Y), null, borderColor, 0, Vector2.Zero, Borders[3].Size, SpriteEffects.None, 0);
-                }
+                    if (i < ButtonsList.Count)
+                    {
+                        borderOffSet += buttonSize.Y;
+                    }
+                    spriteBatch.Draw(tex, new Vector2(Borders[0].Location.X, Borders[0].Location.Y + borderOffSet), null, borderColor, 0, Vector2.Zero, new Vector2(Borders[0].Size.X, Borders[0].Size.Y/2), SpriteEffects.None, 0);              
             }
             //reset how it draws back to normal
             spriteBatch.End();
@@ -148,20 +151,23 @@ namespace TankGame.Tools
             //get the top border
             Borders[0] = new RectangleF(pos.X, pos.Y, buttonSize.X, borderThickness);
             //get the left border
-            Borders[1] = new RectangleF(pos.X, pos.Y, borderThickness, buttonSize.Y);
+            Borders[1] = new RectangleF(pos.X, pos.Y, borderThickness, size.Y);
             //get the right border             
-            Borders[2] = new RectangleF(pos.X + buttonSize.X, pos.Y, borderThickness, buttonSize.Y);
+            Borders[2] = new RectangleF(pos.X + buttonSize.X, pos.Y, borderThickness, size.Y);
             //get the bottom border
-            Borders[3] = new RectangleF(pos.X, pos.Y + buttonSize.Y, buttonSize.X, borderThickness);
+            Borders[3] = new RectangleF(pos.X, pos.Y + size.Y, buttonSize.X, borderThickness);
         }
         private void ButtonPressed(object sender, EventArgs e)
         {
+            //gets the current string selected (from the button)
+            //as well as unselects all other buttons
             for (int i = 0; i < ButtonsList.Count;i++)
             {
                 if (ButtonsList[i] == sender as Button)
                 {
                     if (ButtonsList[i].Texture == ButtonsList[i].UnPressed)
                     {
+                        //empty string if no buttons are active
                         curSelection = "";
                     }
                     else { curSelection = selections[i]; }
