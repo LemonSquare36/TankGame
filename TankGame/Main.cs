@@ -64,8 +64,8 @@ namespace TankGame
         protected override void Initialize()
         {
             //window size for game on start up
-            graphicsManager.PreferredBackBufferWidth = 1920;
-            graphicsManager.PreferredBackBufferHeight = 1080;
+            graphicsManager.PreferredBackBufferWidth = 1600;
+            graphicsManager.PreferredBackBufferHeight = 900;
             graphicsManager.ApplyChanges();
 
             //defualt resolution of the game

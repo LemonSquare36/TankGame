@@ -68,7 +68,7 @@ namespace TankGame
             tankField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1450, 650), new Vector2(80, 70), 2);
             mineField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1650, 650), new Vector2(80, 70), 2);
 
-            levelSelection = new Tools.ListBox(new Vector2(1170, 770), new Vector2(630, 300), 8, Color.White, Color.Black,Color.DarkGray, 2);
+            levelSelection = new ListBox(new Vector2(1170, 770), new Vector2(630, 300), 8, Color.White, Color.Black,Color.DarkGray, 4);
             #endregion
 
             #region default font colors

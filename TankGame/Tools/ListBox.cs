@@ -40,7 +40,8 @@ namespace TankGame.Tools
             bgColor = backgroundColor;
             textColor = TextColor;
             borderThickness = BorderThickness;
-            cutOff = new Rectangle(Convert.ToInt16(rectangle.X), Convert.ToInt16(rectangle.Y), Convert.ToInt16(rectangle.Width), Convert.ToInt16(rectangle.Height));
+            cutOff = new Rectangle(Convert.ToInt16((rectangle.X - BorderThickness) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Y - BorderThickness) * Camera.ResolutionScale.Y),
+                Convert.ToInt16((rectangle.Width + BorderThickness*2) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Height + BorderThickness*2) * Camera.ResolutionScale.Y));
             borderColor = BorderColor;
         }
         public ListBox(RectangleF Rectangle, int NumSelections, Color backgroundColor, Color TextColor, Color BorderColor, int BorderThickness)
@@ -52,8 +53,8 @@ namespace TankGame.Tools
             bgColor = backgroundColor;
             textColor = TextColor;
             borderThickness = BorderThickness;
-            cutOff = new Rectangle(Convert.ToInt16(rectangle.X - BorderThickness), Convert.ToInt16(rectangle.Y - BorderThickness), 
-                Convert.ToInt16(rectangle.Width + BorderThickness), Convert.ToInt16(rectangle.Height + BorderThickness));
+            cutOff = new Rectangle(Convert.ToInt16((rectangle.X)* Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Y) * Camera.ResolutionScale.Y), 
+                Convert.ToInt16((rectangle.Width)* Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Height) * Camera.ResolutionScale.Y));
             borderColor = BorderColor;
         }
         public void Initialize()
@@ -97,12 +98,13 @@ namespace TankGame.Tools
             //check for the mouse inside the box - before checking scroll values
             if (rectangle.Contains(WorldPos))
             {
-                //scroll up
-                if (Mouse.ScrollWheelValue > oldScrollValue)
+                //only scroll if the box is overfull
+                if (selections.Length > numSelections)
                 {
-                    //only scroll if the box is overfull
-                    if (selections.Length > numSelections)
+                    //scroll up
+                    if (Mouse.ScrollWheelValue < oldScrollValue)
                     {
+
                         //make sure the last button isnt at the bottom. If it is dont scroll more
                         if (ButtonsList[ButtonsList.Count - 1].rectangle.Location.Y != (rectangle.Y + rectangle.Height) - buttonSize.Y)
                         {
@@ -114,7 +116,7 @@ namespace TankGame.Tools
 
                     }
                     //scroll down
-                    else if (Mouse.ScrollWheelValue < oldScrollValue)
+                    else if (Mouse.ScrollWheelValue > oldScrollValue)
                     {
                         //make sure the top button isnt at the top. If it is dont scroll more
                         if (ButtonsList[0].rectangle.Location.Y != rectangle.Y)
@@ -157,16 +159,16 @@ namespace TankGame.Tools
                 
                 if (i == 0)
                 {
-                    spriteBatch.Draw(tex, Borders[0].Location, null, borderColor, 0, Vector2.Zero, Borders[0].Size, SpriteEffects.None, 0);
-                    spriteBatch.Draw(tex, Borders[1].Location, null, borderColor, 0, Vector2.Zero, Borders[1].Size, SpriteEffects.None, 0);
-                    spriteBatch.Draw(tex, Borders[2].Location - new Vector2(borderThickness, 0), null, borderColor, 0, Vector2.Zero, Borders[2].Size, SpriteEffects.None, 0);
-                    spriteBatch.Draw(tex, Borders[3].Location - new Vector2(0, borderThickness), null, borderColor, 0, Vector2.Zero, Borders[3].Size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(tex, Borders[0].Location - new Vector2(borderThickness, borderThickness), null, borderColor, 0, Vector2.Zero, Borders[0].Size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(tex, Borders[1].Location - new Vector2(borderThickness, 0), null, borderColor, 0, Vector2.Zero, Borders[1].Size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(tex, Borders[2].Location, null, borderColor, 0, Vector2.Zero, Borders[2].Size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(tex, Borders[3].Location - new Vector2(borderThickness, 0), null, borderColor, 0, Vector2.Zero, Borders[3].Size, SpriteEffects.None, 0);
                 }
-                    if (i < ButtonsList.Count)
-                    {
-                        borderOffSet += buttonSize.Y;
-                    }
-                    spriteBatch.Draw(tex, new Vector2(Borders[0].Location.X, Borders[0].Location.Y + borderOffSet), null, borderColor, 0, Vector2.Zero, new Vector2(Borders[0].Size.X, Borders[0].Size.Y/2), SpriteEffects.None, 0);              
+                if (i < ButtonsList.Count)
+                {
+                    borderOffSet += buttonSize.Y;
+                }
+                spriteBatch.Draw(tex, new Vector2(Borders[0].Location.X, Borders[0].Location.Y + borderOffSet), null, borderColor, 0, Vector2.Zero, new Vector2(Borders[0].Size.X, Borders[0].Size.Y/2), SpriteEffects.None, 0);              
             }
             //reset how it draws back to normal
             spriteBatch.End();
@@ -182,13 +184,13 @@ namespace TankGame.Tools
         {
             Borders = new RectangleF[4];
             //get the top border
-            Borders[0] = new RectangleF(pos.X, pos.Y, buttonSize.X, borderThickness);
+            Borders[0] = new RectangleF(pos.X, pos.Y, buttonSize.X + borderThickness*2, borderThickness);
             //get the left border
             Borders[1] = new RectangleF(pos.X, pos.Y, borderThickness, size.Y);
             //get the right border             
             Borders[2] = new RectangleF(pos.X + buttonSize.X, pos.Y, borderThickness, size.Y);
             //get the bottom border
-            Borders[3] = new RectangleF(pos.X, pos.Y + size.Y, buttonSize.X, borderThickness);
+            Borders[3] = new RectangleF(pos.X, pos.Y + size.Y, buttonSize.X + borderThickness * 2, borderThickness);
         }
         private void ButtonPressed(object sender, EventArgs e)
         {
