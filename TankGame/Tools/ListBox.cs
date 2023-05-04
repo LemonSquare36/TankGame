@@ -100,29 +100,31 @@ namespace TankGame.Tools
                 //scroll up
                 if (Mouse.ScrollWheelValue > oldScrollValue)
                 {
-                    //make sure the last button isnt at the bottom. If it is dont scroll more
-                    if (ButtonsList[ButtonsList.Count - 1].rectangle.Location.Y != (rectangle.Y + rectangle.Height)-buttonSize.Y)
+                    //only scroll if the box is overfull
+                    if (selections.Length > numSelections)
                     {
-                        for (int i = 0; i < ButtonsList.Count; i++)
+                        //make sure the last button isnt at the bottom. If it is dont scroll more
+                        if (ButtonsList[ButtonsList.Count - 1].rectangle.Location.Y != (rectangle.Y + rectangle.Height) - buttonSize.Y)
                         {
-                            ButtonsList[i].rectangle.Y -= ButtonsList[i].rectangle.Height;
+                            for (int i = 0; i < ButtonsList.Count; i++)
+                            {
+                                ButtonsList[i].rectangle.Y -= ButtonsList[i].rectangle.Height;
+                            }
+                        }
 
+                    }
+                    //scroll down
+                    else if (Mouse.ScrollWheelValue < oldScrollValue)
+                    {
+                        //make sure the top button isnt at the top. If it is dont scroll more
+                        if (ButtonsList[0].rectangle.Location.Y != rectangle.Y)
+                        {
+                            for (int i = 0; i < ButtonsList.Count; i++)
+                            {
+                                ButtonsList[i].rectangle.Y += ButtonsList[i].rectangle.Height;
+                            }
                         }
                     }
-                    
-                }
-                //scroll down
-                else if (Mouse.ScrollWheelValue < oldScrollValue)
-                {
-                    //make sure the top button isnt at the top. If it is dont scroll more
-                    if (ButtonsList[0].rectangle.Location.Y != rectangle.Y)
-                    {
-                        for (int i = 0; i < ButtonsList.Count; i++)
-                        {
-                            ButtonsList[i].rectangle.Y += ButtonsList[i].rectangle.Height;
-
-                        }
-                    }                  
                 }
             }
             //get the old value for comparisons
