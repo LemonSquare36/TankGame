@@ -13,7 +13,14 @@ namespace TankGame.Tools
         SpriteFont font;
         RectangleF[] Borders;
 
-        Color bgColor, textColor, offSetColor = new Color(20,20,20), borderColor;
+        Color bgColor, textColor, borderColor;
+        Vector3 offSetColor = new Vector3(20, 20, 20);
+        public Vector3 OffSetColor
+        {
+            get { return offSetColor; }
+            set { offSetColor = value;  ChangeOffSet(); }
+
+        }
 
         Vector2 pos, size;
         int numSelections;
@@ -31,6 +38,19 @@ namespace TankGame.Tools
         Rectangle cutOff;
         RasterizerState r = new RasterizerState();
 
+        //this event allows for outside objects to tell when an event is fired internally
+        public event EventHandler GetEvent;
+
+        /// <summary>
+        /// Creates a listbox that holds buttons that return thier string. Takes an array of strings to populate
+        /// </summary>
+        /// <param name="Position">Top left corner position</param>
+        /// <param name="Size">How big / bottom right corner in regards to the position</param>
+        /// <param name="NumSelections">the number of selections fit into the hieght of the box</param>
+        /// <param name="backgroundColor"></param>
+        /// <param name="TextColor"></param>
+        /// <param name="BorderColor"></param>
+        /// <param name="BorderThickness">Outside border normal, inside is half of outside</param>
         public ListBox(Vector2 Position, Vector2 Size, int NumSelections, Color backgroundColor, Color TextColor, Color BorderColor, int BorderThickness)
         {
             pos = Position;
@@ -44,6 +64,15 @@ namespace TankGame.Tools
                 Convert.ToInt16((rectangle.Width + BorderThickness*2) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Height + BorderThickness*2) * Camera.ResolutionScale.Y));
             borderColor = BorderColor;
         }
+        /// <summary>
+        /// Creates a listbox that holds buttons that return thier string. Takes an array of strings to populate
+        /// </summary>
+        /// <param name="Rectangle">The size and location for the box</param>
+        /// <param name="NumSelections">the number of selections fit into the hieght of the box</param>
+        /// <param name="backgroundColor"></param>
+        /// <param name="TextColor"></param>
+        /// <param name="BorderColor"></param>
+        /// <param name="BorderThickness">Outside border normal, inside is half of outside</param>
         public ListBox(RectangleF Rectangle, int NumSelections, Color backgroundColor, Color TextColor, Color BorderColor, int BorderThickness)
         {
             pos = Rectangle.Location;
@@ -168,17 +197,13 @@ namespace TankGame.Tools
                 {
                     borderOffSet += buttonSize.Y;
                 }
-                spriteBatch.Draw(tex, new Vector2(Borders[0].Location.X, Borders[0].Location.Y + borderOffSet), null, borderColor, 0, Vector2.Zero, new Vector2(Borders[0].Size.X, Borders[0].Size.Y/2), SpriteEffects.None, 0);              
+                spriteBatch.Draw(tex, new Vector2(Borders[0].Location.X- borderThickness, Borders[0].Location.Y + borderOffSet), null, borderColor, 0, Vector2.Zero, new Vector2(Borders[0].Size.X, Borders[0].Size.Y/2), SpriteEffects.None, 0);              
             }
             //reset how it draws back to normal
             spriteBatch.End();
             spriteBatch.GraphicsDevice.ScissorRectangle = Main.gameWindow.ClientBounds;
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, Main.DefualtMatrix());
 
-        }
-        public void SetSelections(string[] Selections)
-        {
-            selections = Selections;
         }
         private void CreateBorder()
         {
@@ -214,6 +239,20 @@ namespace TankGame.Tools
                         ButtonsList[i].toggleTexture();
                     }                    
                 }
+            }
+            if (GetEvent != null)
+            {
+                GetEvent?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        /// <summary>
+        /// Only call after LoadContent() - Changes the Offset amount of the bgcolor when a button is selected
+        /// </summary>
+        private void ChangeOffSet()
+        {
+            foreach (Button b in ButtonsList)
+            {
+                b.ChangeOffSetColor(offSetColor);
             }
         }
     }

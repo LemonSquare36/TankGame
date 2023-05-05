@@ -25,32 +25,26 @@ namespace TankGame
         #region Declares (there are alot)
         //for words
         SpriteFont font;
-        //button declares
-        Texture2D wallTex;
         //generic buttons
         Button Load, Save, New, Delete;
         Button SetRowCol, SetTankCount, SetMineCount;
         //add object buttons
         Button addWall, addItem, erase;
         List<Button> Buttons = new List<Button>();
-        LevelManager levelManager;
         //board info declares
-        List<Entity> entities = new List<Entity>();
         List<Point> gridLocations = new List<Point>();
-        Board curBoard;
         //level loading logic
-        bool levelLoaded = false, threadActive = false;
-        string file, relativePath;
+        bool levelLoaded = false;
+        string file;
         //objects selected logic
         bool wallSelected = false, itemSelected = false, eraseSelected = false;
         //input box
         InputBox nameField, sizeField, tankField, mineField;
         List<InputBox> Fields = new List<InputBox>();
         //List Box
-        Tools.ListBox levelSelection;
+        ListBox levelSelection;
         //the rows and columns
         int RowsCol;
-        Point TanksAndMines;
         //colors for text
         Color rowColColor, tankColor, MineColor;
         #endregion
@@ -59,7 +53,6 @@ namespace TankGame
         public override void Initialize()
         {
             base.Initialize();
-            levelManager = new LevelManager();
 
             //create the text field
             #region initializing textboxes
@@ -76,8 +69,6 @@ namespace TankGame
             tankColor = Color.Black;
             MineColor = Color.Black;
             #endregion
-
-            relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         }
         //LoadContent
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -87,8 +78,6 @@ namespace TankGame
             #region load Textures
             //font
             font = Main.GameContent.Load<SpriteFont>("Fonts/DefualtFont");
-            //textures
-            wallTex = Main.GameContent.Load<Texture2D>("GameSprites/Wall");
             #endregion
 
             #region load buttons
@@ -146,7 +135,7 @@ namespace TankGame
                 box.LoadContent();
             }
             //load the listBox for level selection
-            LevelListLaod();
+            LevelListLoad();
 
 
         }
@@ -383,7 +372,6 @@ namespace TankGame
                     nameField.Text = Path.GetFileName(file).Split(".")[0];
                     //level can be drawn and updated now. New thread can be made
                     levelLoaded = true;
-                    threadActive = false;
                     RowsCol = curBoard.Rows;
                     sizeField.Text = Convert.ToString(RowsCol);
                     tankField.Text = Convert.ToString(TanksAndMines.X);
@@ -413,7 +401,7 @@ namespace TankGame
                 }
             }
             //load the listBox for level selection
-            LevelListLaod();
+            LevelListLoad();
         }
 
         //creates a fresh new board
@@ -468,7 +456,7 @@ namespace TankGame
             if (file != relativePath + "\\TankGame\\" + "" + ".lvl")
             {
                 File.Delete(file);
-                LevelListLaod();
+                LevelListLoad();
             }
         }
         #endregion
@@ -591,7 +579,7 @@ namespace TankGame
         }
         #endregion
 
-        private void LevelListLaod()
+        private void LevelListLoad()
         {
             //gets all the files in the relative folder and sends them as an array to the listbox to populate the levels
             string[] filepaths = Directory.GetFiles(relativePath + "\\TankGame");

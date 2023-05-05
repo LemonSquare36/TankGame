@@ -14,6 +14,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 using TankGame.Tools;
+using TankGame.Objects.Entities;
+using TankGame.Objects;
 
 namespace TankGame
 {
@@ -35,6 +37,13 @@ namespace TankGame
         protected KeyboardState keyHeldState;
         //spriteBatch for all the screens
         protected SpriteBatch spriteBatch;
+        protected string relativePath;
+        protected LevelManager levelManager;
+
+        //board information 
+        protected List<Entity> entities = new List<Entity>();
+        protected Board curBoard;
+        protected Point TanksAndMines;
 
         #region Held functions
 
@@ -42,6 +51,9 @@ namespace TankGame
         public virtual void Initialize()
         {
             keyState = new KeyboardState();
+            levelManager = new LevelManager();
+            entities.Clear();
+            relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         }
         //Holds LoadContent and the font if called
         public virtual void LoadContent(SpriteBatch spriteBatchmain)
@@ -120,6 +132,5 @@ namespace TankGame
             keyState = Keyboard.GetState();
         }
         #endregion
-
     }
 }

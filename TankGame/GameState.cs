@@ -39,7 +39,7 @@ namespace TankGame
         #region Declare the Screens
         private ScreenManager CurrentScreen;
         private MainMenu mainMenu;
-        private GameBoard mainGame;
+        private LevelSelect levelSelector;
         private LevelEditor editor;
         #endregion
 
@@ -48,7 +48,7 @@ namespace TankGame
         {           
             #region Initialize the Screens
             mainMenu = new MainMenu();
-            mainGame = new GameBoard();
+            levelSelector = new LevelSelect();
             editor = new LevelEditor();
             #endregion
         }
@@ -63,14 +63,15 @@ namespace TankGame
 
             if (CurrentScreen == null)
             {
-                CurrentScreen = editor;
+                CurrentScreen = mainMenu;
             }
             CurrentScreen.Initialize();
 
             loading = false;
-
-            //mainMenu.ChangeScreen += HandleScreenChanged;
+            #region screen change events
+            mainMenu.ChangeScreen += HandleScreenChanged;
             //mainGame.ChangeScreen += PlayerChangeScreen;
+            #endregion
         }
         //Loads the Content for The gamestate
         public void LoadContent(SpriteBatch spriteBatchMain, GraphicsDeviceManager graphicsManagerMain)
@@ -124,11 +125,11 @@ namespace TankGame
             //Next Screen is Based off the buttons Name (not garenteed to even load a new screen)
             switch (CurrentScreen.getNextScreen())
             {
-                case "start":
-                    //CurrentScreen = mainGame;
+                case "play":
+                    CurrentScreen = levelSelector;
                     break;
-                case "main":
-                    CurrentScreen = mainMenu;
+                case "editor":
+                    CurrentScreen = editor;
                     break;
                 default:
                     Load = false;

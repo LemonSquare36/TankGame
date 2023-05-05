@@ -205,6 +205,30 @@
 /processorParam:TextureFormat=Color
 /build:Buttons/Editor/WallUH.jpg
 
+#begin Buttons/LevelSelect/SelectH.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Buttons/LevelSelect/SelectH.jpg
+
+#begin Buttons/LevelSelect/SelectUH.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Buttons/LevelSelect/SelectUH.jpg
+
 #begin Buttons/MainMenu/EditorH.jpg
 /importer:TextureImporter
 /processor:TextureProcessor

@@ -19,7 +19,8 @@ namespace TankGame
         public bool OneTexPressed = false;
 
 
-        Color buttonColor = Color.White, offSetColor = new Color(20,20,20);
+        Color buttonColor = Color.White;
+        Vector3 offSetColor = new Vector3(20,20,20);
 
         //Holds the Name or Function the button does
         private string Bname;
@@ -190,7 +191,7 @@ namespace TankGame
                 }
                 else
                 {
-                    spriteBatch.Draw(Texture, rectangle.Location, new Color(buttonColor.R - offSetColor.R, buttonColor.G - offSetColor.G, buttonColor.B - offSetColor.B));
+                    spriteBatch.Draw(Texture, rectangle.Location, new Color(buttonColor.R - Convert.ToInt16(offSetColor.X), buttonColor.G - Convert.ToInt16(offSetColor.Y), buttonColor.B - Convert.ToInt16(offSetColor.Z)));
                 }
 
             }
@@ -222,7 +223,7 @@ namespace TankGame
                 else
                 {
                     Texture = unPressed;
-                    spriteBatch.Draw(Texture, rectangle.Location, null, new Color(buttonColor.R - offSetColor.R, buttonColor.G - offSetColor.G, buttonColor.B - offSetColor.B),
+                    spriteBatch.Draw(Texture, rectangle.Location, null, new Color(buttonColor.R - Convert.ToInt16(offSetColor.X), buttonColor.G - Convert.ToInt16(offSetColor.Y), buttonColor.B - Convert.ToInt16(offSetColor.Z)),
                         0, Vector2.Zero, rectangle.Size, SpriteEffects.None, 0);
                 }
 
@@ -263,7 +264,7 @@ namespace TankGame
         /// This color is subtracted from the button color when its a toggleOneTex
         /// </summary>
         /// <param name="OffSetColor"></param>
-        public void ChangeOffSetColor(Color OffSetColor)
+        public void ChangeOffSetColor(Vector3 OffSetColor)
         {
             offSetColor = OffSetColor;
         }
