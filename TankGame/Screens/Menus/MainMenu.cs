@@ -38,6 +38,7 @@ namespace TankGame
             #endregion
 
             #region Button Add
+            buttonList.Clear();
             buttonList.Add(Play);
             buttonList.Add(Editor);
             buttonList.Add(Settings);

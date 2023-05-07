@@ -14,6 +14,7 @@ namespace TankGame.Tools
         Board board;
         List<Entity> entities = new List<Entity>();
         Point tanksMines;
+        int sweeps;
 
         /// <summary>
         /// Loads the level information from the file selected when initializing the manager
@@ -47,6 +48,8 @@ namespace TankGame.Tools
                         //get the number of tanks and mines per side
                         string[] TankMines = reader.ReadLine().Split(',');
                         tanksMines = new Point(Convert.ToInt16(TankMines[0]), Convert.ToInt16(TankMines[1]));
+                        //read sweeps
+                        sweeps = Convert.ToInt16(reader.ReadLine());
                         //get the board data
                         string[] RowCol = reader.ReadLine().Split(',');
                         int border = Convert.ToInt16(reader.ReadLine());
@@ -97,7 +100,7 @@ namespace TankGame.Tools
         /// <summary>
         /// Saves the level information to a file selected when initializing the manager
         /// </summary>
-        public void SaveLevel(string FileLocation, Board board, List<Entity> E, Point TanksAndMines)
+        public void SaveLevel(string FileLocation, Board board, List<Entity> E, Point TanksAndMines, int Sweeps)
         {
             string relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\TankGame";
             if (!System.IO.Directory.Exists(relativePath))
@@ -121,6 +124,8 @@ namespace TankGame.Tools
             writer.WriteLine("GAMEBOARD");
             //write the tanks and mines
             writer.WriteLine(Convert.ToString(TanksAndMines.X) + "," + Convert.ToString(TanksAndMines.Y));
+            //write sweeps
+            writer.WriteLine(Convert.ToString(Sweeps));
             //write the board data
             writer.WriteLine(Convert.ToString(board.Rows) + "," + Convert.ToString(board.Columns));
             writer.WriteLine(board.BorderThickness);
@@ -164,6 +169,10 @@ namespace TankGame.Tools
         public Point getTanksAndMines()
         {
             return tanksMines;
+        }
+        public int getSweeps()
+        {
+            return sweeps;
         }
     }
 }

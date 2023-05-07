@@ -26,8 +26,8 @@ namespace TankGame
         //for words
         SpriteFont font;
         //generic buttons
-        Button Load, Save, New, Delete;
-        Button SetRowCol, SetTankCount, SetMineCount;
+        Button Load, Save, New, Delete, Back;
+        Button SetRowCol, SetTankCount, SetMineCount, SetSweepCount;
         //add object buttons
         Button addWall, addItem, erase;
         List<Button> Buttons = new List<Button>();
@@ -39,14 +39,14 @@ namespace TankGame
         //objects selected logic
         bool wallSelected = false, itemSelected = false, eraseSelected = false;
         //input box
-        InputBox nameField, sizeField, tankField, mineField;
+        InputBox nameField, sizeField, tankField, mineField, sweepField;
         List<InputBox> Fields = new List<InputBox>();
         //List Box
         ListBox levelSelection;
         //the rows and columns
-        int RowsCol;
+        int RowsCol, sweeps;
         //colors for text
-        Color rowColColor, tankColor, MineColor;
+        Color rowColColor, tankColor, MineColor, sweepColor;
         #endregion
 
         //Initialize
@@ -56,18 +56,21 @@ namespace TankGame
 
             //create the text field
             #region initializing textboxes
-            nameField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1350, 200), new Vector2(300, 50));
-            sizeField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1250, 650), new Vector2(80, 70), 2);
-            tankField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1450, 650), new Vector2(80, 70), 2);
-            mineField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1650, 650), new Vector2(80, 70), 2);
+            nameField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1420, 500), new Vector2(300, 50));
+            sizeField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1090, 100), new Vector2(80, 70), 2);
+            tankField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1290, 100), new Vector2(80, 70), 2);
+            mineField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1490, 100), new Vector2(80, 70), 2);
+            sweepField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1690, 100), new Vector2(80, 70), 2);
 
-            levelSelection = new ListBox(new Vector2(1170, 770), new Vector2(630, 300), 8, Color.White, Color.Black,Color.DarkGray, 4);
+
+            levelSelection = new ListBox(new Vector2(1100, 570), new Vector2(740, 450), 11, Color.White, Color.Black,Color.DarkGray, 4);
             #endregion
 
             #region default font colors
             rowColColor = Color.Black;
             tankColor = Color.Black;
             MineColor = Color.Black;
+            sweepColor = Color.Black;
             #endregion
         }
         //LoadContent
@@ -81,18 +84,20 @@ namespace TankGame
             #endregion
 
             #region load buttons
-            Load = new Button(new Vector2(1200, 100), 100, 50, "Buttons/Editor/Load", "load");
-            Save = new Button(new Vector2(1350, 100), 100, 50, "Buttons/Editor/Save", "save");
-            New = new Button(new Vector2(1500, 100), 100, 50, "Buttons/Editor/New", "new");
-            Delete = new Button(new Vector2(1650, 100), 100, 50, "Buttons/Editor/Delete", "delete");
+            Load = new Button(new Vector2(1130, 440), 100, 50, "Buttons/Editor/Load", "load");
+            Save = new Button(new Vector2(1280, 440), 100, 50, "Buttons/Editor/Save", "save");
+            New = new Button(new Vector2(1430, 440), 100, 50, "Buttons/Editor/New", "new");
+            Delete = new Button(new Vector2(1580, 440), 100, 50, "Buttons/Editor/Delete", "delete");
+            Back = new Button(new Vector2(1730, 440), 100, 50, "Buttons/Editor/Back", "back", 0);
 
-            SetRowCol = new Button(new Vector2(1350, 660), 70, 50, "Buttons/Editor/Set", "setrowcol");
-            SetTankCount = new Button(new Vector2(1550, 660), 70, 50, "Buttons/Editor/Set", "settankcount");
-            SetMineCount = new Button(new Vector2(1750, 660), 70, 50, "Buttons/Editor/Set", "setminecount");
+            SetRowCol = new Button(new Vector2(1180, 110), 70, 50, "Buttons/Editor/Set", "setrowcol");
+            SetTankCount = new Button(new Vector2(1380, 110), 70, 50, "Buttons/Editor/Set", "settankcount");
+            SetMineCount = new Button(new Vector2(1580, 110), 70, 50, "Buttons/Editor/Set", "setminecount");
+            SetSweepCount = new Button(new Vector2(1780, 110), 70, 50, "Buttons/Editor/Set", "setsweepcount");
 
-            addWall = new Button(new Vector2(1320, 400), 50, 50, "Buttons/Editor/Wall", "addWall", "toggle");
-            addItem = new Button(new Vector2(1470, 400), 50, 50, "Buttons/Editor/ItemBox", "addItem", "toggle");
-            erase = new Button(new Vector2(1620, 400), 50, 50, "Buttons/Editor/Clear", "erase", "toggle");
+            addWall = new Button(new Vector2(1290, 300), 50, 50, "Buttons/Editor/Wall", "addWall", "toggle");
+            addItem = new Button(new Vector2(1440, 300), 50, 50, "Buttons/Editor/ItemBox", "addItem", "toggle");
+            erase = new Button(new Vector2(1590, 300), 50, 50, "Buttons/Editor/Clear", "erase", "toggle");
             #endregion
 
             #region Button Events
@@ -100,10 +105,12 @@ namespace TankGame
             Save.ButtonClicked += SavePressed;
             New.ButtonClicked += NewPressed;
             Delete.ButtonClicked += DeletePressed;
+            Back.ButtonClicked += ScreenChangeEvent;
 
             SetRowCol.ButtonClicked += SetRowColPressed;
             SetTankCount.ButtonClicked += SetTanksPressed;
             SetMineCount.ButtonClicked += SetMinesPressed;
+            SetSweepCount.ButtonClicked += SetSweepsPressed;
 
             addWall.ButtonClicked += SelectWall;
             addItem.ButtonClicked += SelectItem;
@@ -111,16 +118,20 @@ namespace TankGame
             #endregion
 
             #region ButtonList
+            Buttons.Clear();
             Buttons.Add(Load);
             Buttons.Add(Save);
             Buttons.Add(New);
             Buttons.Add(Delete);
+            Buttons.Add(Back);
             Buttons.Add(addWall);
             Buttons.Add(addItem);
             Buttons.Add(erase);
             Buttons.Add(SetRowCol);
             Buttons.Add(SetTankCount);
             Buttons.Add(SetMineCount);
+            Buttons.Add(SetSweepCount);
+
             #endregion
 
             #region input box list
@@ -128,6 +139,7 @@ namespace TankGame
             Fields.Add(sizeField);
             Fields.Add(tankField);
             Fields.Add(mineField);
+            Fields.Add(sweepField);
             #endregion
 
             foreach (InputBox box in Fields)
@@ -174,6 +186,11 @@ namespace TankGame
                 if (Convert.ToInt16(mineField.Text) != TanksAndMines.Y)
                 {
                     MineColor = Color.Red;
+                }
+                else { MineColor = Color.Black; }
+                if (Convert.ToInt16(sweepField.Text) != sweeps)
+                {
+                    sweepColor = Color.Red;
                 }
                 else { MineColor = Color.Black; }
             }
@@ -234,15 +251,17 @@ namespace TankGame
 
 
             #region drawing text to screen
-            spriteBatch.DrawString(font, "Add an Object\nRight Click to Erase", new Vector2(1350, 300), Color.Black);
-            spriteBatch.DrawString(font, "Walls", new Vector2(1300, 450), Color.Black);
-            spriteBatch.DrawString(font, "ItemBoxes", new Vector2(1412, 450), Color.Black);
-            spriteBatch.DrawString(font, "Eraser", new Vector2(1600, 450), Color.Black);
-            spriteBatch.DrawString(font, "Level Name", new Vector2(1405, 155), Color.Black);
-            spriteBatch.DrawString(font, "Rows/Columns", new Vector2(1150, 580), rowColColor);
-            spriteBatch.DrawString(font, "# of Tanks", new Vector2(1410, 580), tankColor);
-            spriteBatch.DrawString(font, "# of Mines", new Vector2(1610, 580), MineColor);
-            spriteBatch.DrawString(font, "Red Text = Change Not Set", new Vector2(1250, 530), Color.Red);
+            //spriteBatch.DrawString(font, "Add an Object ", new Vector2(1100, 100), Color.Black);
+            spriteBatch.DrawString(font, "Right Click to Erase", new Vector2(1300, 350), Color.Black);
+            spriteBatch.DrawString(font, "Walls", new Vector2(1270, 250), Color.Black);
+            spriteBatch.DrawString(font, "ItemBoxes", new Vector2(1382, 250), Color.Black);
+            spriteBatch.DrawString(font, "Eraser", new Vector2(1570, 250), Color.Black);
+            spriteBatch.DrawString(font, "Level Name: ", new Vector2(1200, 505), Color.Black);
+            spriteBatch.DrawString(font, "Size", new Vector2(1095, 50), rowColColor);
+            spriteBatch.DrawString(font, "# of Tanks", new Vector2(1240, 50), tankColor);
+            spriteBatch.DrawString(font, "# of Mines", new Vector2(1440, 50), MineColor);
+            spriteBatch.DrawString(font, "# of Sweeps", new Vector2(1640, 50), sweepColor);
+            spriteBatch.DrawString(font, "Red Text = Change Not Set", new Vector2(1250, 180), Color.Red);
             #endregion
         }
 
@@ -362,6 +381,7 @@ namespace TankGame
                     entities = levelManager.getEntities();
                     curBoard = levelManager.getGameBoard();
                     TanksAndMines = levelManager.getTanksAndMines();
+                    sweeps = levelManager.getSweeps();
                     //finish loading the board
                     curBoard.LoadContent();
                     for (int i = 0; i <entities.Count; i++)
@@ -376,6 +396,7 @@ namespace TankGame
                     sizeField.Text = Convert.ToString(RowsCol);
                     tankField.Text = Convert.ToString(TanksAndMines.X);
                     mineField.Text = Convert.ToString(TanksAndMines.Y);
+                    sweepField.Text = Convert.ToString(sweeps);
 
                     rowColColor = Color.Black;
                     tankColor = Color.Black;
@@ -397,7 +418,7 @@ namespace TankGame
                 {
                     string fileName = nameField.Text.Replace(" ", "");
                     file = relativePath + "\\TankGame\\" + fileName + ".lvl";
-                    levelManager.SaveLevel(file, curBoard, entities, TanksAndMines);
+                    levelManager.SaveLevel(file, curBoard, entities, TanksAndMines, sweeps);
                 }
             }
             //load the listBox for level selection
@@ -420,12 +441,15 @@ namespace TankGame
             sizeField.Text = "20";
             tankField.Text = "3";
             mineField.Text = "3";
+            sweepField.Text = "3";
             RowsCol = 20;
             TanksAndMines = new Point(3, 3);
+            sweeps = 3;
 
             rowColColor = Color.Black;
             tankColor = Color.Black;
             MineColor = Color.Black;
+            sweepColor = Color.Black;
         }
         private void NewPressed()
         {
@@ -442,12 +466,15 @@ namespace TankGame
             sizeField.Text = "20";
             tankField.Text = "3";
             mineField.Text = "3";
+            sweepField.Text = "3";
             RowsCol = 20;
             TanksAndMines = new Point(3, 3);
+            sweeps = 3;
 
             rowColColor = Color.Black;
             tankColor = Color.Black;
             MineColor = Color.Black;
+            sweepColor = Color.Black;
         }
 
         private void DeletePressed(object sender, EventArgs e)
@@ -569,13 +596,30 @@ namespace TankGame
         }
         private void SetTanksPressed(object sender, EventArgs e)
         {
-            TanksAndMines.X = Convert.ToInt16(tankField.Text);
-            tankColor = Color.Black;
+            try
+            {
+                TanksAndMines.X = Convert.ToInt16(tankField.Text);
+                tankColor = Color.Black;
+            }
+            catch { }
         }
         private void SetMinesPressed(object sender, EventArgs e)
         {
-            TanksAndMines.Y = Convert.ToInt16(mineField.Text);
-            MineColor = Color.Black;
+            try
+            {
+                TanksAndMines.Y = Convert.ToInt16(mineField.Text);
+                MineColor = Color.Black;
+            }
+            catch { }
+        }
+        private void SetSweepsPressed(object sender, EventArgs e)
+        {
+            try
+            {
+                sweeps = Convert.ToInt16(sweepField.Text);
+                sweepColor = Color.Black;
+            }
+            catch { }
         }
         #endregion
 
@@ -588,6 +632,15 @@ namespace TankGame
                 filepaths[i] = Path.GetFileName(filepaths[i].Split(".")[0]);
             }
             levelSelection.LoadContent(filepaths);
+        }
+
+        public override void ButtonReset()
+        {
+            //resets everybutton to prevent unwanted button clicks
+            foreach (Button b in Buttons)
+            {
+                b.ButtonReset();
+            }
         }
     }
 }

@@ -70,7 +70,7 @@ namespace TankGame
             loading = false;
             #region screen change events
             mainMenu.ChangeScreen += HandleScreenChanged;
-            //mainGame.ChangeScreen += PlayerChangeScreen;
+            editor.ChangeScreen += HandleScreenChanged;
             #endregion
         }
         //Loads the Content for The gamestate
@@ -123,7 +123,7 @@ namespace TankGame
             //if true initialize and load next screen
             bool Load = true;
             //Next Screen is Based off the buttons Name (not garenteed to even load a new screen)
-            switch (CurrentScreen.getNextScreen())
+            switch (CurrentScreen.nextScreen)
             {
                 case "play":
                     CurrentScreen = levelSelector;
@@ -131,19 +131,23 @@ namespace TankGame
                 case "editor":
                     CurrentScreen = editor;
                     break;
+                case "back":
+                    CurrentScreen = mainMenu;
+                    break;
                 default:
                     Load = false;
                     break;
-            }
-            //Resets the button on the screen
-            CurrentScreen.ButtonReset();
+            }           
 
             //Loads if a new screen is activated
             if (Load)
             {
                 Initialize();
                 LoadContent(spriteBatch, graphicsManager);
+                CurrentScreen.nextScreen = "";
             }
+            //Resets the button on the screen
+            CurrentScreen.ButtonReset();
         }
     }
 }

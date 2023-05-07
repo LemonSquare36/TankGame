@@ -93,8 +93,11 @@ namespace TankGame.Tools
                 KeyStrokeHandler.populateInformation();
             }
             catch { }
-
-            r.ScissorTestEnable = true;
+            try
+            {
+                r.ScissorTestEnable = true;
+            }
+            catch { }
         }
         public void Update(MouseState Mouse, Vector2 worldMousePosition, KeyboardState keystate, KeyboardState keyHeldState)
         {

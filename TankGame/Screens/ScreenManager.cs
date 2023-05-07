@@ -25,7 +25,7 @@ namespace TankGame
         //Random rand = new Random();
 
         //gets sent to GameState to inform the manager which screen to load
-        protected string nextScreen;   
+        public string nextScreen;   
         //puases the game when true
         protected bool pause = false;
         //mouse that every screen uses
@@ -78,12 +78,6 @@ namespace TankGame
 
         }
         #endregion
-
-        //Gets the next screen
-        public string getNextScreen()
-        {
-            return nextScreen;
-        }
 
         #region Manager
 
