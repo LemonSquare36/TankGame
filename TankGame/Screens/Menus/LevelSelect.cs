@@ -18,7 +18,7 @@ using TankGame.Objects.Entities;
 
 namespace TankGame
 {
-    internal class LevelSelect : MenuManager
+    internal class LevelSelect : ScreenManager
     {
         //file selection stuff
         ListBox levelSelection;
@@ -51,6 +51,7 @@ namespace TankGame
         public override void Update()
         {
             base.Update();
+            selectedFile = levelSelection.curSelection;
             levelSelection.Update(mouse, worldPosition);
             Select.Update(mouse, worldPosition);
         }

@@ -1,26 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Audio;
-using System.Diagnostics;
 using System.IO;
-using System.Collections;
 using TankGame.Objects;
 using TankGame.Tools;
-using System.Threading;
 using TankGame.Objects.Entities;
 
 namespace TankGame
 {
-    internal class LevelEditor : GameScreenManager
+    internal class LevelEditor : ScreenManager
     {
         #region Declares (there are alot)
         //for words
@@ -31,8 +20,6 @@ namespace TankGame
         //add object buttons
         Button addWall, addItem, erase;
         List<Button> Buttons = new List<Button>();
-        //board info declares
-        List<Point> gridLocations = new List<Point>();
         //level loading logic
         bool levelLoaded = false;
         string file;
@@ -43,8 +30,6 @@ namespace TankGame
         List<InputBox> Fields = new List<InputBox>();
         //List Box
         ListBox levelSelection;
-        //the rows and columns
-        int RowsCol, sweeps;
         //colors for text
         Color rowColColor, tankColor, MineColor, sweepColor;
         #endregion
@@ -166,6 +151,7 @@ namespace TankGame
             {
                 box.Update(mouse, worldPosition, keyState, keyHeldState);
             }
+
             levelSelection.Update(mouse, worldPosition);
 
             //check for changes in the text boxes

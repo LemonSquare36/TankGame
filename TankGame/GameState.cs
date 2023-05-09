@@ -41,6 +41,7 @@ namespace TankGame
         private MainMenu mainMenu;
         private LevelSelect levelSelector;
         private LevelEditor editor;
+        private BattleScreen battleScreen;
         #endregion
 
         //Constructor
@@ -50,6 +51,7 @@ namespace TankGame
             mainMenu = new MainMenu();
             levelSelector = new LevelSelect();
             editor = new LevelEditor();
+            battleScreen = new BattleScreen();
             #endregion
         }
         //Initialize things upon class creation
@@ -71,6 +73,8 @@ namespace TankGame
             #region screen change events
             mainMenu.ChangeScreen += HandleScreenChanged;
             editor.ChangeScreen += HandleScreenChanged;
+            levelSelector.ChangeScreen += HandleScreenChanged;
+            battleScreen.ChangeScreen += HandleScreenChanged;
             #endregion
         }
         //Loads the Content for The gamestate
@@ -133,6 +137,14 @@ namespace TankGame
                     break;
                 case "back":
                     CurrentScreen = mainMenu;
+                    break;
+                case "select":
+                    if (levelSelector.selectedFile != null && levelSelector.selectedFile != "")
+                    {
+                        battleScreen.selectedFile = levelSelector.selectedFile;
+                        CurrentScreen = battleScreen;
+                    }
+                    else { Load = false; }
                     break;
                 default:
                     Load = false;

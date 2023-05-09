@@ -25,7 +25,7 @@ namespace TankGame
         //Random rand = new Random();
 
         //gets sent to GameState to inform the manager which screen to load
-        public string nextScreen;   
+        public string nextScreen, selectedFile;   
         //puases the game when true
         protected bool pause = false;
         //mouse that every screen uses
@@ -40,10 +40,16 @@ namespace TankGame
         protected string relativePath;
         protected LevelManager levelManager;
 
-        //board information 
+
+        #region board information 
         protected List<Entity> entities = new List<Entity>();
         protected Board curBoard;
         protected Point TanksAndMines;
+        //the rows and columns
+        protected int RowsCol, sweeps;
+        //board info declares
+        protected List<Point> gridLocations = new List<Point>();
+        #endregion
 
         #region Held functions
 

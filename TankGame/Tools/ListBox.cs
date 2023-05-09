@@ -109,7 +109,7 @@ namespace TankGame.Tools
                 buttonPos.Y += buttonSize.Y;
                 ButtonsList.Add(tempButton);
             }
-
+            //font scale for size 12. 12 is good for 50 pixel scaling
             scale = buttonSize.Y / 50;
             try { r.ScissorTestEnable = true; }
             catch { }
@@ -117,6 +117,9 @@ namespace TankGame.Tools
 
             tex = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
             CreateBorder();
+
+            //listen in on the window size change to recaluclate the cutoff rectangle for the rasterizer 
+            Main.gameWindow.ClientSizeChanged += recalcRasterizer;
         }
         public void Update(MouseState Mouse, Vector2 WorldPos)
         {
@@ -254,6 +257,11 @@ namespace TankGame.Tools
             {
                 b.ChangeOffSetColor(offSetColor);
             }
+        }
+        private void recalcRasterizer(object sender, EventArgs e)
+        {
+            cutOff = new Rectangle(Convert.ToInt16((rectangle.X - borderThickness) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Y - borderThickness) * Camera.ResolutionScale.Y),
+                Convert.ToInt16((rectangle.Width + borderThickness * 2) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Height + borderThickness * 2) * Camera.ResolutionScale.Y));
         }
     }
 }

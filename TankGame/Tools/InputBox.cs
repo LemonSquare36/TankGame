@@ -59,8 +59,7 @@ namespace TankGame.Tools
                 new Point(Convert.ToInt16(Size.X * Camera.ResolutionScale.X), Convert.ToInt16(Size.Y * Camera.ResolutionScale.Y)));
             text = "";
             //scale the text if needed
-            scale = Size.Y / 50;
-            
+            scale = Size.Y / 50;            
         }
         public InputBox(Color backgroundColor, Color TextColor, Vector2 Pos, Vector2 Size, int characterLimit)
         {
@@ -98,6 +97,9 @@ namespace TankGame.Tools
                 r.ScissorTestEnable = true;
             }
             catch { }
+
+            //listen in on the window size change to recaluclate the cutoff rectangle for the rasterizer 
+            Main.gameWindow.ClientSizeChanged += recalcRasterizer;
         }
         public void Update(MouseState Mouse, Vector2 worldMousePosition, KeyboardState keystate, KeyboardState keyHeldState)
         {
@@ -161,6 +163,11 @@ namespace TankGame.Tools
             spriteBatch.End();
             spriteBatch.GraphicsDevice.ScissorRectangle = Main.gameWindow.ClientBounds;
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, Main.DefualtMatrix());
+        }
+        private void recalcRasterizer(object sender, EventArgs e)
+        {
+            cutOff = new Rectangle(new Point(Convert.ToInt16(pos.X * Camera.ResolutionScale.X), Convert.ToInt16(pos.Y * Camera.ResolutionScale.Y)),
+                new Point(Convert.ToInt16(size.X * Camera.ResolutionScale.X), Convert.ToInt16(size.Y * Camera.ResolutionScale.Y)));
         }
     }
 }
