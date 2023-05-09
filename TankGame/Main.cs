@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TankGame.Tools;
 using System.Threading;
+using System;
 
 namespace TankGame
 {
@@ -66,6 +67,8 @@ namespace TankGame
             //window size for game on start up
             graphicsManager.PreferredBackBufferWidth = 1600;
             graphicsManager.PreferredBackBufferHeight = 900;
+            Window.AllowUserResizing = true;
+            Window.ClientSizeChanged += windowSizeChanged;
             graphicsManager.ApplyChanges();
 
             //defualt resolution of the game
@@ -131,6 +134,18 @@ namespace TankGame
         public static Viewport DefualtView()
         {
             return defualtView;
+        }
+
+        private void windowSizeChanged(object sender, EventArgs e)
+        {
+            //whenever the window is resized, recalculate the backbuffer and viewport/matrix information
+            graphicsManager.PreferredBackBufferWidth = Window.ClientBounds.Width;
+            graphicsManager.PreferredBackBufferHeight = Window.ClientBounds.Height;
+            graphicsManager.ApplyChanges();
+
+            defualtView = Main.graphicsDevice.Viewport;
+            Camera.setBound(defualtView);
+            defualtMatrix = Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y);
         }
     }
 }
