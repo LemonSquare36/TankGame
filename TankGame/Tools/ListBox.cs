@@ -60,8 +60,9 @@ namespace TankGame.Tools
             bgColor = backgroundColor;
             textColor = TextColor;
             borderThickness = BorderThickness;
-            cutOff = new Rectangle(Convert.ToInt16((rectangle.X - BorderThickness) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Y - BorderThickness) * Camera.ResolutionScale.Y),
-                Convert.ToInt16((rectangle.Width + BorderThickness*2) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Height + BorderThickness*2) * Camera.ResolutionScale.Y));
+            cutOff = new Rectangle(Convert.ToInt16((rectangle.X - borderThickness) * Camera.ResolutionScale.X) + Convert.ToInt16(Main.graphicsDevice.Viewport.X),
+                Convert.ToInt16((rectangle.Y - borderThickness) * Camera.ResolutionScale.Y) + Convert.ToInt16(Main.graphicsDevice.Viewport.Y),
+                Convert.ToInt16((rectangle.Width + borderThickness * 2) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Height + borderThickness * 2) * Camera.ResolutionScale.Y));
             borderColor = BorderColor;
         }
         /// <summary>
@@ -82,8 +83,9 @@ namespace TankGame.Tools
             bgColor = backgroundColor;
             textColor = TextColor;
             borderThickness = BorderThickness;
-            cutOff = new Rectangle(Convert.ToInt16((rectangle.X)* Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Y) * Camera.ResolutionScale.Y), 
-                Convert.ToInt16((rectangle.Width)* Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Height) * Camera.ResolutionScale.Y));
+            cutOff = new Rectangle(Convert.ToInt16((rectangle.X - borderThickness) * Camera.ResolutionScale.X) + Convert.ToInt16(Main.graphicsDevice.Viewport.X),
+                Convert.ToInt16((rectangle.Y - borderThickness) * Camera.ResolutionScale.Y) + Convert.ToInt16(Main.graphicsDevice.Viewport.Y),
+                Convert.ToInt16((rectangle.Width + borderThickness * 2) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Height + borderThickness * 2) * Camera.ResolutionScale.Y));
             borderColor = BorderColor;
         }
         public void Initialize()
@@ -260,7 +262,8 @@ namespace TankGame.Tools
         }
         private void recalcRasterizer(object sender, EventArgs e)
         {
-            cutOff = new Rectangle(Convert.ToInt16((rectangle.X - borderThickness) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Y - borderThickness) * Camera.ResolutionScale.Y),
+            cutOff = new Rectangle(Convert.ToInt16((rectangle.X - borderThickness) * Camera.ResolutionScale.X) + Convert.ToInt16(Main.graphicsDevice.Viewport.X), 
+                Convert.ToInt16((rectangle.Y - borderThickness) * Camera.ResolutionScale.Y) + Convert.ToInt16(Main.graphicsDevice.Viewport.Y),
                 Convert.ToInt16((rectangle.Width + borderThickness * 2) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Height + borderThickness * 2) * Camera.ResolutionScale.Y));
         }
     }

@@ -55,8 +55,9 @@ namespace TankGame.Tools
             pos = Pos;
             size = Size;
             rectangle = new RectangleF(pos, size);
-            cutOff = new Rectangle(new Point(Convert.ToInt16(pos.X * Camera.ResolutionScale.X), Convert.ToInt16(pos.Y * Camera.ResolutionScale.Y)), 
-                new Point(Convert.ToInt16(Size.X * Camera.ResolutionScale.X), Convert.ToInt16(Size.Y * Camera.ResolutionScale.Y)));
+            cutOff = new Rectangle(new Point(Convert.ToInt16(pos.X * Camera.ResolutionScale.X) + Convert.ToInt16(Main.graphicsDevice.Viewport.X),
+               Convert.ToInt16(pos.Y * Camera.ResolutionScale.Y) + Convert.ToInt16(Main.graphicsDevice.Viewport.Y)),
+               new Point(Convert.ToInt16(size.X * Camera.ResolutionScale.X), Convert.ToInt16(size.Y * Camera.ResolutionScale.Y)));
             text = "";
             //scale the text if needed
             scale = Size.Y / 50;            
@@ -69,8 +70,9 @@ namespace TankGame.Tools
             pos = Pos;
             size = Size;
             rectangle = new RectangleF(pos, size);
-            cutOff = new Rectangle(new Point(Convert.ToInt16(pos.X * Camera.ResolutionScale.X), Convert.ToInt16(pos.Y * Camera.ResolutionScale.Y)),
-                new Point(Convert.ToInt16(Size.X * Camera.ResolutionScale.X), Convert.ToInt16(Size.Y * Camera.ResolutionScale.Y)));
+            cutOff = new Rectangle(new Point(Convert.ToInt16(pos.X * Camera.ResolutionScale.X) + Convert.ToInt16(Main.graphicsDevice.Viewport.X),
+               Convert.ToInt16(pos.Y * Camera.ResolutionScale.Y) + Convert.ToInt16(Main.graphicsDevice.Viewport.Y)),
+               new Point(Convert.ToInt16(size.X * Camera.ResolutionScale.X), Convert.ToInt16(size.Y * Camera.ResolutionScale.Y)));
             text = "";
             //scale the text if needed
             scale = Size.Y / 50;
@@ -166,7 +168,8 @@ namespace TankGame.Tools
         }
         private void recalcRasterizer(object sender, EventArgs e)
         {
-            cutOff = new Rectangle(new Point(Convert.ToInt16(pos.X * Camera.ResolutionScale.X), Convert.ToInt16(pos.Y * Camera.ResolutionScale.Y)),
+            cutOff = new Rectangle(new Point(Convert.ToInt16(pos.X * Camera.ResolutionScale.X) + Convert.ToInt16(Main.graphicsDevice.Viewport.X),
+                Convert.ToInt16(pos.Y * Camera.ResolutionScale.Y) + Convert.ToInt16(Main.graphicsDevice.Viewport.Y)),
                 new Point(Convert.ToInt16(size.X * Camera.ResolutionScale.X), Convert.ToInt16(size.Y * Camera.ResolutionScale.Y)));
         }
     }
