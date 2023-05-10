@@ -73,6 +73,7 @@ namespace TankGame
 
             //defualt resolution of the game
             Camera.resolution = new Vector2(1920, 1080);
+            Camera.AspectRatio = Camera.resolution.X / Camera.resolution.Y;
 
             //initialize my Graphics Device and SpriteBatch 
             graphics = GraphicsDevice;
