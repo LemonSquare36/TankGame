@@ -50,6 +50,8 @@ namespace TankGame.Tools
         //holds the translation amounts if needed
         static int remainderW = 0, remainderH = 0;
 
+        public static float AspectRatio;
+
         ///<summary>Scales the batch to the proper resolution within the bounds. Call setBounds() First </summary>
         /// <param name="scaleX">The Scale on the X axis for drawing</param>
         /// <param name="scaleY">The Scale on the Y axis for drawing</param>
@@ -114,9 +116,9 @@ namespace TankGame.Tools
         public static void setBound(Viewport view)
         {
             //desired width the hieght of the window wants
-            int desiredWidth = Convert.ToInt16(Main.gameWindow.ClientBounds.Height * 1.777F);          
+            int desiredWidth = Convert.ToInt16(Main.gameWindow.ClientBounds.Height * AspectRatio);          
             //if the desired width is less than the real width then make the viewport width smaller
-            if (Convert.ToInt16(Main.gameWindow.ClientBounds.Height * 1.7777F) < Main.gameWindow.ClientBounds.Width)
+            if (Convert.ToInt16(Main.gameWindow.ClientBounds.Height * AspectRatio) < Main.gameWindow.ClientBounds.Width)
             {
                 //set the viewport for calc and viewport for game to the desired
                 view.Width = desiredWidth;
@@ -130,12 +132,12 @@ namespace TankGame.Tools
                 Main.graphicsDevice.Viewport = view;
             }
             //if the desired width is greater than the window size, then shrink the hieght to match
-            else if (Convert.ToInt16(Main.gameWindow.ClientBounds.Height * 1.777F) > Main.gameWindow.ClientBounds.Width) 
+            else if (Convert.ToInt16(Main.gameWindow.ClientBounds.Height * AspectRatio) > Main.gameWindow.ClientBounds.Width) 
             {
                 //set the viewport for calc and viewport for game to the desired
-                view.Height = Convert.ToInt16(Main.gameWindow.ClientBounds.Width / 1.777F);
+                view.Height = Convert.ToInt16(Main.gameWindow.ClientBounds.Width / AspectRatio);
                 //get the remainder of the leftover height to fit it in the center of window
-                remainderH = (Main.gameWindow.ClientBounds.Height - Convert.ToInt16(Main.gameWindow.ClientBounds.Width / 1.777F)) / 2;
+                remainderH = (Main.gameWindow.ClientBounds.Height - Convert.ToInt16(Main.gameWindow.ClientBounds.Width / AspectRatio)) / 2;
                 remainderW = 0;
                 //offset viewport position for centering
                 view.X += remainderW;
@@ -148,32 +150,6 @@ namespace TankGame.Tools
             Vector2 scale = ResolutionScale;
             Point scaledPos = new Point(view.X - (Convert.ToInt16(view.X * scale.X)), view.Y - (Convert.ToInt16(view.Y * scale.Y)));
             CamPosition = new Vector2(scaledPos.X, scaledPos.Y);
-            //get resolution scale value for other objects to use
-            ScaleToResolution();
-        }
-        public static void setBound(Viewport view, out Viewport V)
-        {
-            //desired width the hieght of the window wants
-            int desiredWidth = Convert.ToInt16(Main.gameWindow.ClientBounds.Height * 1.777F);
-            //if the desired width is less than the real width then make the viewport width smaller
-            if (Convert.ToInt16(Main.gameWindow.ClientBounds.Height * 1.7777F) < Main.gameWindow.ClientBounds.Width)
-            {
-                view.Width = desiredWidth;
-
-                Main.graphicsDevice.Viewport = view;
-            }
-            //if the desired width is greater than the window size, then shrink the hieght to match
-            else if (Convert.ToInt16(Main.gameWindow.ClientBounds.Height * 1.777F) > Main.gameWindow.ClientBounds.Width)
-            {
-                view.Height = Convert.ToInt16(Main.gameWindow.ClientBounds.Width / 1.777F);
-                Main.graphicsDevice.Viewport = view;
-            }
-
-            Bounds = new Vector2(view.Width, view.Height);
-            Vector2 scale = ResolutionScale;
-            Point scaledPos = new Point(view.X - (Convert.ToInt16(view.X * scale.X)), view.Y - (Convert.ToInt16(view.Y * scale.Y)));
-            CamPosition = new Vector2(scaledPos.X, scaledPos.Y);
-            V = new Viewport(scaledPos.X, scaledPos.Y, view.Width, view.Height);
             //get resolution scale value for other objects to use
             ScaleToResolution();
         }
