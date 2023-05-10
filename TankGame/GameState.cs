@@ -26,8 +26,12 @@ namespace TankGame
         //RasterizerState r;
         //Rectangle cutOff;
 
+        //create the black bars where nothing is rendered
+        Color color = Color.Black;
         //color of the game background
-        Color color = Color.CornflowerBlue;
+        Color bgColor = Color.CornflowerBlue;
+        //defualt bg color in side the draw window
+        Texture2D bgTex;
 
         KeyboardState key;
         SpriteBatch spriteBatch;
@@ -89,6 +93,8 @@ namespace TankGame
 
             spriteBatch = spriteBatchMain;           
             graphicsManager = graphicsManagerMain;
+
+            bgTex = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
             
             CurrentScreen.LoadContent(spriteBatch);
 
@@ -116,6 +122,7 @@ namespace TankGame
             if (!loading)
             {
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, Main.DefualtMatrix());
+                spriteBatch.Draw(bgTex, new Rectangle(0,0,Convert.ToInt16(Camera.resolution.X), Convert.ToInt16(Camera.resolution.Y)), bgColor);
                 CurrentScreen.Draw();
                 spriteBatch.End();
             }

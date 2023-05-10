@@ -119,8 +119,9 @@ namespace TankGame
             mouse = Mouse.GetState();
             try
             {
-                pos.X = mouse.X / ((float)(Main.graphicsDevice.Viewport.Width / Camera.resolution.X));
-                pos.Y = mouse.Y / ((float)(Main.graphicsDevice.Viewport.Height / Camera.resolution.Y));
+                //calculate the mouse position to scale and possible offset
+                pos.X = (mouse.X / Camera.ResolutionScale.X) - (Main.graphicsDevice.Viewport.X / Camera.ResolutionScale.X);
+                pos.Y = (mouse.Y / Camera.ResolutionScale.Y) - (Main.graphicsDevice.Viewport.Y / Camera.ResolutionScale.Y);
             }
             catch { }
             return pos;
