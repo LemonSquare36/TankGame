@@ -13,10 +13,25 @@ namespace TankGame
     {
         //hold the level file location
         private string file;
+        int activePlayer;
+        private bool placementStage, battleStarted;
+
+        InputBox tanksCount, minesCount;
+        Button tanks, mines;
+
+        int tanksUsed = 0, minesUsed = 0;
+        
 
         public override void Initialize()
         {
             base.Initialize();
+            placementStage = true;
+            battleStarted = false;
+            activePlayer = 1;
+            //create input boxes for displaying tanks and mine count
+            tanksCount = new InputBox(Color.Black, Color.LightGreen, new Vector2(1550, 700), new Vector2(80, 70), 0);
+            minesCount = new InputBox(Color.Black, Color.LightGreen, new Vector2(1750, 700), new Vector2(80, 70), 0);
+
         }
 
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -26,11 +41,33 @@ namespace TankGame
             LoadBoardfromFile();
 
             //SendLoadToPeer();
+
+            //load inputboxes
+            tanksCount.LoadContent();
+            minesCount.LoadContent();
+            //populate the information to show how many tanks and mines they get to place
+            tanksCount.Text = Convert.ToString(TanksAndMines.X);
+            minesCount.Text = Convert.ToString(TanksAndMines.Y);
+
         }
 
         public override void Update()
         {
             base.Update();
+            //update code for the placement stage. Placing tanks and mines
+            if (placementStage)
+            {
+                //update the text to show how many tanks are left
+                tanksCount.Text = Convert.ToString(TanksAndMines.X - tanksUsed);
+                minesCount.Text = Convert.ToString(TanksAndMines.Y - minesUsed);
+                //code for placing and picking up tanks
+                Placement();
+            }
+            //update code for if the battle has started. All players ready to begin the fight
+            else if (battleStarted)
+            {
+
+            }
         }
 
         public override void Draw()
@@ -42,14 +79,32 @@ namespace TankGame
             {
                 e.Draw(spriteBatch);
             }
+            //draw code for the placement stage. Placing tanks and mines
+            if (placementStage)
+            {
+                minesCount.Draw(spriteBatch);
+                tanksCount.Draw(spriteBatch);
+            }
+            //draw code for if the battle has started. All players ready to begin the fight
+            else if (battleStarted)
+            {
+
+            }
         }
 
         public override void ButtonReset()
         {
 
         }
+       
+        private void Placement()
+        {
+
+        }
+
         private void LoadBoardfromFile()
         {
+            //load the board and additional data from the file passed in levelselect.
             file = relativePath + "\\TankGame\\" + selectedFile + ".lvl";
             if (file != relativePath + "\\TankGame\\" + "" + ".lvl")
             {
