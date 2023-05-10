@@ -32,8 +32,6 @@ namespace TankGame
         public virtual void LoadContent(SpriteBatch spriteBatchmain)
         {
             base.LoadContent(spriteBatchmain);
-            //load the board (load for host before sending to peer)
-            LoadBoardfromFile();
         }
 
         public override void Update()
@@ -74,7 +72,6 @@ namespace TankGame
                 }
                 catch {  }
             }
-            else { }
         }
     }
 }
