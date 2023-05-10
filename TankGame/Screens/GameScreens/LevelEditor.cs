@@ -362,7 +362,7 @@ namespace TankGame
             {
                 try
                 {
-                    levelManager.LoadLevel(file);
+                    levelManager.LoadLevel(file, 0.028F, 0.05F);
                     //grab the informatin from the levelManager
                     entities = levelManager.getEntities();
                     curBoard = levelManager.getGameBoard();
@@ -416,7 +416,7 @@ namespace TankGame
         {
             file = relativePath + "\\TankGame\\";
             float size = Camera.ViewboxScale.Y * 0.9F;
-            Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
+            Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.X * .028F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
             curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 20, 20, 8);
             entities.Clear();
             gridLocations.Clear();

@@ -96,7 +96,7 @@ namespace TankGame
             {
                 try
                 {
-                    levelManager.LoadLevel(file);
+                    levelManager.LoadLevel(file, 0.028F, 0.05F);
                     //grab the informatin from the levelManager
                     entities = levelManager.getEntities();
                     curBoard = levelManager.getGameBoard();

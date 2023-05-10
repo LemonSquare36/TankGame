@@ -19,7 +19,10 @@ namespace TankGame.Tools
         /// <summary>
         /// Loads the level information from the file selected when initializing the manager
         /// </summary>
-        public void LoadLevel(string FileLocation)
+        /// <param name="FileLocation">Full file location</param>
+        /// <param name="offSetX">A decimal value representing perctage of the internal resolution</param>
+        /// <param name="offSetY">A decimal value representing perctage of the internal resolution</param>
+        public void LoadLevel(string FileLocation, float offSetX, float offSetY)
         {
             //
             string[] cords;
@@ -59,7 +62,7 @@ namespace TankGame.Tools
 
                         //create the board with the data
                         float size = Camera.ViewboxScale.Y * 0.9F;
-                        Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
+                        Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.X * offSetX), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * offSetY)));
 
                         board = new Board(pos,
                             new Point(Convert.ToInt16(size), Convert.ToInt16(size)),

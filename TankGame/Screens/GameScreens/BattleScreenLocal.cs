@@ -1,39 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Audio;
-using System.Diagnostics;
 using System.IO;
-using System.Collections;
 using TankGame.Objects;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
 
 namespace TankGame
 {
-    internal class BattleScreen : ScreenManager
+    internal class BattleScreenLocal : ScreenManager
     {
         //hold the level file location
         private string file;
 
-        public virtual void Initialize()
+        public override void Initialize()
         {
             base.Initialize();
         }
 
-        public virtual void LoadContent(SpriteBatch spriteBatchmain)
+        public override void LoadContent(SpriteBatch spriteBatchmain)
         {
             base.LoadContent(spriteBatchmain);
             //load the board (load for host before sending to peer)
             LoadBoardfromFile();
+
+            //SendLoadToPeer();
         }
 
         public override void Update()
@@ -41,12 +33,18 @@ namespace TankGame
             base.Update();
         }
 
-        public virtual void Draw()
+        public override void Draw()
         {
-
+            //board draw 
+            curBoard.drawCheckers(spriteBatch);
+            curBoard.DrawOutline(spriteBatch);
+            foreach (Entity e in entities)
+            {
+                e.Draw(spriteBatch);
+            }
         }
 
-        public virtual void ButtonReset()
+        public override void ButtonReset()
         {
 
         }
@@ -57,7 +55,7 @@ namespace TankGame
             {
                 try
                 {
-                    levelManager.LoadLevel(file);
+                    levelManager.LoadLevel(file, 0.2468F, 0.05F);
                     //grab the informatin from the levelManager
                     entities = levelManager.getEntities();
                     curBoard = levelManager.getGameBoard();
