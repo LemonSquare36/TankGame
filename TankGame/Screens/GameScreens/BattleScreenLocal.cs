@@ -18,6 +18,7 @@ namespace TankGame
 
         InputBox tanksCount, minesCount;
         Button tanks, mines;
+        List<Button> placementButtonList = new List<Button>();
 
         int tanksUsed = 0, minesUsed = 0;
         
@@ -42,13 +43,28 @@ namespace TankGame
 
             //SendLoadToPeer();
 
+            #region load buttons and input boxes
+            //load buttons
+            tanks = new Button(new Vector2(1565, 640), 50, 50, "GameSprites/BattleSprites/Tank", "tanks", "toggle");
+            tanks.ChangeButtonColor(Color.Black);
+            mines = new Button(new Vector2(1765, 640), 50, 50, "GameSprites/BattleSprites/Mine", "mines", "toggle");
+
+
             //load inputboxes
             tanksCount.LoadContent();
             minesCount.LoadContent();
             //populate the information to show how many tanks and mines they get to place
             tanksCount.Text = Convert.ToString(TanksAndMines.X);
             minesCount.Text = Convert.ToString(TanksAndMines.Y);
+            #endregion
 
+            #region list adds
+            placementButtonList.Add(tanks);
+            placementButtonList.Add(mines);
+            #endregion
+
+            #region Event listeners
+            #endregion
         }
 
         public override void Update()
@@ -60,6 +76,12 @@ namespace TankGame
                 //update the text to show how many tanks are left
                 tanksCount.Text = Convert.ToString(TanksAndMines.X - tanksUsed);
                 minesCount.Text = Convert.ToString(TanksAndMines.Y - minesUsed);
+
+                //buttons in the placement stage
+                foreach (Button b in placementButtonList)
+                {
+                    b.Update(mouse, worldPosition);
+                }
                 //code for placing and picking up tanks
                 Placement();
             }
@@ -84,6 +106,11 @@ namespace TankGame
             {
                 minesCount.Draw(spriteBatch);
                 tanksCount.Draw(spriteBatch);
+                //buttons in the placement stage
+                foreach (Button b in placementButtonList)
+                {
+                    b.Draw(spriteBatch);
+                }
             }
             //draw code for if the battle has started. All players ready to begin the fight
             else if (battleStarted)
