@@ -16,14 +16,14 @@ using System.Collections;
 
 namespace TankGame.Objects.Entities
 {
-    internal class Tank : Entity
+    internal class Mine : Entity
     {
         Vector2 size = new Vector2(50, 50);
-        public Tank(RectangleF CurrentSquare, Point GridLocation) : base(CurrentSquare, GridLocation)
+        public Mine(RectangleF CurrentSquare, Point GridLocation) : base(CurrentSquare, GridLocation)
         {
             curSquare = CurrentSquare;
-            texFile = "GameSprites/BattleSprites/TankUH";
-            type = "tank";
+            texFile = "GameSprites/BattleSprites/MineUH";
+            type = "mine";
             size = curSquare.Size / size;
         }
         public override void LoadContent()
