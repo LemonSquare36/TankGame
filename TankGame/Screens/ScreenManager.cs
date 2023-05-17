@@ -43,6 +43,7 @@ namespace TankGame
 
         #region board information 
         protected List<Entity> entities = new List<Entity>();
+        protected List<Mine> curMines = new List<Mine>();
         protected Board curBoard;
         protected Point TanksAndMines;
         //the rows and columns

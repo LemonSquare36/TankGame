@@ -9,6 +9,7 @@ namespace TankGame.Objects
         public float X, Y;
         //the size of the rectangle measure out from the topleft corner
         public float Width, Height;
+        public bool Null = false;
 
         //get the location of the rectagle
         public Vector2 Location
@@ -75,6 +76,18 @@ namespace TankGame.Objects
             this.Width = size.X;
             this.Height = size.Y;
 
+        }
+        /// <summary>
+        /// Creates a new instance of <see cref="Rectangle"/> struct, with the specified
+        /// position, width, and height. NO PARAMS CREATES ALL 0's AND SETS BOOL 'Null' TO TRUE
+        /// </summary>
+        public RectangleF()
+        {
+            this.X = 0;
+            this.Y = 0;
+            this.Width = 0;
+            this.Height = 0;
+            Null = true;
         }
 
         //contains. Used to see if something is in the rectangle

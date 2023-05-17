@@ -12,6 +12,7 @@ namespace TankGame
 {
     internal class BattleScreenLocal : ScreenManager
     {
+        SpriteFont font;
         //hold the level file location
         private string file;
         //int activePlayer;
@@ -24,6 +25,16 @@ namespace TankGame
         int tanksUsed = 0, minesUsed = 0;
         ButtonState curRightClick, oldRightClick;
 
+
+        Player curPlayer, P1, P2;
+        int curPlayerTurn = 1;
+        //info for current turn state
+        int AP = 4;
+        int turn = 1;
+
+        //information for start of turn state
+        List<Entity> oldEntities = new List<Entity>();
+
         public override void Initialize()
         {
             base.Initialize();
@@ -34,6 +45,10 @@ namespace TankGame
             tanksCount = new InputBox(Color.Black, Color.LightGreen, new Vector2(1550, 700), new Vector2(80, 70), 0);
             minesCount = new InputBox(Color.Black, Color.LightGreen, new Vector2(1750, 700), new Vector2(80, 70), 0);
 
+
+            P1 = new Player(AP , sweeps);
+            P2 = new Player(AP, sweeps);
+            curPlayer = P1;
         }
 
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -41,6 +56,8 @@ namespace TankGame
             base.LoadContent(spriteBatchmain);
             //load the board (load for host before sending to peer)
             LoadBoardfromFile();
+            //font
+            font = Main.GameContent.Load<SpriteFont>("Fonts/DefualtFont");
 
             //SendLoadToPeer();
 
@@ -68,6 +85,7 @@ namespace TankGame
             #region Event listeners
             tanks.ButtonClicked += AddTankPressed;
             mines.ButtonClicked += AddMinePressed;
+            ready.ButtonClicked += ReadyPressed;
             #endregion
         }
 
@@ -103,6 +121,7 @@ namespace TankGame
             curBoard.DrawOutline(spriteBatch);
             foreach (Entity e in entities)
             {
+                if (e.Type.ToString() != "mine")
                 e.Draw(spriteBatch);
             }
             //draw code for the placement stage. Placing tanks and mines
@@ -115,19 +134,27 @@ namespace TankGame
                 {
                     b.Draw(spriteBatch);
                 }
+                
+                foreach (Mine mine in curPlayer.mines)
+                {
+                    mine.Draw(spriteBatch);
+                }
             }
             //draw code for if the battle has started. All players ready to begin the fight
             else if (battleStarted)
             {
 
             }
+
+            //draw current players turn info
+            spriteBatch.DrawString(font, "Current Player: " + curPlayerTurn, new Vector2(1550, 350), Color.Black);
         }
 
         public override void ButtonReset()
         {
 
         }
-       
+        #region placement Phase Code
         private void Placement()
         {
             if (tanks.Texture == tanks.Pressed)
@@ -163,6 +190,8 @@ namespace TankGame
             curRightClick = mouse.RightButton;
 
             Entity entity;
+            Mine tempMine;
+            Tank tempTank;
             //find out if the mouse is inside the board
             if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
             {
@@ -174,17 +203,29 @@ namespace TankGame
                     RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);
                     if (type == "tank")
                     {
-                        entity = new Tank(curGrid, curGridLocation);
+                        tempTank = new Tank(curGrid, curGridLocation);
+                        entity = tempTank;
+
+                        //to satisfy bs of needed to be declared in some way
+                        tempMine = new Mine(curGrid, curGridLocation);
                     }
                     else if (type == "mine")
                     {
-                        entity = new Mine(curGrid, curGridLocation);
+                        tempMine = new Mine(curGrid, curGridLocation);
+                        entity = tempMine;
+
+                        //to satisfy bs of needed to be declared in some way
+                        tempTank = new Tank(curGrid, curGridLocation);
+                        //
+                        //
                     }
                     else
                     {
                         entity = new Entity(curGrid, curGridLocation);
+                        tempMine = new Mine(curGrid, curGridLocation);
+                        tempTank = new Tank(curGrid, curGridLocation);
                     }
-                    if (type != "tank" || type != "mine")
+                    if (type == "tank" || type == "mine")
                     {
                         //check if the type of object has some count left
                         if ((type == "tank" && Convert.ToInt16(tanksCount.Text) > 0) || (type == "mine" && Convert.ToInt16(minesCount.Text) > 0))
@@ -199,10 +240,15 @@ namespace TankGame
                                 if (type == "tank")
                                 {
                                     tanksUsed++;
+                                    tempTank.LoadContent();
+                                    curPlayer.tanks.Add(new Tank(curGrid, curGridLocation));                                    
                                 }
                                 else if (type == "mine")
                                 {
-                                   minesUsed++;
+                                    minesUsed++;
+                                    tempMine.LoadContent();
+                                    curMines.Add(tempMine);
+                                    curPlayer.mines.Add(tempMine);
                                 }
                             }
                         }                      
@@ -228,6 +274,8 @@ namespace TankGame
                                     //if its a tank
                                     if (entities[i].Type == "tank")
                                     {
+                                        //make a new tank to remove it from player tanks                                       
+                                        curPlayer.tanks.Remove(new Tank(entities[i].curSquare, entities[i].gridLocation));
                                         //remove its records
                                         entities.Remove(entities[i]);
                                         gridLocations.Remove(curGridLocation);
@@ -240,6 +288,9 @@ namespace TankGame
                                     //if its a mine
                                     if (entities[i].Type == "mine")
                                     {
+                                        //make a new mine to remove it from player mines and mine list                                     
+                                        curPlayer.mines.Remove(new Mine(entities[i].curSquare, entities[i].gridLocation));
+                                        curMines.Remove(new Mine(entities[i].curSquare, entities[i].gridLocation));
                                         //remove its records
                                         entities.Remove(entities[i]);
                                         gridLocations.Remove(curGridLocation);
@@ -250,6 +301,25 @@ namespace TankGame
                         }
                     }                   
                 }
+            }
+        }
+        #endregion
+
+        private void ReadyPressed(object sender, EventArgs e)
+        {
+            if (curPlayerTurn == 1)
+            {
+                curPlayer = P2;
+                curPlayerTurn = 2;
+                tanksUsed = 0;
+                minesUsed = 0;
+            }
+            else if (curPlayerTurn == 2)
+            {
+                placementStage = false;
+                battleStarted = true;
+                curPlayer = P1;
+                curPlayerTurn = 1;
             }
         }
         #endregion
@@ -281,5 +351,32 @@ namespace TankGame
             }
             else { }
         }
+
+        #region turnTakingCode
+        /// <summary> Set the old information to represent the start of the turn. </summary>
+        private void SetStartofTurnState()
+        {
+            curPlayer.oldItems = curPlayer.Items;
+            curPlayer.oldSweeps = curPlayer.sweeps;
+            curPlayer.oldTanks = curPlayer.tanks;
+
+            oldEntities = entities;
+        }
+        /// <summary> Get the old information and apply it to the tracked information. 
+        /// This will act as an undo effect. Setting the turn back to the beginning </summary>
+        private void GetStartofTurnState()
+        {
+            curPlayer.Items = curPlayer.oldItems;
+            curPlayer.sweeps = curPlayer.oldSweeps;
+            curPlayer.tanks = curPlayer.oldTanks;
+
+            entities = oldEntities;
+        }
+
+        private void TakeTurn()
+        {
+            
+        }
+        #endregion
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 
 namespace TankGame.Objects
 {
@@ -203,6 +204,49 @@ namespace TankGame.Objects
         public RectangleF getInnerRectangle()
         {
             return InnerRectangle;
+        }
+        public RectangleF[,] getRectanglesInRadius(Vector2 origin, int radius)
+        {
+            //get the sub grid for looping
+            RectangleF[,] subGrid = getSubGrid(new Vector2(origin.X-radius, origin.Y-radius), new Vector2(radius*2, radius*2));
+            for (int i = 0; i < subGrid.GetLength(0); i++)
+            {
+                //columns
+                for (int j = 0; j < subGrid.GetLength(1); i++)
+                {
+                  //make sure the rectangle isnt a defualt rectangle
+                    if (!subGrid[i, j].Null)
+                    {
+                        //find distance between the center of the circle and center of current rectangle center
+                        //returns true if the rectangle center is out of the radius
+                        if (radius <= Math.Sqrt(Math.Pow(subGrid[i, j].Center.X - origin.X, 2) + Math.Pow(subGrid[i, j].Center.Y - origin.Y, 2)))
+                        {
+                            //set all rectangles not in radius to null
+                            subGrid[i, j] = new RectangleF();
+                        }
+                    }
+                }
+            }
+            //return the subGrid with all rectangles in the radius being normal and all others null
+            return subGrid;
+        }
+        private RectangleF[,] getSubGrid(Vector2 location, Vector2 size)
+        {
+            RectangleF[,] subGrid = new RectangleF[(int)size.X, (int)size.Y];
+            //rows
+            for (int i = 0; i < size.X; i++)
+            {
+                //columns
+                for (int j = 0; j < size.Y; i++)
+                {
+                    try
+                    {
+                        subGrid[i, j] = gridarray[(int)location.X + i, (int)location.Y + j];
+                    }
+                    catch { subGrid[i, j] = new RectangleF(); }
+                }
+            }
+            return subGrid;
         }
         //this gets the lines to draw to make the rectangles on the grid. 
         private static RectangleF[,] getGridLines(RectangleF[,] grid)
