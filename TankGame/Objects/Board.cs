@@ -208,18 +208,19 @@ namespace TankGame.Objects
         public RectangleF[,] getRectanglesInRadius(Vector2 origin, int radius)
         {
             //get the sub grid for looping
+            RectangleF originRectangle = gridarray[(int)origin.X, (int)origin.Y];
             RectangleF[,] subGrid = getSubGrid(new Vector2(origin.X-radius, origin.Y-radius), new Vector2(radius*2, radius*2));
             for (int i = 0; i < subGrid.GetLength(0); i++)
             {
                 //columns
-                for (int j = 0; j < subGrid.GetLength(1); i++)
+                for (int j = 0; j < subGrid.GetLength(1); j++)
                 {
                   //make sure the rectangle isnt a defualt rectangle
                     if (!subGrid[i, j].Null)
                     {
                         //find distance between the center of the circle and center of current rectangle center
                         //returns true if the rectangle center is out of the radius
-                        if (radius <= Math.Sqrt(Math.Pow(subGrid[i, j].Center.X - origin.X, 2) + Math.Pow(subGrid[i, j].Center.Y - origin.Y, 2)))
+                        if (radius <= Math.Sqrt(Math.Pow(subGrid[i, j].Center.X - originRectangle.Center.X, 2) + Math.Pow(subGrid[i, j].Center.Y - originRectangle.Center.Y, 2)))
                         {
                             //set all rectangles not in radius to null
                             subGrid[i, j] = new RectangleF();
@@ -230,14 +231,14 @@ namespace TankGame.Objects
             //return the subGrid with all rectangles in the radius being normal and all others null
             return subGrid;
         }
-        private RectangleF[,] getSubGrid(Vector2 location, Vector2 size)
+        public RectangleF[,] getSubGrid(Vector2 location, Vector2 size)
         {
             RectangleF[,] subGrid = new RectangleF[(int)size.X, (int)size.Y];
             //rows
             for (int i = 0; i < size.X; i++)
             {
                 //columns
-                for (int j = 0; j < size.Y; i++)
+                for (int j = 0; j < size.Y; j++)
                 {
                     try
                     {

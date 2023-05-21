@@ -53,5 +53,18 @@ namespace TankGame.Objects.Entities
         {
             //spriteBatch.Draw(tex, curSquare.Location, null, Color.White, 0, Vector2.Zero, curSquare.Size, SpriteEffects.None, 0);
         }
+
+        public static Tank ConvertToTank(Entity e)
+        {
+            Tank t = new Tank(e.curSquare, e.gridLocation);
+            t.LoadContent();
+            return t;
+        }
+        public static Mine ConvertToMine(Entity e)
+        {
+            Mine m = new Mine(e.curSquare, e.gridLocation);
+            m.LoadContent();
+            return m;
+        }
     }
 }

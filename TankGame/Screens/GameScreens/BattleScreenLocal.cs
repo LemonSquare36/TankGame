@@ -12,15 +12,26 @@ namespace TankGame
 {
     internal class BattleScreenLocal : ScreenManager
     {
+        //UI stuff
         SpriteFont font;
+        Texture2D UI_bg, UI_filler, spawnTex;
+        Color bgColor, bgFillerColor;
+        int R, G, B;
+        Vector3 bgColorOffset;
+        
+
         //hold the level file location
         private string file;
         //int activePlayer;
+        //logic that determines what stage the game is in
         private bool placementStage, battleStarted;
+        //logic for various purposes
+        private bool placementWarning = false;
 
         InputBox tanksCount, minesCount;
-        Button tanks, mines, ready;
+        Button tanks, mines, ready, endturn;
         List<Button> placementButtonList = new List<Button>();
+        List<Button> battleButtonList = new List<Button>();
 
         int tanksUsed = 0, minesUsed = 0;
         ButtonState curRightClick, oldRightClick;
@@ -45,6 +56,16 @@ namespace TankGame
             tanksCount = new InputBox(Color.Black, Color.LightGreen, new Vector2(1550, 700), new Vector2(80, 70), 0);
             minesCount = new InputBox(Color.Black, Color.LightGreen, new Vector2(1750, 700), new Vector2(80, 70), 0);
 
+            //color stuff for background
+            bgFillerColor = new Color(255, 255, 255); //filler color
+            bgColor = Color.LightBlue; //current background color shade
+            bgColorOffset = new Vector3(bgColor.R, bgColor.G, bgColor.B);
+            //offset the filler color to match with the bg color changes applied to the bg sprites
+            R = Convert.ToInt16((float)bgFillerColor.R * (float)(bgColorOffset.X / 255));
+            G = Convert.ToInt16((float)bgFillerColor.G * (float)(bgColorOffset.Y / 255));
+            B = Convert.ToInt16((float)bgFillerColor.B * (float)(bgColorOffset.Z / 255));
+            bgFillerColor = new Color(R,G,B);
+
 
             P1 = new Player(AP , sweeps);
             P2 = new Player(AP, sweeps);
@@ -54,11 +75,18 @@ namespace TankGame
         public override void LoadContent(SpriteBatch spriteBatchmain)
         {
             base.LoadContent(spriteBatchmain);
+
             //load the board (load for host before sending to peer)
             LoadBoardfromFile();
+            //player spawn rows calc
+            getSpawnRegion();
+
             //font
             font = Main.GameContent.Load<SpriteFont>("Fonts/DefualtFont");
-
+            //textures
+            UI_bg = Main.GameContent.Load<Texture2D>("Backgrounds/Battlescreen/UI_BG");
+            UI_filler = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
+            spawnTex = Main.GameContent.Load<Texture2D>("GameSprites/spawnHighLight");
             //SendLoadToPeer();
 
             #region load buttons and input boxes
@@ -66,7 +94,8 @@ namespace TankGame
             tanks = new Button(new Vector2(1565, 640), 50, 50, "GameSprites/BattleSprites/Tank", "tanks", "toggle");
             tanks.ChangeButtonColor(Color.Black);
             mines = new Button(new Vector2(1765, 640), 50, 50, "GameSprites/BattleSprites/Mine", "mines", "toggle");
-            ready = new Button(new Vector2(1590, 800), 200, 100, "Buttons/BattleScreen/Ready", "ready", "toggle");
+            ready = new Button(new Vector2(1590, 800), 200, 100, "Buttons/BattleScreen/Ready", "ready");
+            endturn = new Button(new Vector2(1590, 800), 200, 100, "Buttons/BattleScreen/EndTurn", "endturn");
 
             //load inputboxes
             tanksCount.LoadContent();
@@ -77,9 +106,12 @@ namespace TankGame
             #endregion
 
             #region list adds
+            //palcement stage buttons
             placementButtonList.Add(tanks);
             placementButtonList.Add(mines);
             placementButtonList.Add(ready);
+            //battle stage buttons
+            battleButtonList.Add(endturn);
             #endregion
 
             #region Event listeners
@@ -110,12 +142,20 @@ namespace TankGame
             //update code for if the battle has started. All players ready to begin the fight
             else if (battleStarted)
             {
-
+                foreach (Button b in battleButtonList)
+                {
+                    b.Update(mouse, worldPosition);
+                }
             }
         }
 
         public override void Draw()
         {
+            //background for ui elements draw
+            spriteBatch.Draw(UI_filler, new Rectangle(0, 0, 1920, 54), bgFillerColor);
+            spriteBatch.Draw(UI_filler, new Rectangle(0, 1026, 1920, 54), bgFillerColor);
+            spriteBatch.Draw(UI_bg, Vector2.Zero, bgColor);
+            spriteBatch.Draw(UI_bg, new Vector2(1446, 0), bgColor);
             //board draw 
             curBoard.drawCheckers(spriteBatch);
             curBoard.DrawOutline(spriteBatch);
@@ -139,11 +179,23 @@ namespace TankGame
                 {
                     mine.Draw(spriteBatch);
                 }
+
+                //give a warning the player pressed ready when they had tanks and mines left
+                if (placementWarning)
+                {
+                    spriteBatch.DrawString(font, "You still have Tanks and\n    Mines left to place", new Vector2(1485, 500), Color.DarkRed);
+                }
+                //draw the tank spawn region highlight for visual indication of where tanks can go
+                spriteBatch.Draw(spawnTex, curPlayer.spawn.Location, null, Color.LightGray, 0, Vector2.Zero, curPlayer.spawn.Size, SpriteEffects.None, 0);
             }
+
             //draw code for if the battle has started. All players ready to begin the fight
             else if (battleStarted)
             {
-
+                foreach (Button b in battleButtonList)
+                {
+                    b.Draw(spriteBatch);
+                }
             }
 
             //draw current players turn info
@@ -154,6 +206,7 @@ namespace TankGame
         {
 
         }
+
         #region placement Phase Code
         private void Placement()
         {
@@ -165,6 +218,14 @@ namespace TankGame
             {
                 AddEntity("mine");
             }
+        }
+        private void getSpawnRegion()
+        {
+            int spawnRows = Convert.ToInt32(curBoard.Rows * .1F);
+            if (spawnRows == 0) { spawnRows = 1; }
+
+            P2.spawnRows = curBoard.getSubGrid(new Vector2(0, 0), new Vector2(spawnRows, curBoard.Columns));
+            P1.spawnRows = curBoard.getSubGrid(new Vector2(curBoard.Rows - spawnRows, 0), new Vector2(spawnRows, curBoard.Columns));
         }
         #region Add objects code
         private void AddTankPressed(object sender, EventArgs e)
@@ -227,8 +288,10 @@ namespace TankGame
                     }
                     if (type == "tank" || type == "mine")
                     {
-                        //check if the type of object has some count left
-                        if ((type == "tank" && Convert.ToInt16(tanksCount.Text) > 0) || (type == "mine" && Convert.ToInt16(minesCount.Text) > 0))
+                        //check if the type of object has some count left //Tanks Check (also checks for mouse in spawn)
+                        if (((type == "tank" && Convert.ToInt16(tanksCount.Text) > 0) && curPlayer.spawn.Contains(worldPosition)) 
+                            //mines check
+                            || (type == "mine" && Convert.ToInt16(minesCount.Text) > 0))
                         {
                             //if the grid has nothing there then add the object
                             if (!gridLocations.Contains(curGridLocation))
@@ -274,12 +337,18 @@ namespace TankGame
                                     //if its a tank
                                     if (entities[i].Type == "tank")
                                     {
-                                        //make a new tank to remove it from player tanks                                       
-                                        curPlayer.tanks.Remove(new Tank(entities[i].curSquare, entities[i].gridLocation));
-                                        //remove its records
-                                        entities.Remove(entities[i]);
-                                        gridLocations.Remove(curGridLocation);
-                                        tanksUsed--;
+                                        for (int j = 0; j < curPlayer.tanks.Count; j++)
+                                        {
+                                            //find which tank is the current one based on gridlocation to remove it
+                                            if (curPlayer.tanks[j].gridLocation == curGridLocation)
+                                            {
+                                                curPlayer.tanks.Remove(curPlayer.tanks[j]);
+                                                //remove its records
+                                                entities.Remove(entities[i]);
+                                                gridLocations.Remove(curGridLocation);
+                                                tanksUsed--;
+                                            }
+                                        }                                   
                                     }
                                 }
                                 //if we are working with mines
@@ -288,13 +357,20 @@ namespace TankGame
                                     //if its a mine
                                     if (entities[i].Type == "mine")
                                     {
-                                        //make a new mine to remove it from player mines and mine list                                     
-                                        curPlayer.mines.Remove(new Mine(entities[i].curSquare, entities[i].gridLocation));
-                                        curMines.Remove(new Mine(entities[i].curSquare, entities[i].gridLocation));
-                                        //remove its records
-                                        entities.Remove(entities[i]);
-                                        gridLocations.Remove(curGridLocation);
-                                        minesUsed--;
+                                        
+                                        for (int j = 0; j < curPlayer.mines.Count; j++)
+                                        {
+                                            //find which mine based on gridlocation and remove it
+                                            if (curPlayer.mines[j].gridLocation == curGridLocation)
+                                            {
+                                                curMines.Remove(curPlayer.mines[j]);
+                                                curPlayer.mines.Remove(curPlayer.mines[j]);
+                                                //remove its records
+                                                entities.Remove(entities[i]);
+                                                gridLocations.Remove(curGridLocation);
+                                                minesUsed--;
+                                            }                                           
+                                        }                                       
                                     }
                                 }
                             }
@@ -307,19 +383,36 @@ namespace TankGame
 
         private void ReadyPressed(object sender, EventArgs e)
         {
-            if (curPlayerTurn == 1)
+            //check to see if the player is actaully done placing thier stuff when they hit ready
+            if (tanksCount.Text != "0" || minesCount.Text != "0")
             {
-                curPlayer = P2;
-                curPlayerTurn = 2;
-                tanksUsed = 0;
-                minesUsed = 0;
+                //if they are done issue a warning (set bool to true for draw)
+                placementWarning = true;
             }
-            else if (curPlayerTurn == 2)
+            else
             {
-                placementStage = false;
-                battleStarted = true;
-                curPlayer = P1;
-                curPlayerTurn = 1;
+                if (curPlayerTurn == 1)
+                {
+                    curPlayer = P2;
+                    curPlayerTurn = 2;
+                    tanksUsed = 0;
+                    minesUsed = 0;
+                    //remove warning for other player
+                    placementWarning = false;
+                }
+                else if (curPlayerTurn == 2)
+                {
+                    placementStage = false;
+                    battleStarted = true;
+                    curPlayer = P1;
+                    curPlayerTurn = 1;
+                    //remove warning 
+                    placementWarning = false;
+                }
+                foreach (Button b in placementButtonList)
+                {
+                    b.ButtonReset();
+                }
             }
         }
         #endregion

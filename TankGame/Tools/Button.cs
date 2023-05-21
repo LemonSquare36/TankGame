@@ -40,11 +40,12 @@ namespace TankGame
             add { buttonClicked += value; }
             remove { buttonClicked -= value; }
         }
-        //Resets the Current and Old Click for the buttons
+        //Resets the Current and Old Click for the buttons and resets the texture
         public void ButtonReset()
         {
             curClick = ButtonState.Pressed;
             oldClick = ButtonState.Pressed;
+            this.Texture = unPressed;
         }
         public Texture2D UnPressed { get { return unPressed; } }
         public Texture2D Pressed { get { return pressed; } }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,6 +21,24 @@ namespace TankGame.Objects
         public int oldSweeps;
         public List<Items> oldItems = new List<Items>();
         public List<Tank> oldTanks = new List<Tank>();
+
+        private RectangleF[,] SpawnRows;
+        public RectangleF[,] spawnRows
+        {
+            get
+            {
+                return SpawnRows;
+            }
+            set
+            {
+                SpawnRows = value;
+                //set the spawn rectangle based on SpawnRows size information
+                int test = SpawnRows.GetUpperBound(0);
+                int test2 = SpawnRows.GetUpperBound(1);
+                spawn = new RectangleF(SpawnRows[0,0].Location, (SpawnRows[SpawnRows.GetUpperBound(0), SpawnRows.GetUpperBound(1)].Location - SpawnRows[0, 0].Location) + SpawnRows[0, 0].Size);
+            }
+        }
+        public RectangleF spawn;
 
         public Player(int ActionPoints, int Sweeps)
         {
