@@ -186,6 +186,8 @@ namespace TankGame
             //if the level is loaded
             if (levelLoaded)
             {
+                //if the board is loaded, check if the mouse is inside it or not
+                getMouseInBoard();
                 //if walls are selected this code allows for the addition of walls
                 if (wallSelected)
                 {
@@ -256,7 +258,7 @@ namespace TankGame
         private void AddWall()
         {
             //find out if the mouse is inside the board
-            if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
+            if (mouseInBoard)
             {
                 //if the mouse is clicked once inside the board
                 if (mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
@@ -292,12 +294,10 @@ namespace TankGame
         private void AddItem()
         {
             //find out if the mouse is inside the board
-            if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
+            if (mouseInBoard)
             {
-                oldClick = curClick;
-                curClick = mouse.LeftButton;
                 //if the mouse is clicked once inside the board
-                if (curClick == Microsoft.Xna.Framework.Input.ButtonState.Pressed && oldClick == Microsoft.Xna.Framework.Input.ButtonState.Released)
+                if (curLeftClick == Microsoft.Xna.Framework.Input.ButtonState.Pressed && oldLeftClick == Microsoft.Xna.Framework.Input.ButtonState.Released)
                 {
                     //get the current rectangle the mouse is within
                     Point curGridLocation;
@@ -330,7 +330,7 @@ namespace TankGame
         private void EraserTool()
         {
             //find out if the mouse is inside the board
-            if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
+            if (mouseInBoard)
             {
                 //if the mouse is clicked once inside the board
                 if (mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed || mouse.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)

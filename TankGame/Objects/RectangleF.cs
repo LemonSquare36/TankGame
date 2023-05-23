@@ -45,6 +45,26 @@ namespace TankGame.Objects
                 return new Vector2(this.X + (this.Width / 2), this.Y + (this.Height / 2));
             }
         }
+        //get the sides of the rectangles
+        public float Left
+        {
+            get { return this.X; }
+        }
+
+        public float Right
+        {
+            get { return (this.X + this.Width); }
+        }
+
+        public float Top
+        {
+            get { return this.Y; }
+        }
+
+        public float Bottom
+        {
+            get { return (this.Y + this.Height); }
+        }
         //constructors
         /// <summary>
         /// Creates a new instance of <see cref="Rectangle"/> struct, with the specified

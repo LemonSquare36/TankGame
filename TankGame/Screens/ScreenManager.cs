@@ -30,7 +30,7 @@ namespace TankGame
         protected bool pause = false;
         //mouse that every screen uses
         protected MouseState mouse;
-        protected ButtonState curClick, oldClick;
+        protected ButtonState curLeftClick, oldLeftClick, curRightClick, oldRightClick;
         protected Vector2 worldPosition;
         //keystate every screen uses and keystate to calculate if a key is held
         protected KeyboardState keyState;
@@ -50,6 +50,8 @@ namespace TankGame
         protected int RowsCol, sweeps;
         //board info declares
         protected List<Point> gridLocations = new List<Point>();
+
+        protected bool mouseInBoard = false;
         #endregion
 
         #region Held functions
@@ -72,6 +74,11 @@ namespace TankGame
         {
             getKeyState(out keyHeldState);
             worldPosition = MousePos();
+            //find out the left and right mouse clicks
+            oldLeftClick = curLeftClick;
+            curLeftClick = mouse.LeftButton;
+            oldRightClick = curRightClick;
+            curRightClick = mouse.RightButton;
         }
         //Holds Draw
         public virtual void Draw()
@@ -132,6 +139,19 @@ namespace TankGame
         {
             oldState = keyState;
             keyState = Keyboard.GetState();
+        }
+
+        protected void getMouseInBoard()
+        {
+            //find out if the mouse is inside the current board
+            if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
+            {
+                mouseInBoard = true;
+            }
+            else
+            {
+                mouseInBoard = false;
+            }
         }
         #endregion
     }

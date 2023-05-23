@@ -19,12 +19,14 @@ namespace TankGame.Objects.Entities
     internal class Tank : Entity
     {
         Vector2 size = new Vector2(50, 50);
+        public int range;
         public Tank(RectangleF CurrentSquare, Point GridLocation) : base(CurrentSquare, GridLocation)
         {
             curSquare = CurrentSquare;
             texFile = "GameSprites/BattleSprites/TankUH";
             type = "tank";
             size = curSquare.Size / size;
+            range = 4;
         }
         public override void LoadContent()
         {
@@ -34,5 +36,6 @@ namespace TankGame.Objects.Entities
         {
             spriteBatch.Draw(tex, curSquare.Location, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
+
     }
 }

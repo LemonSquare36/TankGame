@@ -10,7 +10,7 @@ using TankGame.Objects.Entities;
 
 namespace TankGame
 {
-    internal class BattleScreenLocal : ScreenManager
+    internal class BattleScreenLocal : GameScreensManager
     {
         //UI stuff
         SpriteFont font;
@@ -34,8 +34,6 @@ namespace TankGame
         List<Button> battleButtonList = new List<Button>();
 
         int tanksUsed = 0, minesUsed = 0;
-        ButtonState curRightClick, oldRightClick;
-
 
         Player curPlayer, P1, P2;
         int curPlayerTurn = 1;
@@ -87,6 +85,9 @@ namespace TankGame
             UI_bg = Main.GameContent.Load<Texture2D>("Backgrounds/Battlescreen/UI_BG");
             UI_filler = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
             spawnTex = Main.GameContent.Load<Texture2D>("GameSprites/spawnHighLight");
+
+            //get the starter wall locations for later use
+            wallLocations = getWallLocations(entities);
             //SendLoadToPeer();
 
             #region load buttons and input boxes
@@ -124,6 +125,8 @@ namespace TankGame
         public override void Update()
         {
             base.Update();
+            //set MouseInBoard to true or false, if the mouse is in the board
+            getMouseInBoard();
             //update code for the placement stage. Placing tanks and mines
             if (placementStage)
             {
@@ -146,6 +149,11 @@ namespace TankGame
                 {
                     b.Update(mouse, worldPosition);
                 }
+                //check if the mouse is in the board
+                if (mouseInBoard)
+                {
+                    checkSelectedTank();
+                }               
             }
         }
 
@@ -244,20 +252,14 @@ namespace TankGame
         }
         private void AddEntity(string type)
         {
-            //track old click to see when the mouse state changes from unpressed to pressed. Prevent holding mouse
-            oldClick = curClick;
-            curClick = mouse.LeftButton;
-            oldRightClick = curRightClick;
-            curRightClick = mouse.RightButton;
-
             Entity entity;
             Mine tempMine;
             Tank tempTank;
             //find out if the mouse is inside the board
-            if (new RectangleF(curBoard.getInnerRectangle().Location, curBoard.getInnerRectangle().Size).Contains(worldPosition))
+            if (mouseInBoard)
             {
                 //if the mouse is left clicked once inside the board (add code)
-                if (mouse.LeftButton == ButtonState.Pressed && oldClick != curClick) 
+                if (mouse.LeftButton == ButtonState.Pressed && oldLeftClick != curLeftClick) 
                 {                   
                     //get the current rectangle the mouse is within
                     Point curGridLocation;
@@ -469,6 +471,32 @@ namespace TankGame
         private void TakeTurn()
         {
             
+        }
+
+        private void checkSelectedTank()
+        {
+            //check each tank for the mouse inside it
+            foreach (Tank tank in curPlayer.tanks)
+            {
+                //returns true if the mouse is inside the tank
+                if (tank.curSquare.Contains(worldPosition))
+                {
+                    //if the mouse is clicked on the tank and the tanks isnt already active
+                    if (curLeftClick == ButtonState.Pressed && !tank.Active)
+                    {
+                        //set all tanks to inactive
+                        foreach (Tank tank2 in curPlayer.tanks)
+                        {
+                            tank2.Active = false;
+                        }
+                        //set this tank to active
+                        tank.Active = true;
+                        //get the circle around the selected tank
+                        CircleTiles = curBoard.getRectanglesInRadius(new Vector2(tank.gridLocation.X, tank.gridLocation.Y), tank.range, wallLocations, out wallsInCircle);
+                        drawCircle = true;
+                    }
+                }
+            }
         }
         #endregion
     }

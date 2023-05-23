@@ -24,6 +24,7 @@ namespace TankGame.Objects.Entities
         protected Texture2D tex;
         protected string texFile;
         protected int hp;
+        public bool Active = false;
 
         protected string type;
         public string Type

@@ -205,6 +205,13 @@ namespace TankGame.Objects
         {
             return InnerRectangle;
         }
+
+        /// <summary>
+        /// returns a 2d array of rectangleFs. Null RectFs are out of the circle and non nulls are in the Cirlce
+        /// </summary>
+        /// <param name="origin">The cordinates of the center tile</param>
+        /// <param name="radius">how many tiles out from it</param>
+        /// <returns></returns>
         public RectangleF[,] getRectanglesInRadius(Vector2 origin, int radius)
         {
             //get the sub grid for looping
@@ -231,6 +238,57 @@ namespace TankGame.Objects
             //return the subGrid with all rectangles in the radius being normal and all others null
             return subGrid;
         }
+        /// <summary>
+        /// returns a 2d array of rectangleFs. Null RectFs are out of the circle and non nulls are in the Cirlce
+        /// </summary>
+        /// <param name="origin">The cordinates of the center tile</param>
+        /// <param name="radius">how many tiles out from it</param>
+        /// <param name="items">A list of items that function will check. See which items fall in the circle</param>
+        /// <param name="itemsInCircle">The return list of items in the circle</param>
+        /// <returns></returns>
+        public RectangleF[,] getRectanglesInRadius(Vector2 origin, int radius, List<Point> items ,out List<Vector2> itemsInCircle)
+        {
+            itemsInCircle = new List<Vector2>();
+
+            //get the sub grid for looping
+            RectangleF originRectangle = gridarray[(int)origin.X, (int)origin.Y];
+            RectangleF[,] subGrid = getSubGrid(new Vector2(origin.X - radius, origin.Y - radius), new Vector2(radius * 2, radius * 2));
+            for (int i = 0; i < subGrid.GetLength(0); i++)
+            {
+                //columns
+                for (int j = 0; j < subGrid.GetLength(1); j++)
+                {
+                    //make sure the rectangle isnt a defualt rectangle
+                    if (!subGrid[i, j].Null)
+                    {
+                        //find distance between the center of the circle and center of current rectangle center
+                        //returns true if the rectangle center is out of the radius
+                        if (radius <= Math.Sqrt(Math.Pow(subGrid[i, j].Center.X - originRectangle.Center.X, 2) + Math.Pow(subGrid[i, j].Center.Y - originRectangle.Center.Y, 2)))
+                        {
+                            //set all rectangles not in radius to null
+                            subGrid[i, j] = new RectangleF();
+                        }
+                        //if the rectangle center is in the radius
+                        else
+                        {
+                            //check to see if the rectangle contains an item within its personal cordinate
+                            if (items.Contains(new Point(i,j)))
+                            {
+                                itemsInCircle.Add(new Vector2(i, j));
+                            }
+                        }
+                    }
+                }
+            }
+            //return the subGrid with all rectangles in the radius being normal and all others null
+            return subGrid;
+        }
+        /// <summary>
+        /// returns a subgrid inside the major grid
+        /// </summary>
+        /// <param name="location">top left cordinate of the sub grid</param>
+        /// <param name="size">Size.X for columns, Size.Y for rows</param>
+        /// <returns></returns>
         public RectangleF[,] getSubGrid(Vector2 location, Vector2 size)
         {
             RectangleF[,] subGrid = new RectangleF[(int)size.X, (int)size.Y];
