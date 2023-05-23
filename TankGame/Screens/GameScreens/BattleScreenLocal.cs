@@ -35,11 +35,7 @@ namespace TankGame
 
         int tanksUsed = 0, minesUsed = 0;
 
-        Player curPlayer, P1, P2;
         int curPlayerTurn = 1;
-        //info for current turn state
-        int AP = 4;
-        int turn = 1;
 
         //information for start of turn state
         List<Entity> oldEntities = new List<Entity>();
@@ -64,9 +60,6 @@ namespace TankGame
             B = Convert.ToInt16((float)bgFillerColor.B * (float)(bgColorOffset.Z / 255));
             bgFillerColor = new Color(R,G,B);
 
-
-            P1 = new Player(AP , sweeps);
-            P2 = new Player(AP, sweeps);
             curPlayer = P1;
         }
 
@@ -473,31 +466,7 @@ namespace TankGame
             
         }
 
-        private void checkSelectedTank()
-        {
-            //check each tank for the mouse inside it
-            foreach (Tank tank in curPlayer.tanks)
-            {
-                //returns true if the mouse is inside the tank
-                if (tank.curSquare.Contains(worldPosition))
-                {
-                    //if the mouse is clicked on the tank and the tanks isnt already active
-                    if (curLeftClick == ButtonState.Pressed && !tank.Active)
-                    {
-                        //set all tanks to inactive
-                        foreach (Tank tank2 in curPlayer.tanks)
-                        {
-                            tank2.Active = false;
-                        }
-                        //set this tank to active
-                        tank.Active = true;
-                        //get the circle around the selected tank
-                        CircleTiles = curBoard.getRectanglesInRadius(new Vector2(tank.gridLocation.X, tank.gridLocation.Y), tank.range, wallLocations, out wallsInCircle);
-                        drawCircle = true;
-                    }
-                }
-            }
-        }
+
         #endregion
     }
 }
