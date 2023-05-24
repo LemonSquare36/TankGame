@@ -28,6 +28,7 @@ namespace TankGame
         #region base functions
         public override void Initialize()
         {
+            base.Initialize();
             //create the player classes
             P1 = new Player(AP, sweeps);
             P2 = new Player(AP, sweeps);
@@ -83,7 +84,7 @@ namespace TankGame
         protected void findTilesInLoS()
         {
             //use each wall to check what tiles they are blocking
-            foreach(Point wall in wallLocations)
+            foreach(Vector2 wall in wallsInCircle)
             {
                 //where the loops will start when iterating the 2darray
                 int starti = 0;
@@ -92,29 +93,48 @@ namespace TankGame
                 int width = CircleTiles.GetUpperBound(0); //the columns number as width
                 int height = CircleTiles.GetUpperBound(1); //rows number as height
 
-                //get the center point 
-                Vector2 Center = CircleTiles[((width+1)/2) - 1, ((height + 1) / 2) - 1].Center;
+                int X = (int)wall.X;
+                int Y = (int)wall.Y;
 
-                //find out if the X cordinate is in the left or right of the circle (add 1 since circle is odd number from center tile)
-                if (wall.X < (width + 1) / 2)
-                { width = (width + 1) / 2; }
-                else if (wall.X > (width + 1) / 2)
-                { starti = ((width + 1) / 2) - 1; } //-1 to include the middle column
-                //if it falls in the middle column - check both left and right (start 0 and full width)
+                //get the center point
+                int CenterX = ((width + 1) / 2);
+                int CenterY = ((height + 1) / 2);
+                Vector2 Center = CircleTiles[CenterX, CenterY].Center;
 
-                //find out if the Y cordniate is in the top or bottom of the circle
-                if (wall.Y < (height + 1) / 2)
-                { height = (height + 1) / 2; }
-                else if(wall.Y > (height + 1) / 2)
-                { startj = ((height + 1) / 2) - 1; } //-1 to include the middle row
-                //if it falls in the middle row - check both top and bottom (start 0 and full height)
+                //if the wall is to the left of the center tile
+                if (wall.X < CenterX)
+                { width = X; } //shrink the iterations so nothing in front sideways is checked
+
+                //if the wall is to the right of the center tile
+                else if (wall.X > CenterX)
+                { starti = X; } //start the iteration at that value, only checking what is behind the wall
+
+                //if the wall is above the center tile
+                if (wall.Y < CenterY)
+                { height = Y; } //only check tiles equal or above the wall
+
+                //if the wall is below the center tile
+                else if (wall.Y < CenterY)
+                { startj = Y; }//only check tiles equal or below the wall
+
+                //if the tile falls on the center for the rows or columns, then leave it alone and check the whole row lenght or column length
 
                 //iterate the 2darray quadrant that the wall is in and check to see if its blocking any blocks
                 for (int i = starti; i < width; i++)
                 {
                     for (int j = startj; j < height; j++)
                     {
-                        //Line templine = new Line(CircleTiles[i,j].Center, )
+                        //if the rectangle isnt null
+                        if (!CircleTiles[X, Y].Null)
+                        {
+                            //check if it is visiable with the current wall as argument
+                            Line templine = new Line(CircleTiles[X, Y].Center, Center);
+                            if (templine.LineSegmentIntersectsRectangle(CircleTiles[i, j]))
+                            {
+                                //if it is blocked then empty/null the rectangle
+                                CircleTiles[X, Y] = new RectangleF();
+                            }
+                        }
                     }
                 }
             }

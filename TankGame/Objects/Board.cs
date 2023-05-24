@@ -252,7 +252,11 @@ namespace TankGame.Objects
 
             //get the sub grid for looping
             RectangleF originRectangle = gridarray[(int)origin.X, (int)origin.Y];
-            RectangleF[,] subGrid = getSubGrid(new Vector2(origin.X - radius, origin.Y - radius), new Vector2(radius * 2, radius * 2));
+            RectangleF[,] subGrid = getSubGrid(new Vector2(origin.X - radius, origin.Y - radius), new Vector2((radius * 2) + 1, (radius * 2) + 1));
+
+            //multiplay radius by size of the rectangles to get an in game accurate size
+            float realRadius = (float)radius * originRectangle.Size.X;
+
             for (int i = 0; i < subGrid.GetLength(0); i++)
             {
                 //columns
@@ -263,7 +267,7 @@ namespace TankGame.Objects
                     {
                         //find distance between the center of the circle and center of current rectangle center
                         //returns true if the rectangle center is out of the radius
-                        if (radius <= Math.Sqrt(Math.Pow(subGrid[i, j].Center.X - originRectangle.Center.X, 2) + Math.Pow(subGrid[i, j].Center.Y - originRectangle.Center.Y, 2)))
+                        if (realRadius <= (Math.Sqrt(Math.Pow(subGrid[i, j].Center.X - originRectangle.Center.X, 2) + Math.Pow(subGrid[i, j].Center.Y - originRectangle.Center.Y, 2))) - (originRectangle.Size.X / 8))
                         {
                             //set all rectangles not in radius to null
                             subGrid[i, j] = new RectangleF();

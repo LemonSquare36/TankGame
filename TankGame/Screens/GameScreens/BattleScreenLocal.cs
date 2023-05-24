@@ -7,6 +7,7 @@ using System.IO;
 using TankGame.Objects;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
+using System.Security.Cryptography;
 
 namespace TankGame
 {
@@ -196,6 +197,14 @@ namespace TankGame
                 foreach (Button b in battleButtonList)
                 {
                     b.Draw(spriteBatch);
+                }
+                if (drawCircle)
+                {
+                    foreach (RectangleF rF in CircleTiles)
+                    {
+                        if (!rF.Null)
+                        spriteBatch.Draw(UI_filler, rF.Location, null, Color.Green, 0, Vector2.Zero, rF.Size, SpriteEffects.None, 0);
+                    }
                 }
             }
 
