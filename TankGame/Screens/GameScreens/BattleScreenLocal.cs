@@ -203,7 +203,7 @@ namespace TankGame
                     foreach (RectangleF rF in CircleTiles)
                     {
                         if (!rF.Null)
-                        spriteBatch.Draw(UI_filler, rF.Location, null, Color.Green, 0, Vector2.Zero, rF.Size, SpriteEffects.None, 0);
+                        spriteBatch.Draw(spawnTex, rF.Location, null, Color.Green, 0, Vector2.Zero, rF.Size, SpriteEffects.None, 0);
                     }
                 }
             }

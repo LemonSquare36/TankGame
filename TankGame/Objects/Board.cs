@@ -181,7 +181,7 @@ namespace TankGame.Objects
         /// <summary>Gets the specific rectangle from grid array with Col and Row</summary>
         public RectangleF getGridSquare(int Row, int Col)
         {
-            return gridarray[Col,Row];
+            return gridarray[Row,Col];
         }
         /// <summary>Gets the specific rectangle from grid array with Vector2 Position</summary>
         public RectangleF getGridSquare(Vector2 Position)
@@ -193,9 +193,9 @@ namespace TankGame.Objects
         public RectangleF getGridSquare(Vector2 Position, out Point gridLocation)
         {
             Vector2 gridPos = (Position - getInnerRectangle().Location) / IndividualSize;
-            gridLocation.X = Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.X)));
-            gridLocation.Y = Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.Y)));
-            return gridarray[gridLocation.Y, gridLocation.X];
+            gridLocation.Y = Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.X)));
+            gridLocation.X = Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.Y)));
+            return gridarray[gridLocation.X, gridLocation.Y];
         }
         public Vector2 getOutlineSize()
         {
@@ -252,7 +252,8 @@ namespace TankGame.Objects
 
             //get the sub grid for looping
             RectangleF originRectangle = gridarray[(int)origin.X, (int)origin.Y];
-            RectangleF[,] subGrid = getSubGrid(new Vector2(origin.X - radius, origin.Y - radius), new Vector2((radius * 2) + 1, (radius * 2) + 1));
+            Vector2 subGridLocation = new Vector2(origin.X - radius, origin.Y - radius);
+            RectangleF[,] subGrid = getSubGrid(subGridLocation, new Vector2((radius * 2) + 1, (radius * 2) + 1));
 
             //multiplay radius by size of the rectangles to get an in game accurate size
             float realRadius = (float)radius * originRectangle.Size.X;
@@ -267,7 +268,7 @@ namespace TankGame.Objects
                     {
                         //find distance between the center of the circle and center of current rectangle center
                         //returns true if the rectangle center is out of the radius
-                        if (realRadius <= (Math.Sqrt(Math.Pow(subGrid[i, j].Center.X - originRectangle.Center.X, 2) + Math.Pow(subGrid[i, j].Center.Y - originRectangle.Center.Y, 2))) - (originRectangle.Size.X / 8))
+                        if (realRadius <= (Math.Sqrt(Math.Pow(subGrid[i, j].Center.X - originRectangle.Center.X, 2) + Math.Pow(subGrid[i, j].Center.Y - originRectangle.Center.Y, 2))))
                         {
                             //set all rectangles not in radius to null
                             subGrid[i, j] = new RectangleF();
@@ -276,9 +277,9 @@ namespace TankGame.Objects
                         else
                         {
                             //check to see if the rectangle contains an item within its personal cordinate
-                            if (items.Contains(new Point(i,j)))
+                            if (items.Contains(new Point((int)subGridLocation.X + i, (int)subGridLocation.Y + j)))//use the real location from within the major grid
                             {
-                                itemsInCircle.Add(new Vector2(i, j));
+                                itemsInCircle.Add(new Vector2(i, j));//use the location from within the sub grid
                             }
                         }
                     }

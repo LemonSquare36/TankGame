@@ -83,27 +83,28 @@ namespace TankGame
         /// <summary>Find out which tiles are in the line of sight of the tank (not blocked by walls)</summary>
         protected void findTilesInLoS()
         {
+            int defualtRows = CircleTiles.GetLength(0);
+            int defualtCols = CircleTiles.GetLength(1);
+            //get the center point
+            int CenterX = defualtRows / 2;
+            int CenterY = defualtCols / 2;
+            Vector2 Center = CircleTiles[CenterX, CenterY].Center;
+
             //use each wall to check what tiles they are blocking
-            foreach(Vector2 wall in wallsInCircle)
+            foreach (Vector2 wall in wallsInCircle)
             {
                 //where the loops will start when iterating the 2darray
                 int starti = 0;
                 int startj = 0;
-                //find out what quater of the circle the wall is in
-                int width = CircleTiles.GetLength(0); //the columns number as width
-                int height = CircleTiles.GetLength(1); //rows number as height
+                int rows = defualtRows;
+                int cols = defualtCols;
 
                 int X = (int)wall.X;
                 int Y = (int)wall.Y;
 
-                //get the center point
-                int CenterX = width / 2;
-                int CenterY = height / 2;
-                Vector2 Center = CircleTiles[CenterX, CenterY].Center;
-
                 //if the wall is to the left of the center tile
                 if (wall.X < CenterX)
-                { width = X; } //shrink the iterations so nothing in front sideways is checked
+                { rows = X+1; } //shrink the iterations so nothing in front sideways is checked
 
                 //if the wall is to the right of the center tile
                 else if (wall.X > CenterX)
@@ -111,7 +112,7 @@ namespace TankGame
 
                 //if the wall is above the center tile
                 if (wall.Y < CenterY)
-                { height = Y; } //only check tiles equal or above the wall
+                { cols = Y+1; } //only check tiles equal or above the wall
 
                 //if the wall is below the center tile
                 else if (wall.Y > CenterY)
@@ -120,24 +121,31 @@ namespace TankGame
                 //if the tile falls on the center for the rows or columns, then leave it alone and check the whole row lenght or column length
 
                 //iterate the 2darray quadrant that the wall is in and check to see if its blocking any blocks
-                for (int i = starti; i < width; i++)
+                for (int i = starti; i < rows; i++)
                 {
-                    for (int j = startj; j < height; j++)
+                    for (int j = startj; j < cols; j++)
                     {
                         //if the rectangle isnt null
-                        if (!CircleTiles[X, Y].Null)
+                        if (!CircleTiles[i, j].Null)
                         {
-                            //check if it is visiable with the current wall as argument
-                            Line templine = new Line(CircleTiles[X, Y].Center, Center);
-                            if (templine.LineSegmentIntersectsRectangle(CircleTiles[i, j]))
+                            if (!(i == X && j == Y))
                             {
-                                //if it is blocked then empty/null the rectangle
-                                CircleTiles[X, Y] = new RectangleF();
+                                //check if it is visiable with the current wall as argument
+                                Line templine = new Line(CircleTiles[i, j].Center, Center);
+                                if (templine.LineSegmentIntersectsRectangle(CircleTiles[X, Y]))
+                                {
+                                    //if it is blocked then empty/null the rectangle
+                                    CircleTiles[i, j] = new RectangleF();
+                                }
+
                             }
+                            
                         }
                     }
-                }
+                }                
             }
+            //null center rectangle so it doesnt draw over the tank
+            CircleTiles[CenterX, CenterY] = new RectangleF();
         }
     }
 }
