@@ -45,15 +45,18 @@ namespace TankGame.Tools
             }
 
             //if the rectangle is near the line and doesnt get ruled out, but still isnt intersecting find the Y for the left and right X
-            float yAtRectLeft = CalculateY(rect.Left);
-            float yAtRectRight = CalculateY(rect.Right);
+            float yAtRectLeft = float.Parse((CalculateY(rect.Left)).ToString("0.00"));
+            float yAtRectRight = float.Parse((CalculateY(rect.Right)).ToString("0.00"));
 
-            if (rect.Top > yAtRectLeft && rect.Top > yAtRectRight)
+            float roundedTop = float.Parse(rect.Top.ToString("0.00"));
+            float roundedBottom = float.Parse(rect.Bottom.ToString("0.00"));
+
+            if (roundedTop >= yAtRectLeft && roundedTop >= yAtRectRight)
             {
                 return false;
             }
 
-            if (rect.Bottom < yAtRectLeft && rect.Bottom < yAtRectRight)
+            if (roundedBottom <= yAtRectLeft && roundedBottom <= yAtRectRight)
             {
                 return false;
             } 
