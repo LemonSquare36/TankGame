@@ -95,6 +95,19 @@ namespace TankGame.Tools
         }
         public void LoadContent(string[] Selections)
         {
+            if (ButtonsList.Count > 0)
+            {
+                ButtonsList[topButton].rectangle.Y += ButtonsList[topButton].rectangle.Height;
+                findTopButton();
+            }
+            //seeing if a button was removed
+            bool subtraction = false;
+
+            if (ButtonsList.Count > Selections.Length)
+            {
+                subtraction = true;
+            }
+
             ButtonsList.Clear();
             selections = Selections;
             buttonSize = new Vector2(size.X ,size.Y / numSelections);            
@@ -123,6 +136,19 @@ namespace TankGame.Tools
 
             //listen in on the window size change to recaluclate the cutoff rectangle for the rasterizer 
             Main.gameWindow.ClientSizeChanged += recalcRasterizer;
+
+            if (topButton > 0)
+            {
+                if (subtraction)
+                {
+                    //lower the top button by one since we removed a button
+                    topButton--;
+                }
+                for (int i = 0; i < ButtonsList.Count; i++)
+                {
+                    ButtonsList[i].rectangle.Y -= (ButtonsList[i].rectangle.Height) * topButton;
+                }
+            }
         }
         public void Update(MouseState Mouse, Vector2 WorldPos)
         {
@@ -275,7 +301,11 @@ namespace TankGame.Tools
                 //top button tracks which button in the list should currently be the top one
                 for (int i = topButton; i < numSelections + topButton; i++)
                 {
-                    ButtonsList[i].Draw(spriteBatch, true);
+                    try
+                    {
+                        ButtonsList[i].Draw(spriteBatch, true);
+                    }
+                    catch { }
                 }
             }
             else
@@ -291,10 +321,15 @@ namespace TankGame.Tools
             //only updates the buttons currently showing
             if (ButtonsList.Count > numSelections)
             {
+                //int difference = (ButtonsList.Count - numSelections);
                 //top button tracks which button in the list should currently be the top one
-                for (int i = topButton; i < numSelections + topButton; i++)
+                for (int i = topButton; i < numSelections+topButton; i++)
                 {
-                    ButtonsList[i].Update(Mouse, WorldPos);
+                    try
+                    {
+                        ButtonsList[i].Update(Mouse, WorldPos);
+                    }
+                    catch { }
                 }
             }
             else
@@ -302,6 +337,16 @@ namespace TankGame.Tools
                 foreach (Button b in ButtonsList)
                 {
                     b.Update(Mouse, WorldPos);
+                }
+            }
+        }
+        private void findTopButton()
+        {
+            for (int i = 0; i < ButtonsList.Count; i++)
+            {
+                if (ButtonsList[i].rectangle.Location == this.rectangle.Location)
+                {
+                    topButton = i;
                 }
             }
         }
