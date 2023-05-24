@@ -90,15 +90,15 @@ namespace TankGame
                 int starti = 0;
                 int startj = 0;
                 //find out what quater of the circle the wall is in
-                int width = CircleTiles.GetUpperBound(0); //the columns number as width
-                int height = CircleTiles.GetUpperBound(1); //rows number as height
+                int width = CircleTiles.GetLength(0); //the columns number as width
+                int height = CircleTiles.GetLength(1); //rows number as height
 
                 int X = (int)wall.X;
                 int Y = (int)wall.Y;
 
                 //get the center point
-                int CenterX = ((width + 1) / 2);
-                int CenterY = ((height + 1) / 2);
+                int CenterX = width / 2;
+                int CenterY = height / 2;
                 Vector2 Center = CircleTiles[CenterX, CenterY].Center;
 
                 //if the wall is to the left of the center tile
@@ -114,7 +114,7 @@ namespace TankGame
                 { height = Y; } //only check tiles equal or above the wall
 
                 //if the wall is below the center tile
-                else if (wall.Y < CenterY)
+                else if (wall.Y > CenterY)
                 { startj = Y; }//only check tiles equal or below the wall
 
                 //if the tile falls on the center for the rows or columns, then leave it alone and check the whole row lenght or column length
