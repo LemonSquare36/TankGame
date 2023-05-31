@@ -32,6 +32,8 @@ namespace TankGame
         protected RectangleF[,] tankMoveSubGrid;
         protected bool drawTankInfo = false;
 
+        private List<Cell> cellMap = new List<Cell>();
+
         #region base functions
         public override void Initialize()
         {

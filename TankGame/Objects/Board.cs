@@ -307,7 +307,7 @@ namespace TankGame.Objects
                 {
                     int locX = (int)location.X + i;
                     int locY = (int)location.Y + j;
-                    if (locX >= 0 && locX < gridarray.GetLength(0) && locY >= 0 && locX < gridarray.GetLength(1))
+                    if (locX >= 0 && locX < gridarray.GetLength(0) && locY >= 0 && locY < gridarray.GetLength(1))
                     {
                         subGrid[i, j] = gridarray[locX, locY];
                     }
@@ -337,7 +337,7 @@ namespace TankGame.Objects
                 {
                     int locX = (int)location.X + i;
                     int locY = (int)location.Y + j;
-                    if (locX >= 0 && locX < gridarray.GetLength(0) && locY >= 0 && locX < gridarray.GetLength(1))
+                    if (locX >= 0 && locX < gridarray.GetLength(0) && locY >= 0 && locY < gridarray.GetLength(1))
                     {
                         subGrid[i, j] = gridarray[locX, locY];
                     }

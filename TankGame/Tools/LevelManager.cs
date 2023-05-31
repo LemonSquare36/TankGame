@@ -13,6 +13,7 @@ namespace TankGame.Tools
         StreamWriter writer;
         Board board;
         List<Entity> entities = new List<Entity>();
+        List<Cell> cellMap = new List<Cell>();
         Point tanksMines;
         int sweeps;
 
@@ -176,6 +177,14 @@ namespace TankGame.Tools
         public int getSweeps()
         {
             return sweeps;
+        }
+        public List<Cell> getCellMap()
+        {
+            return cellMap;           
+        }
+        private void populateCellMap()
+        {
+
         }
     }
 }
