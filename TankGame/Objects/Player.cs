@@ -45,6 +45,17 @@ namespace TankGame.Objects
             AP = ActionPoints;
             sweeps = Sweeps;
         }
+        public int getActiveTankNum()
+        {
+            for (int i = 0; i < tanks.Count; i++)
+            {
+                if (tanks[i].Active)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
     }
 }
 

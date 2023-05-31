@@ -20,9 +20,6 @@ namespace TankGame
         int R, G, B;
         Vector3 bgColorOffset;
         
-
-        //hold the level file location
-        private string file;
         //int activePlayer;
         //logic that determines what stage the game is in
         private bool placementStage, battleStarted;
@@ -38,8 +35,6 @@ namespace TankGame
 
         int curPlayerTurn = 1;
 
-        //information for start of turn state
-        List<Entity> oldEntities = new List<Entity>();
 
         public override void Initialize()
         {
@@ -62,6 +57,7 @@ namespace TankGame
             bgFillerColor = new Color(R,G,B);
 
             curPlayer = P1;
+            enemyPlayer = P2;
         }
 
         public override void LoadContent(SpriteBatch spriteBatchmain)
@@ -139,6 +135,7 @@ namespace TankGame
             //update code for if the battle has started. All players ready to begin the fight
             else if (battleStarted)
             {
+                tankLocations = getTankLocations(P1.tanks, P2.tanks);
                 foreach (Button b in battleButtonList)
                 {
                     b.Update(mouse, worldPosition);
@@ -198,18 +195,35 @@ namespace TankGame
                 {
                     b.Draw(spriteBatch);
                 }
-                if (drawCircle)
+                if (drawTankInfo)
                 {
                     foreach (RectangleF rF in CircleTiles)
                     {
                         if (!rF.Null)
-                        spriteBatch.Draw(spawnTex, rF.Location, null, Color.Green, 0, Vector2.Zero, rF.Size, SpriteEffects.None, 0);
+                        {
+                            if (rF.identifier == 1)
+                            {//draw red for enemy tanks and walls
+                                spriteBatch.Draw(spawnTex, rF.Location, null, Color.DarkRed, 0, Vector2.Zero, rF.Size, SpriteEffects.None, 0);
+                            }
+                            else
+                            {//draw green to show range
+                                spriteBatch.Draw(spawnTex, rF.Location, null, Color.Green, 0, Vector2.Zero, rF.Size, SpriteEffects.None, 0);
+                            }                           
+                        }
                     }
+                    /*foreach (RectangleF rF in tankMoveSubGrid)
+                    {
+                        //if (!rF.Null)
+                        //{
+                        //    spriteBatch.Draw(spawnTex, rF.Location, null, Color.Blue, 0, Vector2.Zero, rF.Size, SpriteEffects.None, 0);
+                        //}
+                    }*/
                 }
             }
 
             //draw current players turn info
             spriteBatch.DrawString(font, "Current Player: " + curPlayerTurn, new Vector2(1550, 350), Color.Black);
+            spriteBatch.DrawString(font, "Current AP: " + curPlayer.AP, new Vector2(1600, 450), Color.Black);
         }
 
         public override void ButtonReset()
@@ -399,6 +413,7 @@ namespace TankGame
                 {
                     curPlayer = P2;
                     curPlayerTurn = 2;
+                    enemyPlayer = P1;
                     tanksUsed = 0;
                     minesUsed = 0;
                     //remove warning for other player
@@ -410,6 +425,7 @@ namespace TankGame
                     battleStarted = true;
                     curPlayer = P1;
                     curPlayerTurn = 1;
+                    enemyPlayer = P2;
                     //remove warning 
                     placementWarning = false;
                 }
@@ -421,62 +437,6 @@ namespace TankGame
         }
         #endregion
 
-        private void LoadBoardfromFile()
-        {
-            //load the board and additional data from the file passed in levelselect.
-            file = relativePath + "\\TankGame\\" + selectedFile + ".lvl";
-            if (file != relativePath + "\\TankGame\\" + "" + ".lvl")
-            {
-                try
-                {
-                    levelManager.LoadLevel(file, 0.2468F, 0.05F);
-                    //grab the informatin from the levelManager
-                    entities = levelManager.getEntities();
-                    curBoard = levelManager.getGameBoard();
-                    TanksAndMines = levelManager.getTanksAndMines();
-                    sweeps = levelManager.getSweeps();
-                    //finish loading the board
-                    curBoard.LoadContent();
-                    for (int i = 0; i < entities.Count; i++)
-                    {
-                        entities[i].LoadContent();
-                        gridLocations.Add(entities[i].gridLocation);
-                    }                    
-                    RowsCol = curBoard.Rows;
-                }
-                catch {  }
-            }
-            else { }
-        }
-
-        #region turnTakingCode
-        /// <summary> Set the old information to represent the start of the turn. </summary>
-        private void SetStartofTurnState()
-        {
-            curPlayer.oldItems = curPlayer.Items;
-            curPlayer.oldSweeps = curPlayer.sweeps;
-            curPlayer.oldTanks = curPlayer.tanks;
-
-            oldEntities = entities;
-        }
-        /// <summary> Get the old information and apply it to the tracked information. 
-        /// This will act as an undo effect. Setting the turn back to the beginning </summary>
-        private void GetStartofTurnState()
-        {
-            curPlayer.Items = curPlayer.oldItems;
-            curPlayer.sweeps = curPlayer.oldSweeps;
-            curPlayer.tanks = curPlayer.oldTanks;
-
-            entities = oldEntities;
-        }
-
-        private void TakeTurn()
-        {
-            
-        }
-
-
-        #endregion
     }
 }
 

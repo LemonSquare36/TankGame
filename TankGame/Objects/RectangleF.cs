@@ -10,6 +10,7 @@ namespace TankGame.Objects
         //the size of the rectangle measure out from the topleft corner
         public float Width, Height;
         public bool Null = false;
+        public int identifier = -1;
 
         //get the location of the rectagle
         public Vector2 Location

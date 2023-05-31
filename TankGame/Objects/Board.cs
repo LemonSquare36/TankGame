@@ -217,6 +217,10 @@ namespace TankGame.Objects
             //get the sub grid for looping
             RectangleF originRectangle = gridarray[(int)origin.X, (int)origin.Y];
             RectangleF[,] subGrid = getSubGrid(new Vector2(origin.X-radius, origin.Y-radius), new Vector2(radius*2, radius*2));
+
+            //multiplay radius by size of the rectangles to get an in game accurate size
+            float realRadius = ((float)radius * originRectangle.Size.X) + (originRectangle.Size.X / 2);
+
             for (int i = 0; i < subGrid.GetLength(0); i++)
             {
                 //columns
@@ -227,7 +231,7 @@ namespace TankGame.Objects
                     {
                         //find distance between the center of the circle and center of current rectangle center
                         //returns true if the rectangle center is out of the radius
-                        if (radius <= Math.Sqrt(Math.Pow(subGrid[i, j].Center.X - originRectangle.Center.X, 2) + Math.Pow(subGrid[i, j].Center.Y - originRectangle.Center.Y, 2)))
+                        if (realRadius <= Math.Sqrt(Math.Pow(subGrid[i, j].Center.X - originRectangle.Center.X, 2) + Math.Pow(subGrid[i, j].Center.Y - originRectangle.Center.Y, 2)))
                         {
                             //set all rectangles not in radius to null
                             subGrid[i, j] = new RectangleF();
@@ -249,14 +253,12 @@ namespace TankGame.Objects
         public RectangleF[,] getRectanglesInRadius(Vector2 origin, int radius, List<Point> items ,out List<Vector2> itemsInCircle)
         {
             itemsInCircle = new List<Vector2>();
-
             //get the sub grid for looping
             RectangleF originRectangle = gridarray[(int)origin.X, (int)origin.Y];
             Vector2 subGridLocation = new Vector2(origin.X - radius, origin.Y - radius);
             RectangleF[,] subGrid = getSubGrid(subGridLocation, new Vector2((radius * 2) + 1, (radius * 2) + 1));
-
             //multiplay radius by size of the rectangles to get an in game accurate size
-            float realRadius = (float)radius * originRectangle.Size.X;
+            float realRadius = ((float)radius * originRectangle.Size.X) + (originRectangle.Size.X/3);
 
             for (int i = 0; i < subGrid.GetLength(0); i++)
             {
@@ -303,11 +305,51 @@ namespace TankGame.Objects
                 //columns
                 for (int j = 0; j < size.Y; j++)
                 {
-                    try
+                    int locX = (int)location.X + i;
+                    int locY = (int)location.Y + j;
+                    if (locX >= 0 && locX < gridarray.GetLength(0) && locY >= 0 && locX < gridarray.GetLength(1))
                     {
-                        subGrid[i, j] = gridarray[(int)location.X + i, (int)location.Y + j];
+                        subGrid[i, j] = gridarray[locX, locY];
                     }
-                    catch { subGrid[i, j] = new RectangleF(); }
+                    else {
+                        subGrid[i, j] = new RectangleF();
+                    }
+
+                }
+            }
+            return subGrid;
+        }
+        /// <summary>
+        /// returns a subgrid inside the major grid
+        /// </summary>
+        /// <param name="location">top left cordinate of the sub grid</param>
+        /// <param name="size">Size.X for columns, Size.Y for rows</param>
+        /// <returns></returns>
+        public RectangleF[,] getSubGrid(Vector2 location, Vector2 size, List<Point> items, out List<Vector2> itemsInGrid)
+        {
+            itemsInGrid = new List<Vector2>();
+            RectangleF[,] subGrid = new RectangleF[(int)size.X, (int)size.Y];
+            //rows
+            for (int i = 0; i < size.X; i++)
+            {
+                //columns
+                for (int j = 0; j < size.Y; j++)
+                {
+                    int locX = (int)location.X + i;
+                    int locY = (int)location.Y + j;
+                    if (locX >= 0 && locX < gridarray.GetLength(0) && locY >= 0 && locX < gridarray.GetLength(1))
+                    {
+                        subGrid[i, j] = gridarray[locX, locY];
+                    }
+                    else
+                    {
+                        subGrid[i, j] = new RectangleF();
+                    }
+
+                    if (items.Contains(new Point((int)location.X + i, (int)location.Y + j)))//use the real location from within the major grid
+                    {
+                        itemsInGrid.Add(new Vector2(i, j));//use the location from within the sub grid
+                    }
                 }
             }
             return subGrid;
