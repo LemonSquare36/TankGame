@@ -7,6 +7,7 @@ using System.IO;
 using TankGame.Objects;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
+using System.Threading.Tasks;
 
 namespace TankGame
 {
@@ -133,7 +134,7 @@ namespace TankGame
                         tankMoveSubGrid = curBoard.getSubGrid(new Vector2(tank.gridLocation.X - tank.range, tank.gridLocation.Y - tank.range), 
                             new Vector2((tank.range * 2) + 1, (tank.range * 2) + 1), objectLocations, out wallsInGrid);                       
                         CircleTiles = curBoard.getRectanglesInRadius(new Vector2(tank.gridLocation.X, tank.gridLocation.Y), tank.range, objectLocations, out blockersInCircle);
-                        findTilesInLOS();
+                        findTilesInLOS(tank);
                         drawTankInfo = true;
                     }
                 }
@@ -141,7 +142,7 @@ namespace TankGame
         }
 
         /// <summary>Find out which tiles are in the line of sight of the tank (not blocked by walls)</summary>
-        protected void findTilesInLOS()
+        protected void findTilesInLOS(Tank selectedTank)
         {
             int defualtRows = CircleTiles.GetLength(0);
             int defualtCols = CircleTiles.GetLength(1);
@@ -210,14 +211,20 @@ namespace TankGame
                 {
                     //If it isnt null then it is in sight and give the identifier of 1 to make it draw different
                     CircleTiles[(int)@object.X, (int)@object.Y].identifier = 1;
+                    //get the subgrids location relative to the board to see if a tank is there
+                    Point subgridLocation = new Point(selectedTank.gridLocation.X - selectedTank.range, selectedTank.gridLocation.Y - selectedTank.range);
                     //check if the object is a friendly tank and make the rectangle null/untargetable
                     foreach (Tank tank in curPlayer.tanks)
                     {
-                        if (tank.gridLocation == new Point((int)@object.X, (int)@object.Y))
+                        Point tankLocation = tank.gridLocation - subgridLocation;
+                        if (tankLocation == new Point((int)@object.X, (int)@object.Y))
                         {
                             CircleTiles[(int)@object.X, (int)@object.Y] = new RectangleF();
                         }
                     }
+                    //make the selected tanks rectangle null
+                    Point selectedTankLocation = selectedTank.gridLocation - subgridLocation;
+                    CircleTiles[selectedTankLocation.X, selectedTankLocation.Y] = new RectangleF();
                 }
             }
         }
