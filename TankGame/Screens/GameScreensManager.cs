@@ -72,7 +72,8 @@ namespace TankGame
                     }
                     RowsCol = curBoard.Rows;
                     //get the cellMap and load the pathfinder with it
-
+                    cellMap = levelManager.getCellMap();
+                    pathfinder = new Pathfinder(cellMap);
                 }
                 catch { }
             }
@@ -233,7 +234,10 @@ namespace TankGame
         }
         protected void pathFind(Vector2 start, Vector2 end)
         {
-           
+           if (drawTankInfo)
+           {
+                //pathfinder.getPath(cellMap[(int)start.X, (int)start.Y], cellMap[(int)end.X, (int)end.Y]);
+           }
         }
 
         #region turnTakingCode
