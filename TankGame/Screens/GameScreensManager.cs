@@ -32,7 +32,9 @@ namespace TankGame
         protected RectangleF[,] tankMoveSubGrid;
         protected bool drawTankInfo = false;
 
-        private List<Cell> cellMap = new List<Cell>();
+        //pathfinding information
+        private Cell[,] cellMap;
+        private Pathfinder pathfinder;
 
         #region base functions
         public override void Initialize()
@@ -69,6 +71,8 @@ namespace TankGame
                         gridLocations.Add(entities[i].gridLocation);
                     }
                     RowsCol = curBoard.Rows;
+                    //get the cellMap and load the pathfinder with it
+
                 }
                 catch { }
             }
@@ -78,12 +82,9 @@ namespace TankGame
         protected List<Point> getWallLocations(List<Entity> entityList)
         {
             List<Point> WallLocations = new List<Point>();
-            foreach (Entity e in entityList)
-            {
-                if (e.Type.ToString() == "wall")
-                {
-                    WallLocations.Add(e.gridLocation);
-                }
+            foreach (Wall w in levelManager.getWallsList())
+            {                
+                WallLocations.Add(w.gridLocation);              
             }
             return WallLocations;
         }
@@ -232,29 +233,7 @@ namespace TankGame
         }
         protected void pathFind(Vector2 start, Vector2 end)
         {
-            //check for any walls or other tanks inside the moveable range
-            for (int i = 0; i < tankMoveSubGrid.GetLength(0); i++)
-            {
-                for (int j = 0; j < tankMoveSubGrid.GetLength(1); j++)
-                {
-                    //check if the tile is inside the shoot subgrid
-                    //if its not null in that one make it null in this one
-                    if (!CircleTiles[i,j].Null)
-                    {
-                        tankMoveSubGrid[i, j] = new RectangleF();
-                    }
-                    //check if it has a wall there
-                    else if (wallsInGrid.Contains(new Vector2(i,j)))
-                    {
-                        tankMoveSubGrid[i, j] = new RectangleF();
-                    }
-                    //check for a tank there
-                    else if (tankLocations.Contains(new Point(i, j)))
-                    {
-                        tankMoveSubGrid[i, j] = new RectangleF();
-                    }
-                }
-            }
+           
         }
 
         #region turnTakingCode

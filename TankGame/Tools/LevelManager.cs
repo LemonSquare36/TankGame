@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using System.IO;
 using TankGame.Objects.Entities;
 using TankGame.Objects;
+using System.Linq;
 
 namespace TankGame.Tools
 {
@@ -13,7 +14,8 @@ namespace TankGame.Tools
         StreamWriter writer;
         Board board;
         List<Entity> entities = new List<Entity>();
-        List<Cell> cellMap = new List<Cell>();
+        List<Wall> walls = new List<Wall>();
+        Cell[,] cellMap;
         Point tanksMines;
         int sweeps;
 
@@ -25,7 +27,6 @@ namespace TankGame.Tools
         /// <param name="offSetY">A decimal value representing perctage of the internal resolution</param>
         public void LoadLevel(string FileLocation, float offSetX, float offSetY)
         {
-            //
             string[] cords;
             //set reader to the file needing to load
             reader = new StreamReader(FileLocation);
@@ -82,8 +83,10 @@ namespace TankGame.Tools
                         if (line != "END")
                         {
                             cords = line.Split(',');
-                            entities.Add(new Wall(board.getGridSquare(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])),
-                                new Point(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1]))));
+                            Wall wallToAdd = new Wall(board.getGridSquare(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])),
+                                new Point(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])));
+                            entities.Add(wallToAdd);
+                            walls.Add(wallToAdd);
                         }
                     }
                     else if (category == "ITEMBOXS")
@@ -98,7 +101,8 @@ namespace TankGame.Tools
                     }
                 }
                 catch { }
-            }
+            }           
+            populateCellMap();
             reader.Close();
         }
         /// <summary>
@@ -178,13 +182,31 @@ namespace TankGame.Tools
         {
             return sweeps;
         }
-        public List<Cell> getCellMap()
+        public Cell[,] getCellMap()
         {
             return cellMap;           
         }
         private void populateCellMap()
         {
-
+            cellMap = new Cell[board.Rows, board.Columns];
+            //create the cellmap with the info aquired
+            for (int i = 0; i < board.Rows; i++)
+            {
+                for (int j = 0; j < board.Columns; j++)
+                {
+                    cellMap[i, j] = new Cell(i, j, 1); //create a cell per tile on the board with a cost of moment being 1
+                    //if walls list contains a wall on the current cell (i j location)
+                    if (walls.Contains(walls.FirstOrDefault(a => a.gridLocation.X == i && a.gridLocation.Y == j)))
+                    {
+                        //set that cell in the map to have a identifier of 1 to indicate a wall existing
+                        cellMap[i, j].Identifier = 1; //1 for wall (2 for tank)
+                    }
+                }
+            }
+        }
+        public List<Wall> getWallsList()
+        {
+            return walls;
         }
     }
 }

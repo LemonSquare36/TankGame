@@ -11,11 +11,15 @@ namespace TankGame.Objects
 {
     internal class Cell
     {
-        public int X, Y, Cost, Distance, CostDistance;
+        public int X, Y, Cost, Distance;
         public Point location 
         { 
             get { return new Point(X, Y); }
             set { X = value.X; Y = value.Y; }
+        }
+        public int CostDistance 
+        { 
+            get { return Distance + Cost; }
         }
 
         //Cell we came from
@@ -36,7 +40,7 @@ namespace TankGame.Objects
         {
             X = x;
             Y = y; 
-            Cost = cost;
+            Cost = cost; //all my cells have the same cost
         }
 
     }
