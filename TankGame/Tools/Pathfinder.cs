@@ -13,23 +13,33 @@ namespace TankGame.Tools
     internal class Pathfinder
     {
         public Cell[,] cellMap;
-
+        private Cell[,] originalCellMap;
 
         public Pathfinder(Cell[,] CellMap)
         {
-            cellMap = CellMap;
+            cellMap = new Cell[CellMap.GetLength(0), CellMap.GetLength(1)];
+            originalCellMap = new Cell[CellMap.GetLength(0), CellMap.GetLength(1)];
+            for (int i = 0; i < cellMap.GetLength(0); i++)
+            {
+                for (int j = 0; j < cellMap.GetLength(1); j++)
+                {
+                    cellMap[i, j] = new Cell(CellMap[i, j].X, CellMap[i, j].Y, CellMap[i, j].Cost);
+                    originalCellMap[i, j] = new Cell(CellMap[i, j].X, CellMap[i, j].Y, CellMap[i, j].Cost);
+                }
+            }
         }
 
         public List<Cell> getPath(Cell start, Cell end)
         {
+            if (start.Parent != null)
+            {
+
+            }
             Cell curCell;
             List<Cell> checkList = new List<Cell>();
             List<Cell> closedList = new List<Cell>();
             start.RawDistance(end.X, end.Y);
             checkList.Add(start);
-
-            //set starts distance to end to the raw distance with no obstacles
-            start.RawDistance(end.X, end.Y);
 
             //loop while we still have cells to check
             while (checkList.Count > 0)
@@ -48,7 +58,7 @@ namespace TankGame.Tools
                 //add it to the list of checked cells
                 closedList.Add(curCell);
                 //check the neighbor cells of the current cell
-                foreach (Cell nCell in getNeighborCells(curCell))
+                foreach (Cell nCell in getNeighborCells(curCell, start))
                 {
                     //if the nCell (neighbor cell) has never been looked at
                     if (!closedList.Contains(nCell))
@@ -71,6 +81,7 @@ namespace TankGame.Tools
             }
             //create and return an empty list if there is no path
             List<Cell> emptyList = new List<Cell>();
+            resetCellMap();
             return emptyList;
         }
 
@@ -88,6 +99,7 @@ namespace TankGame.Tools
                 //and check if there is a new parent when looping
             }
             //when there is no more parents we are at the start cell and return the path
+            resetCellMap();
             return path;
 
         }
@@ -96,8 +108,9 @@ namespace TankGame.Tools
         /// </summary>
         /// <param name="originCell">the cell looking for neighbors</param>
         /// <returns></returns>
-        public List<Cell> getNeighborCells(Cell originCell)
+        public List<Cell> getNeighborCells(Cell originCell, Cell startCell)
         {
+            //startCell.
             //create a list to add the neighbors too
             List<Cell> neighbors = new List<Cell>();
             Cell neighborCell;
@@ -110,18 +123,23 @@ namespace TankGame.Tools
             {
                 for (int j = jStart; j < jStart + 3; j++)
                 {
-                    neighborCell = cellMap[i, j];
-                    //check if the cell is free from obstacles and isnt the originCell
-                    if (neighborCell.Identifier == 0 && neighborCell != originCell)
+                    if (i >= 0 && i < cellMap.GetLength(0) && j >= 0 && j < cellMap.GetLength(1))
                     {
-                        //if the cell to check is in the bounds of the array
-                        if (neighborCell.X >= 0 && neighborCell.X < cellMap.GetLength(0) && neighborCell.Y >= 0 && neighborCell.Y < cellMap.GetLength(1))
-                        {
-                            //add it to neighbor
-                            neighbors.Add(neighborCell);
-                            //set the cell it came from. Used for constructing the final path later
-                            neighborCell.Parent = originCell;
+                        neighborCell = cellMap[i, j];
 
+                        //check if the cell is free from obstacles and isnt the originCell
+                        if (neighborCell.Identifier == 0 && neighborCell != originCell)
+                        {
+                                //add it to neighbor
+                                neighbors.Add(neighborCell);
+                                //set the cell it came from. Used for constructing the final path later
+                                if (neighborCell.X != startCell.X || neighborCell.Y != startCell.Y) //prevent the start cell from gaining a parent
+                                {
+                                    if (originCell.Parent != neighborCell) //prevent cells from being eachothers parent
+                                    {
+                                        neighborCell.Parent = originCell;
+                                    }
+                                }
                         }
                     }
                 }
@@ -154,6 +172,16 @@ namespace TankGame.Tools
                 }
             }
             return lowCost;
+        }
+        private void resetCellMap()
+        {
+            for (int i = 0; i < cellMap.GetLength(0); i++)
+            {
+                for (int j = 0; j < cellMap.GetLength(1); j++)
+                {
+                    cellMap[i, j] = new Cell(originalCellMap[i, j].X, originalCellMap[i, j].Y, originalCellMap[i, j].Cost);
+                }
+            }
         }
     }
 }

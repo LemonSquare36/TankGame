@@ -140,7 +140,15 @@ namespace TankGame
                         CircleTiles = curBoard.getRectanglesInRadius(new Vector2(tank.gridLocation.X, tank.gridLocation.Y), tank.range, objectLocations, out blockersInCircle);
                         findTilesInLOS(tank);
                         drawTankInfo = true;
+                        
+                        
                     }
+                }
+                if (drawTankInfo)
+                {
+                    Point endCellLoc = new Point();
+                    curBoard.getGridSquare(worldPosition, out endCellLoc);
+                    pathFind(tank.gridLocation, endCellLoc);
                 }
             }
         }
@@ -232,11 +240,12 @@ namespace TankGame
                 }
             }
         }
-        protected void pathFind(Vector2 start, Vector2 end)
+
+        protected void pathFind(Point start, Point end)
         {
            if (drawTankInfo)
            {
-                //pathfinder.getPath(cellMap[(int)start.X, (int)start.Y], cellMap[(int)end.X, (int)end.Y]);
+                pathfinder.getPath(cellMap[start.X, start.Y], cellMap[end.X, end.Y]);
            }
         }
 
