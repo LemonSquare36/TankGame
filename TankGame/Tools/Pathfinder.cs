@@ -18,20 +18,23 @@ namespace TankGame.Tools
         public Pathfinder(Cell[,] CellMap)
         {
             cellMap = new Cell[CellMap.GetLength(0), CellMap.GetLength(1)];
-            originalCellMap = new Cell[CellMap.GetLength(0), CellMap.GetLength(1)];
+            originalCellMap = CellMap;
             for (int i = 0; i < cellMap.GetLength(0); i++)
             {
                 for (int j = 0; j < cellMap.GetLength(1); j++)
                 {
                     cellMap[i, j] = new Cell(CellMap[i, j].X, CellMap[i, j].Y, CellMap[i, j].Cost);
-                    originalCellMap[i, j] = new Cell(CellMap[i, j].X, CellMap[i, j].Y, CellMap[i, j].Cost);
+                    if (CellMap[i, j].Identifier == 1)
+                    {
+                        cellMap[i, j].Identifier = 1;
+                    }
                 }
             }
         }
 
         public List<Cell> getPath(Cell start, Cell end)
         {
-            if (start.Parent != null)
+            if (end.X == 12 && end.Y == 15)
             {
 
             }
@@ -47,9 +50,13 @@ namespace TankGame.Tools
                 //lowestCostDistance = findLowestCostDistance(checkList, end);
 
                 //find the index with the lowest cost distance in the to check list
-                curCell = checkList[checkList.FindIndex(a => a.CostDistance == findLowestCostDistance(checkList))];
+                curCell = findLowestCostDistance(checkList);
+                if (curCell.X == 16 && curCell.Y == 10)
+                {
+
+                }
                 //if we found the goal then return the path
-                if (curCell == end)
+                if (curCell.X == end.X && curCell.Y == end.Y)
                 {
                     return constructPath(curCell);
                 }
@@ -89,7 +96,7 @@ namespace TankGame.Tools
         {
             List<Cell> path = new List<Cell>();
             path.Add(endCell);
-            
+            int tracker = 0;
             while (endCell.Parent != null)
             {
                 //if the parent exists set the end cell the parent to construct a path backwards
@@ -97,6 +104,11 @@ namespace TankGame.Tools
                 //add the new cell that was a parent to the path
                 path.Add(endCell);
                 //and check if there is a new parent when looping
+                tracker++;
+                if (tracker == 1000)
+                {
+
+                }
             }
             //when there is no more parents we are at the start cell and return the path
             resetCellMap();
@@ -130,16 +142,20 @@ namespace TankGame.Tools
                         //check if the cell is free from obstacles and isnt the originCell
                         if (neighborCell.Identifier == 0 && neighborCell != originCell)
                         {
-                                //add it to neighbor
-                                neighbors.Add(neighborCell);
-                                //set the cell it came from. Used for constructing the final path later
-                                if (neighborCell.X != startCell.X || neighborCell.Y != startCell.Y) //prevent the start cell from gaining a parent
+                            //add it to neighbor
+                            neighbors.Add(neighborCell);
+                            //set the cell it came from. Used for constructing the final path later
+                            if (neighborCell.X != startCell.X || neighborCell.Y != startCell.Y) //prevent the start cell from gaining a parent
+                            {
+                                if (originCell.Parent != neighborCell) //prevent cells from being eachothers parent
                                 {
-                                    if (originCell.Parent != neighborCell) //prevent cells from being eachothers parent
-                                    {
-                                        neighborCell.Parent = originCell;
-                                    }
+                                    neighborCell.Parent = originCell;
                                 }
+                            }
+                        }
+                        else if (neighborCell.Identifier == 1)
+                        {
+
                         }
                     }
                 }
@@ -151,15 +167,17 @@ namespace TankGame.Tools
         /// </summary>
         /// <param name="cells">the current list of cells to check</param>
         /// <param name="target">the cell that is the final destination</param>
-        private int findLowestCostDistance(List<Cell> cells)
+        private Cell findLowestCostDistance(List<Cell> cells)
         {
             //lowcost is the current lowest recorded. -1 means none recorded
             int lowCost = -1;
+            Cell selectedCell = new Cell(-1,-1,-1);
             foreach (Cell cell in cells)
             {
                 if (lowCost == -1)
                 {
                     lowCost = cell.CostDistance;
+                    selectedCell = cell;
                 }
                 else
                 {
@@ -168,10 +186,27 @@ namespace TankGame.Tools
                     {
                         //if the new cost distance is lower then set the lowcost to that
                         lowCost = cell.CostDistance;
+                        selectedCell = cell;
+                    }
+                    else if (lowCost == cell.CostDistance)
+                    {
+                        if (selectedCell.Parent != null)
+                        {
+                            if (selectedCell.Parent.X != selectedCell.X && selectedCell.Parent.Y != selectedCell.Y)
+                            {
+                                if (cell.Parent != null)
+                                {
+                                    if (cell.Parent.X == cell.X || cell.Parent.Y == cell.Y)
+                                    {
+                                        selectedCell = cell;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-            return lowCost;
+            return selectedCell;
         }
         private void resetCellMap()
         {
@@ -180,6 +215,10 @@ namespace TankGame.Tools
                 for (int j = 0; j < cellMap.GetLength(1); j++)
                 {
                     cellMap[i, j] = new Cell(originalCellMap[i, j].X, originalCellMap[i, j].Y, originalCellMap[i, j].Cost);
+                    if (originalCellMap[i,j].Identifier == 1)
+                    {
+                        cellMap[i, j].Identifier = 1;
+                    }
                 }
             }
         }

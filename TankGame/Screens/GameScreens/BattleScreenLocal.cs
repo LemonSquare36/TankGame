@@ -211,13 +211,11 @@ namespace TankGame
                             }                           
                         }
                     }
-                    /*foreach (RectangleF rF in tankMoveSubGrid)
+                    foreach (Cell cell in path)
                     {
-                        //if (!rF.Null)
-                        //{
-                        //    spriteBatch.Draw(spawnTex, rF.Location, null, Color.Blue, 0, Vector2.Zero, rF.Size, SpriteEffects.None, 0);
-                        //}
-                    }*/
+                        RectangleF cellRect = curBoard.getGridSquare(cell.X, cell.Y);
+                        spriteBatch.Draw(spawnTex, cellRect.Location, null, Color.Blue, 0, Vector2.Zero, cellRect.Size, SpriteEffects.None, 0);
+                    }
                 }
             }
 

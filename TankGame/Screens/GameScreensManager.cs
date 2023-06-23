@@ -35,6 +35,7 @@ namespace TankGame
         //pathfinding information
         private Cell[,] cellMap;
         private Pathfinder pathfinder;
+        protected List<Cell> path = new List<Cell>();
 
         #region base functions
         public override void Initialize()
@@ -146,9 +147,12 @@ namespace TankGame
                 }
                 if (drawTankInfo)
                 {
-                    Point endCellLoc = new Point();
-                    curBoard.getGridSquare(worldPosition, out endCellLoc);
-                    pathFind(tank.gridLocation, endCellLoc);
+                    if (tank.Active)
+                    {
+                        Point endCellLoc = new Point();
+                        curBoard.getGridSquare(worldPosition, out endCellLoc);
+                        pathFind(tank.gridLocation, endCellLoc);
+                    }
                 }
             }
         }
@@ -245,7 +249,7 @@ namespace TankGame
         {
            if (drawTankInfo)
            {
-                pathfinder.getPath(cellMap[start.X, start.Y], cellMap[end.X, end.Y]);
+                path = pathfinder.getPath(cellMap[start.X, start.Y], cellMap[end.X, end.Y]);
            }
         }
 

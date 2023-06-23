@@ -42,6 +42,5 @@ namespace TankGame.Objects
             Y = y; 
             Cost = cost; //all my cells have the same cost
         }
-
     }
 }
