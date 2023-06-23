@@ -7,11 +7,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using TankGame.Objects;
+using System.IO;
 
 namespace TankGame.Tools
 {
     internal class Pathfinder
     {
+        private StreamWriter writer;
         public Cell[,] cellMap;
         private Cell[,] originalCellMap;
 
@@ -30,10 +32,18 @@ namespace TankGame.Tools
                     }
                 }
             }
+            
         }
 
         public List<Cell> getPath(Cell start, Cell end)
         {
+            string FileLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\TankGame\\log.txt";
+            if (File.Exists(FileLocation))
+            { File.Delete(FileLocation); }
+            //createfile and then write to it
+            File.Create(FileLocation).Close();
+            writer = new StreamWriter(FileLocation);            
+
             if (end.X == 12 && end.Y == 15)
             {
 
@@ -55,6 +65,11 @@ namespace TankGame.Tools
                 {
 
                 }
+                if (curCell.X == 17 && curCell.Y == 11)
+                {
+
+                }
+                writer.WriteLine(Convert.ToString(curCell.X) + "," + Convert.ToString(curCell.Y));
                 //if we found the goal then return the path
                 if (curCell.X == end.X && curCell.Y == end.Y)
                 {
@@ -89,11 +104,13 @@ namespace TankGame.Tools
             //create and return an empty list if there is no path
             List<Cell> emptyList = new List<Cell>();
             resetCellMap();
+            writer.Close();
             return emptyList;
         }
 
         public List<Cell> constructPath(Cell endCell)
         {
+            writer.Close();
             List<Cell> path = new List<Cell>();
             path.Add(endCell);
             int tracker = 0;
@@ -149,7 +166,11 @@ namespace TankGame.Tools
                             {
                                 if (originCell.Parent != neighborCell) //prevent cells from being eachothers parent
                                 {
-                                    neighborCell.Parent = originCell;
+                                    if (neighborCell.Parent == null) //added. ^Works so the nieghbor cell parent isnt needed however
+                                        //I am keeping it in for now as I change things
+                                    {
+                                        neighborCell.Parent = originCell;
+                                    }
                                 }
                             }
                         }
