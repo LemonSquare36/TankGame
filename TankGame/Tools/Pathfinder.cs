@@ -166,11 +166,7 @@ namespace TankGame.Tools
                             {
                                 if (originCell.Parent != neighborCell) //prevent cells from being eachothers parent
                                 {
-                                    if (neighborCell.Parent == null) //added. ^Works so the nieghbor cell parent isnt needed however
-                                        //I am keeping it in for now as I change things
-                                    {
-                                        neighborCell.Parent = originCell;
-                                    }
+                                    neighborCell.Parent = originCell;
                                 }
                             }
                         }
