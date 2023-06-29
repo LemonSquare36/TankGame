@@ -42,64 +42,64 @@ namespace TankGame.Tools
             { File.Delete(FileLocation); }
             //createfile and then write to it
             File.Create(FileLocation).Close();
-            writer = new StreamWriter(FileLocation);            
-
-            if (end.X == 12 && end.Y == 15)
-            {
-
-            }
+            writer = new StreamWriter(FileLocation);
+            //
             Cell curCell;
-            List<Cell> checkList = new List<Cell>();
+            List<Cell> openList = new List<Cell>();
             List<Cell> closedList = new List<Cell>();
+            List<Cell> neighborList = new List<Cell>();
             start.RawDistance(end.X, end.Y);
-            checkList.Add(start);
+            openList.Add(start);
 
             //loop while we still have cells to check
-            while (checkList.Count > 0)
+            while (openList.Count > 0)
             {
-                //lowestCostDistance = findLowestCostDistance(checkList, end);
 
                 //find the index with the lowest cost distance in the to check list
-                curCell = findLowestCostDistance(checkList);
-                if (curCell.X == 16 && curCell.Y == 10)
-                {
-
-                }
-                if (curCell.X == 17 && curCell.Y == 11)
-                {
-
-                }
+                curCell = findLowestCostDistance(openList);
+                //
                 writer.WriteLine(Convert.ToString(curCell.X) + "," + Convert.ToString(curCell.Y));
+                //
                 //if we found the goal then return the path
                 if (curCell.X == end.X && curCell.Y == end.Y)
                 {
-                    return constructPath(curCell);
+                    return constructPath(curCell, start);
                 }
                 //remove it from the list of cells to check since we are checking it now
-                checkList.Remove(curCell);
+                openList.Remove(curCell);
                 //add it to the list of checked cells
                 closedList.Add(curCell);
                 //check the neighbor cells of the current cell
-                foreach (Cell nCell in getNeighborCells(curCell, start))
+                neighborList = getNeighborCells(curCell, start);
+                foreach (Cell nCell in neighborList)
                 {
-                    //if the nCell (neighbor cell) has never been looked at
-                    if (!closedList.Contains(nCell))
+                    nCell.RawDistance(end.X, end.Y); //gets the distance to it can return costDistance
+
+                    if (openList.Contains(nCell))
                     {
-                        //find its cost distance
-                        nCell.RawDistance(end.X, end.Y); //gets the distance to it can return costDistance
-                        //if its not in the to check List
-                        if (!checkList.Contains(nCell))
+                        if(nCell.CostDistance <= curCell.CostDistance)
                         {
-                            //add it to that list
-                            checkList.Add(nCell);
-                        }
-                        else //otherwise
-                        {
-                            //if the cost isnt always 1 then this is where you would update a faster path using same tiles
-                            //my cost is always one to so the shortest path to the tile will always be 1
+                            break;
                         }
                     }
+                    else if(closedList.Contains(nCell))
+                    {
+                        if (nCell.CostDistance <= curCell.CostDistance)
+                        {
+                            break;
+                        }
+                        openList.Add(nCell);
+                    }
+                    else
+                    {
+                        openList.Add(nCell);
+                    }
+                        if (curCell.Parent != nCell) //prevent cells from being eachothers parent
+                        {
+                            nCell.Parent = curCell;
+                        }                   
                 }
+                closedList.Add(curCell);
             }
             //create and return an empty list if there is no path
             List<Cell> emptyList = new List<Cell>();
@@ -108,7 +108,7 @@ namespace TankGame.Tools
             return emptyList;
         }
 
-        public List<Cell> constructPath(Cell endCell)
+        public List<Cell> constructPath(Cell endCell, Cell startCell)
         {
             writer.Close();
             List<Cell> path = new List<Cell>();
@@ -125,6 +125,10 @@ namespace TankGame.Tools
                 if (tracker == 1000)
                 {
 
+                }
+                if (endCell.X == startCell.X && endCell.Y == startCell.Y)
+                {
+                    break;
                 }
             }
             //when there is no more parents we are at the start cell and return the path
@@ -159,16 +163,18 @@ namespace TankGame.Tools
                         //check if the cell is free from obstacles and isnt the originCell
                         if (neighborCell.Identifier == 0 && neighborCell != originCell)
                         {
+                            //if its a diagonal make it cost more
+                            if (neighborCell.X == originCell.X || neighborCell.Y == originCell.Y) //if true its not diagonal
+                            {
+                                neighborCell.Cost = 1;                               
+                            }
+                            else
+                            {
+                                neighborCell.Cost = 1.40;
+                            }
                             //add it to neighbor
                             neighbors.Add(neighborCell);
-                            //set the cell it came from. Used for constructing the final path later
-                            if (neighborCell.X != startCell.X || neighborCell.Y != startCell.Y) //prevent the start cell from gaining a parent
-                            {
-                                if (originCell.Parent != neighborCell) //prevent cells from being eachothers parent
-                                {
-                                    neighborCell.Parent = originCell;
-                                }
-                            }
+
                         }
                         else if (neighborCell.Identifier == 1)
                         {
@@ -187,7 +193,7 @@ namespace TankGame.Tools
         private Cell findLowestCostDistance(List<Cell> cells)
         {
             //lowcost is the current lowest recorded. -1 means none recorded
-            int lowCost = -1;
+            double lowCost = -1;
             Cell selectedCell = new Cell(-1,-1,-1);
             foreach (Cell cell in cells)
             {

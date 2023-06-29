@@ -11,13 +11,14 @@ namespace TankGame.Objects
 {
     internal class Cell
     {
-        public int X, Y, Cost, Distance;
+        public int X, Y;
+        public double Distance, Cost;
         public Point location 
         { 
             get { return new Point(X, Y); }
             set { X = value.X; Y = value.Y; }
         }
-        public int CostDistance 
+        public double CostDistance 
         { 
             get { return Distance + Cost; }
         }
@@ -30,13 +31,13 @@ namespace TankGame.Objects
         /// <summary>
         /// this gets the distance from point to point with no obstacles
         /// </summary>
-        public int RawDistance(int targetX, int targetY)
+        public double RawDistance(double targetX, double targetY)
         {
             //without walls, diagonals will cover the lesser value completly. Only need the larger value to get raw distance
-            Distance = (Math.Abs(targetX - X) > Math.Abs(targetY - Y)) ? Math.Abs(targetX - X) : Math.Abs(targetY - Y);
+            Distance = Math.Sqrt(Math.Pow((targetX-this.X), 2) + Math.Pow((targetY-this.Y), 2));
             return Distance;
         }
-        public Cell(int x, int y, int cost)
+        public Cell(int x, int y, double cost)
         {
             X = x;
             Y = y; 
