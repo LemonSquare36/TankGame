@@ -12,15 +12,15 @@ namespace TankGame.Objects
     internal class Cell
     {
         public int X, Y;
-        public double Distance, Cost;
+        public double h, g, Cost;
         public Point location 
         { 
             get { return new Point(X, Y); }
             set { X = value.X; Y = value.Y; }
         }
-        public double CostDistance 
+        public double f 
         { 
-            get { return Distance + Cost; }
+            get { return h + g; }
         }
 
         //Cell we came from
@@ -31,17 +31,18 @@ namespace TankGame.Objects
         /// <summary>
         /// this gets the distance from point to point with no obstacles
         /// </summary>
-        public double RawDistance(double targetX, double targetY)
+        public double getHueristic(double targetX, double targetY)
         {
             //without walls, diagonals will cover the lesser value completly. Only need the larger value to get raw distance
-            Distance = Math.Sqrt(Math.Pow((targetX-this.X), 2) + Math.Pow((targetY-this.Y), 2));
-            return Distance;
+            h = Math.Sqrt(Math.Pow((targetX-this.X), 2) + Math.Pow((targetY-this.Y), 2));
+            return h;
         }
         public Cell(int x, int y, double cost)
         {
             X = x;
             Y = y; 
-            Cost = cost; //all my cells have the same cost
+            this.Cost = cost; //all my cells have the same cost initially
+            g = 0;
         }
     }
 }

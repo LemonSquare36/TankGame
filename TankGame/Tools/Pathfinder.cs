@@ -13,7 +13,7 @@ namespace TankGame.Tools
 {
     internal class Pathfinder
     {
-        private StreamWriter writer;
+        //private StreamWriter writer;
         public Cell[,] cellMap;
         private Cell[,] originalCellMap;
 
@@ -32,85 +32,85 @@ namespace TankGame.Tools
                     }
                 }
             }
-            
+
         }
 
         public List<Cell> getPath(Cell start, Cell end)
         {
-            string FileLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\TankGame\\log.txt";
-            if (File.Exists(FileLocation))
-            { File.Delete(FileLocation); }
+            //string FileLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\TankGame\\log.txt";
+            //if (File.Exists(FileLocation))
+            //{ File.Delete(FileLocation); }
             //createfile and then write to it
-            File.Create(FileLocation).Close();
-            writer = new StreamWriter(FileLocation);
+            //File.Create(FileLocation).Close();
+            //writer = new StreamWriter(FileLocation);
             //
             Cell curCell;
             List<Cell> openList = new List<Cell>();
             List<Cell> closedList = new List<Cell>();
             List<Cell> neighborList = new List<Cell>();
-            start.RawDistance(end.X, end.Y);
+
+            double curCost;
+            //
+            start.getHueristic(end.X, end.Y);
             openList.Add(start);
 
             //loop while we still have cells to check
             while (openList.Count > 0)
             {
 
-                //find the index with the lowest cost distance in the to check list
-                curCell = findLowestCostDistance(openList);
+                //find the index with the lowest f in the to check list
+                curCell = findLowestFScore(openList);
                 //
-                writer.WriteLine(Convert.ToString(curCell.X) + "," + Convert.ToString(curCell.Y));
+                //writer.WriteLine(Convert.ToString(curCell.X) + "," + Convert.ToString(curCell.Y));
                 //
                 //if we found the goal then return the path
                 if (curCell.X == end.X && curCell.Y == end.Y)
                 {
                     return constructPath(curCell, start);
                 }
-                //remove it from the list of cells to check since we are checking it now
                 openList.Remove(curCell);
-                //add it to the list of checked cells
-                closedList.Add(curCell);
-                //check the neighbor cells of the current cell
-                neighborList = getNeighborCells(curCell, start);
+
+                neighborList = getNeighborCells(curCell);
                 foreach (Cell nCell in neighborList)
                 {
-                    nCell.RawDistance(end.X, end.Y); //gets the distance to it can return costDistance
-
+                    curCost = curCell.g + nCell.Cost;
                     if (openList.Contains(nCell))
                     {
-                        if(nCell.CostDistance <= curCell.CostDistance)
+                        if (nCell.g <= curCost)
                         {
-                            break;
+                            continue;
                         }
                     }
-                    else if(closedList.Contains(nCell))
+                    else if (closedList.Contains(nCell))
                     {
-                        if (nCell.CostDistance <= curCell.CostDistance)
+                        if (nCell.g <= curCost)
                         {
-                            break;
+                            continue;
                         }
+                        closedList.Remove(nCell);
                         openList.Add(nCell);
                     }
                     else
                     {
-                        openList.Add(nCell);
+                        nCell.getHueristic(end.X, end.Y);
+                        openList.Add(nCell);                      
                     }
-                        if (curCell.Parent != nCell) //prevent cells from being eachothers parent
-                        {
-                            nCell.Parent = curCell;
-                        }                   
+                    nCell.g = curCost;
+                    nCell.Parent = curCell;
                 }
                 closedList.Add(curCell);
+
             }
             //create and return an empty list if there is no path
             List<Cell> emptyList = new List<Cell>();
             resetCellMap();
-            writer.Close();
+            //writer.Close();
             return emptyList;
         }
 
         public List<Cell> constructPath(Cell endCell, Cell startCell)
         {
-            writer.Close();
+            //writer.Close();
             List<Cell> path = new List<Cell>();
             path.Add(endCell);
             int tracker = 0;
@@ -141,15 +141,15 @@ namespace TankGame.Tools
         /// </summary>
         /// <param name="originCell">the cell looking for neighbors</param>
         /// <returns></returns>
-        public List<Cell> getNeighborCells(Cell originCell, Cell startCell)
+        public List<Cell> getNeighborCells(Cell originCell)
         {
             //startCell.
             //create a list to add the neighbors too
             List<Cell> neighbors = new List<Cell>();
             Cell neighborCell;
             //get the cords for the first nieghbor cell to check
-            int iStart = originCell.X-1;
-            int jStart = originCell.Y-1;
+            int iStart = originCell.X - 1;
+            int jStart = originCell.Y - 1;
 
             //checking from i and 2 more cells over
             for (int i = iStart; i < iStart + 3; i++)
@@ -166,66 +166,50 @@ namespace TankGame.Tools
                             //if its a diagonal make it cost more
                             if (neighborCell.X == originCell.X || neighborCell.Y == originCell.Y) //if true its not diagonal
                             {
-                                neighborCell.Cost = 1;                               
+                                neighborCell.Cost = 1;
                             }
                             else
                             {
-                                neighborCell.Cost = 1.40;
+                                neighborCell.Cost = 1.5;
                             }
+                            //neighborCell.g = originCell.g + neighborCell.Cost;
+                            //if (neighborCell != originCell.Parent)
+                            //{
+                            //    neighborCell.Parent = originCell;
+                            //}
                             //add it to neighbor
                             neighbors.Add(neighborCell);
-
-                        }
-                        else if (neighborCell.Identifier == 1)
-                        {
-
                         }
                     }
                 }
             }
-            return neighbors;            
+            return neighbors;
         }
         /// <summary>
         /// finds the lowest cost cell towards the final destination in the in the cell check list
         /// </summary>
         /// <param name="cells">the current list of cells to check</param>
         /// <param name="target">the cell that is the final destination</param>
-        private Cell findLowestCostDistance(List<Cell> cells)
+        private Cell findLowestFScore(List<Cell> cells)
         {
             //lowcost is the current lowest recorded. -1 means none recorded
             double lowCost = -1;
-            Cell selectedCell = new Cell(-1,-1,-1);
+            Cell selectedCell = new Cell(-1, -1, -1);
             foreach (Cell cell in cells)
             {
                 if (lowCost == -1)
                 {
-                    lowCost = cell.CostDistance;
+                    lowCost = cell.f;
                     selectedCell = cell;
                 }
                 else
                 {
                     //compare new cells cost distance to the current lowest
-                    if (lowCost > cell.CostDistance)
+                    if (lowCost > cell.f)
                     {
                         //if the new cost distance is lower then set the lowcost to that
-                        lowCost = cell.CostDistance;
+                        lowCost = cell.f;
                         selectedCell = cell;
-                    }
-                    else if (lowCost == cell.CostDistance)
-                    {
-                        if (selectedCell.Parent != null)
-                        {
-                            if (selectedCell.Parent.X != selectedCell.X && selectedCell.Parent.Y != selectedCell.Y)
-                            {
-                                if (cell.Parent != null)
-                                {
-                                    if (cell.Parent.X == cell.X || cell.Parent.Y == cell.Y)
-                                    {
-                                        selectedCell = cell;
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -238,7 +222,7 @@ namespace TankGame.Tools
                 for (int j = 0; j < cellMap.GetLength(1); j++)
                 {
                     cellMap[i, j] = new Cell(originalCellMap[i, j].X, originalCellMap[i, j].Y, originalCellMap[i, j].Cost);
-                    if (originalCellMap[i,j].Identifier == 1)
+                    if (originalCellMap[i, j].Identifier == 1)
                     {
                         cellMap[i, j].Identifier = 1;
                     }
