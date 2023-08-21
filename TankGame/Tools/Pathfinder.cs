@@ -93,7 +93,7 @@ namespace TankGame.Tools
                     else
                     {
                         nCell.getHueristic(end.X, end.Y);
-                        openList.Add(nCell);                      
+                        openList.Add(nCell);
                     }
                     nCell.g = curCost;
                     nCell.Parent = curCell;
@@ -158,6 +158,7 @@ namespace TankGame.Tools
                 {
                     if (i >= 0 && i < cellMap.GetLength(0) && j >= 0 && j < cellMap.GetLength(1))
                     {
+
                         neighborCell = cellMap[i, j];
 
                         //check if the cell is free from obstacles and isnt the originCell
@@ -167,18 +168,49 @@ namespace TankGame.Tools
                             if (neighborCell.X == originCell.X || neighborCell.Y == originCell.Y) //if true its not diagonal
                             {
                                 neighborCell.Cost = 1;
+                                //add it to neighbor
+                                neighbors.Add(neighborCell);
                             }
+                            //it is diagonal so check if its valid to reach and then apply cost
                             else
                             {
+                                //check to see which diagonal it is
+                                if (i == originCell.X - 1 && j == originCell.Y - 1)
+                                {
+                                    //check if its reachable (true = not reachable)
+                                    if (cellMap[originCell.X, originCell.Y -1].Identifier != 0 && cellMap[originCell.X -1, originCell.Y].Identifier != 0)
+                                    {
+                                        continue;
+                                    }
+                                }
+                                else if (i == originCell.X + 1 && j == originCell.Y - 1)
+                                {
+                                    //check if its reachable (true = not reachable)
+                                    if (cellMap[originCell.X, originCell.Y - 1].Identifier != 0 && cellMap[originCell.X + 1, originCell.Y].Identifier != 0)
+                                    {
+                                        continue;
+                                    }
+                                }
+                                else if (i == originCell.X + 1 && j == originCell.Y + 1)
+                                {
+                                    //check if its reachable (true = not reachable)
+                                    if (cellMap[originCell.X, originCell.Y + 1].Identifier != 0 && cellMap[originCell.X + 1, originCell.Y].Identifier != 0)
+                                    {
+                                        continue;
+                                    }
+                                }
+                                else if (i == originCell.X - 1 && j == originCell.Y + 1)
+                                {
+                                    //check if its reachable (true = not reachable)
+                                    if (cellMap[originCell.X, originCell.Y + 1].Identifier != 0 && cellMap[originCell.X - 1, originCell.Y].Identifier != 0)
+                                    {
+                                        continue;
+                                    }
+                                }
                                 neighborCell.Cost = 1.5;
+                                //add it to neighbor
+                                neighbors.Add(neighborCell);
                             }
-                            //neighborCell.g = originCell.g + neighborCell.Cost;
-                            //if (neighborCell != originCell.Parent)
-                            //{
-                            //    neighborCell.Parent = originCell;
-                            //}
-                            //add it to neighbor
-                            neighbors.Add(neighborCell);
                         }
                     }
                 }
