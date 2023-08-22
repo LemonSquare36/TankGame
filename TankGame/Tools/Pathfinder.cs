@@ -171,7 +171,21 @@ namespace TankGame.Tools
                                 //add it to neighbor
                                 neighbors.Add(neighborCell);
                             }
+
                             //it is diagonal so check if its valid to reach and then apply cost
+                            /* a Non Valid Diagonal Represented
+                             *      |       |
+                             *  ok  |blocked|  not ok
+                             *      |       |
+                             * -----------------------
+                             *      |       |
+                             *      |start  |blocked
+                             *      |       |
+                             *-----------------------
+                             *      |       |
+                             *      |       |
+                             *      |       |
+                            */
                             else
                             {
                                 //check to see which diagonal it is
