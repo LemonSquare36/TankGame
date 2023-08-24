@@ -144,6 +144,7 @@ namespace TankGame
                 if (mouseInBoard)
                 {
                     checkSelectedTank();
+                    MoveOrShoot();
                 }               
             }
         }
@@ -211,10 +212,18 @@ namespace TankGame
                             }                           
                         }
                     }
-                    foreach (Cell cell in path)
+                    for (int i = 0; i < path.Count; i++) 
                     {
-                        RectangleF cellRect = curBoard.getGridSquare(cell.X, cell.Y);
-                        spriteBatch.Draw(spawnTex, cellRect.Location, null, Color.Blue, 0, Vector2.Zero, cellRect.Size, SpriteEffects.None, 0);
+                        if (path[i].Parent != null)
+                        {
+                            RectangleF cellRect = curBoard.getGridSquare(path[i].X, path[i].Y);
+                            spriteBatch.Draw(spawnTex, cellRect.Location, null, Color.Blue, 0, Vector2.Zero, cellRect.Size, SpriteEffects.None, 0);
+
+                            int reverseListCounter = path.Count -1 - i;
+                            //48 is the internal tile size at the standard map size of 20. The calculations are based on the internal size for a "standard" tile\
+                            //just change the float it multiplies with to create scale since at the standard (48) * 1 the font would fill the whole rectangle. Dont make larger than 1
+                            spriteBatch.DrawString(font, Convert.ToString(reverseListCounter), cellRect.Location, Color.Black, 0, Vector2.Zero, .6f * cellRect.Width/48, SpriteEffects.None, 0);
+                        }
                     }
                 }
             }

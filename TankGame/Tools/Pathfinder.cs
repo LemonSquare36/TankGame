@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using TankGame.Objects;
 using System.IO;
+using System.Data.Common;
 
 namespace TankGame.Tools
 {
@@ -35,14 +36,14 @@ namespace TankGame.Tools
 
         }
 
-        public List<Cell> getPath(Cell start, Cell end)
+        public List<Cell> getPath(Cell start, Cell end, List<Point> tankLocations)
         {
-            //string FileLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\TankGame\\log.txt";
-            //if (File.Exists(FileLocation))
-            //{ File.Delete(FileLocation); }
-            //createfile and then write to it
-            //File.Create(FileLocation).Close();
-            //writer = new StreamWriter(FileLocation);
+            //apply the tank locations to the cellmap so they are counted as obstacles
+            foreach(Point location in tankLocations)
+            {
+                cellMap[location.X, location.Y].Identifier = 1;
+            }
+
             //
             Cell curCell;
             List<Cell> openList = new List<Cell>();
@@ -60,9 +61,7 @@ namespace TankGame.Tools
 
                 //find the index with the lowest f in the to check list
                 curCell = findLowestFScore(openList);
-                //
-                //writer.WriteLine(Convert.ToString(curCell.X) + "," + Convert.ToString(curCell.Y));
-                //
+
                 //if we found the goal then return the path
                 if (curCell.X == end.X && curCell.Y == end.Y)
                 {

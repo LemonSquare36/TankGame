@@ -249,7 +249,7 @@ namespace TankGame
         {
            if (drawTankInfo)
            {
-                path = pathfinder.getPath(cellMap[start.X, start.Y], cellMap[end.X, end.Y]);
+                path = pathfinder.getPath(cellMap[start.X, start.Y], cellMap[end.X, end.Y], tankLocations);
            }
         }
 
@@ -279,9 +279,38 @@ namespace TankGame
         protected void MoveOrShoot()
         {
             //ensure the tank is active and has player has ap left
-            if (curPlayer.tanks[activeTankNum].Active && curPlayer.AP > 0)
+            if (activeTankNum != -1)
             {
-
+                if (curPlayer.tanks[activeTankNum].Active && curPlayer.AP > 0)
+                {
+                    //if there is a path
+                    if (path != null)
+                    {
+                        //if the mouse is within the board
+                        if (mouseInBoard)
+                        {
+                            //if the mouse gets clicked while there is a mouse
+                            if (curLeftClick == ButtonState.Pressed && oldLeftClick != ButtonState.Pressed)
+                            {
+                                //get the AP and then move that distance, starting from the back of the list (the list is in reverse move order)
+                                if (path.Count > 1)
+                                {
+                                    //if its greater than the ap then use all ap
+                                    if (path.Count > curPlayer.AP +1)
+                                    {
+                                        curPlayer.tanks[activeTankNum].gridLocation = path[path.Count - 1 - curPlayer.AP].location;
+                                    }
+                                    else //else just use how much ap it takes to move the smaller amount
+                                    {
+                                        curPlayer.tanks[activeTankNum].gridLocation = path[0].location;
+                                        curPlayer.AP -= path.Count - 1;
+                                    }
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         #endregion
