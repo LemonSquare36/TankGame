@@ -183,12 +183,7 @@ namespace TankGame.Objects
         {
             return gridarray[Row,Col];
         }
-        /// <summary>Gets the specific rectangle from grid array with Vector2 Position</summary>
-        public RectangleF getGridSquare(Vector2 Position)
-        {
-            Vector2 gridPos = Position - getInnerRectangle().Location / IndividualSize;
-            return gridarray[Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.X))), Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.Y)))];
-        }
+
         /// <summary>Gets the specific rectangle from grid array with Vector2 Position, and returns the grid loction</summary>
         public RectangleF getGridSquare(Vector2 Position, out Point gridLocation)
         {

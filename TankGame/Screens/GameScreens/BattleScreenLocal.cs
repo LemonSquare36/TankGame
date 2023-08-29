@@ -161,8 +161,16 @@ namespace TankGame
             curBoard.DrawOutline(spriteBatch);
             foreach (Entity e in entities)
             {
-                if (e.Type.ToString() != "mine")
-                e.Draw(spriteBatch);
+                if (placementStage)
+                {
+                    if (e.Type.ToString() != "mine")
+                        e.Draw(spriteBatch);
+                }
+                if (battleStarted)
+                {
+                    if (e.Type.ToString() != "mine" && e.Type.ToString() != "tank") 
+                        e.Draw(spriteBatch);
+                }
             }
             //draw code for the placement stage. Placing tanks and mines
             if (placementStage)
@@ -192,9 +200,25 @@ namespace TankGame
             //draw code for if the battle has started. All players ready to begin the fight
             else if (battleStarted)
             {
+                //draw buttons
                 foreach (Button b in battleButtonList)
                 {
                     b.Draw(spriteBatch);
+                }
+                //draw friendly mines
+                foreach (Mine mine in curPlayer.mines)
+                {
+                    mine.Draw(spriteBatch);
+                }
+                //draw player 1 tanks
+                foreach (Tank tank in P1.tanks)
+                {
+                    tank.Draw(spriteBatch);
+                }
+                //draw player 2 tanks
+                foreach (Tank tank in P2.tanks)
+                {
+                    tank.Draw(spriteBatch);
                 }
                 if (drawTankInfo)
                 {
@@ -418,6 +442,12 @@ namespace TankGame
             {
                 if (curPlayerTurn == 1)
                 {
+                    //load the tanks placed down for player 1
+                    foreach (Tank tank in curPlayer.tanks)
+                    {
+                        tank.LoadContent();
+                    }
+                    //swap info to player 2
                     curPlayer = P2;
                     curPlayerTurn = 2;
                     enemyPlayer = P1;
@@ -428,6 +458,12 @@ namespace TankGame
                 }
                 else if (curPlayerTurn == 2)
                 {
+                    //load the tanks placed down for player 2
+                    foreach (Tank tank in curPlayer.tanks)
+                    {
+                        tank.LoadContent();
+                    }
+                    //swap info to player 1
                     placementStage = false;
                     battleStarted = true;
                     curPlayer = P1;
@@ -435,6 +471,8 @@ namespace TankGame
                     enemyPlayer = P2;
                     //remove warning 
                     placementWarning = false;
+                    //get the start of turn state for player1
+                   // SetTurnState();
                 }
                 foreach (Button b in placementButtonList)
                 {
@@ -442,6 +480,15 @@ namespace TankGame
                 }
             }
         }
+        #endregion
+
+        #region battlestated button code
+        private void UndoPressed(object sender, EventArgs e)
+        {
+            //go back to the last turnstatesaved
+            GetTurnState();
+        }
+
         #endregion
 
     }

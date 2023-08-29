@@ -29,7 +29,6 @@ namespace TankGame
         protected List<Vector2> blockersInCircle = new List<Vector2>();
         protected List<Vector2> wallsInGrid = new List<Vector2>();
         protected RectangleF[,] CircleTiles;
-        protected RectangleF[,] tankMoveSubGrid;
         protected bool drawTankInfo = false;
 
         //pathfinding information
@@ -135,9 +134,7 @@ namespace TankGame
                             //make sure to remove the current selected tank
                             objectLocations.Remove(tank.gridLocation);
                         }
-                        //get the circle around the selected tank
-                        tankMoveSubGrid = curBoard.getSubGrid(new Vector2(tank.gridLocation.X - tank.range, tank.gridLocation.Y - tank.range), 
-                            new Vector2((tank.range * 2) + 1, (tank.range * 2) + 1), objectLocations, out wallsInGrid);                       
+                        //get the circle around the selected tank                   
                         CircleTiles = curBoard.getRectanglesInRadius(new Vector2(tank.gridLocation.X, tank.gridLocation.Y), tank.range, objectLocations, out blockersInCircle);
                         findTilesInLOS(tank);
                         drawTankInfo = true;
@@ -258,7 +255,7 @@ namespace TankGame
         List<Entity> oldEntities = new List<Entity>();
 
         /// <summary> Set the old information to represent the start of the turn. </summary>
-        private void SetStartofTurnState()
+        public void GetTurnState()
         {
             curPlayer.oldItems = curPlayer.Items;
             curPlayer.oldSweeps = curPlayer.sweeps;
@@ -268,7 +265,7 @@ namespace TankGame
         }
         /// <summary> Get the old information and apply it to the tracked information. 
         /// This will act as an undo effect. Setting the turn back to the beginning </summary>
-        private void GetStartofTurnState()
+        public void SetTurnState()
         {
             curPlayer.Items = curPlayer.oldItems;
             curPlayer.sweeps = curPlayer.oldSweeps;
@@ -299,13 +296,21 @@ namespace TankGame
                                     if (path.Count > curPlayer.AP +1)
                                     {
                                         curPlayer.tanks[activeTankNum].gridLocation = path[path.Count - 1 - curPlayer.AP].location;
+                                        curPlayer.tanks[activeTankNum].curSquare = curBoard.getGrid()
+                                            [path[path.Count - 1 - curPlayer.AP].location.X, path[path.Count - 1 - curPlayer.AP].location.Y];
+                                        curPlayer.AP = 0;
                                     }
                                     else //else just use how much ap it takes to move the smaller amount
                                     {
                                         curPlayer.tanks[activeTankNum].gridLocation = path[0].location;
+                                        curPlayer.tanks[activeTankNum].curSquare = curBoard.getGrid()[path[0].location.X, path[0].location.Y];
                                         curPlayer.AP -= path.Count - 1;
                                     }
-                                    
+                                    //redo the Line of Set check for the new position //should have a function here if I wanna be good coder
+                                    CircleTiles = curBoard.getRectanglesInRadius(
+                                        new Vector2(curPlayer.tanks[activeTankNum].gridLocation.X, curPlayer.tanks[activeTankNum].gridLocation.Y), 
+                                        curPlayer.tanks[activeTankNum].range, objectLocations, out blockersInCircle);
+                                    findTilesInLOS(curPlayer.tanks[activeTankNum]);
                                 }
                             }
                         }
