@@ -73,6 +73,30 @@
 /processorParam:TextureFormat=Color
 /build:Buttons/BattleScreen/ReadyUH.jpg
 
+#begin Buttons/BattleScreen/UndoH.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Buttons/BattleScreen/UndoH.jpg
+
+#begin Buttons/BattleScreen/UndoUH.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Buttons/BattleScreen/UndoUH.jpg
+
 #begin Buttons/Editor/BackH.jpg
 /importer:TextureImporter
 /processor:TextureProcessor

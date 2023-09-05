@@ -27,13 +27,11 @@ namespace TankGame
         private bool placementWarning = false;
 
         InputBox tanksCount, minesCount;
-        Button tanks, mines, ready, endturn;
+        Button tanks, mines, ready, endturn, undo;
         List<Button> placementButtonList = new List<Button>();
         List<Button> battleButtonList = new List<Button>();
 
         int tanksUsed = 0, minesUsed = 0;
-
-        int curPlayerTurn = 1;
 
 
         public override void Initialize()
@@ -87,6 +85,7 @@ namespace TankGame
             mines = new Button(new Vector2(1765, 640), 50, 50, "GameSprites/BattleSprites/Mine", "mines", "toggle");
             ready = new Button(new Vector2(1590, 800), 200, 100, "Buttons/BattleScreen/Ready", "ready");
             endturn = new Button(new Vector2(1590, 800), 200, 100, "Buttons/BattleScreen/EndTurn", "endturn");
+            undo = new Button(new Vector2(1590, 600), 100, 50, "Buttons/BattleScreen/Undo", "undo");
 
             //load inputboxes
             tanksCount.LoadContent();
@@ -103,12 +102,15 @@ namespace TankGame
             placementButtonList.Add(ready);
             //battle stage buttons
             battleButtonList.Add(endturn);
+            battleButtonList.Add(undo);
             #endregion
 
             #region Event listeners
             tanks.ButtonClicked += AddTankPressed;
             mines.ButtonClicked += AddMinePressed;
             ready.ButtonClicked += ReadyPressed;
+            undo.ButtonClicked += UndoPressed;
+            endturn.ButtonClicked += EndTurnPressed;
             #endregion
         }
 
@@ -472,7 +474,7 @@ namespace TankGame
                     //remove warning 
                     placementWarning = false;
                     //get the start of turn state for player1
-                   // SetTurnState();
+                    GetTurnState();
                 }
                 foreach (Button b in placementButtonList)
                 {
@@ -486,9 +488,8 @@ namespace TankGame
         private void UndoPressed(object sender, EventArgs e)
         {
             //go back to the last turnstatesaved
-            GetTurnState();
+            SetTurnState();
         }
-
         #endregion
 
     }

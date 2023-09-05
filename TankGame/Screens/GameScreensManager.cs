@@ -21,6 +21,7 @@ namespace TankGame
         int AP = 4;
         //turn tracker
         int activeTankNum = -1;
+        protected int curPlayerTurn = 1;
 
         //info storage for circles in the grid
         protected List<Point> wallLocations = new List<Point>();
@@ -143,19 +144,14 @@ namespace TankGame
                     }
                 }
                 if (drawTankInfo)
-                {
-                    if (tank.Active)
-                    {
-                        Point endCellLoc = new Point();
-                        curBoard.getGridSquare(worldPosition, out endCellLoc);
-                        pathFind(tank.gridLocation, endCellLoc);
-                    }
+                {        
+                    pathFind(curPlayer.tanks[activeTankNum].gridLocation);
                 }
             }
         }
 
         /// <summary>Find out which tiles are in the line of sight of the tank (not blocked by walls)</summary>
-        protected void findTilesInLOS(Tank selectedTank)
+        private void findTilesInLOS(Tank selectedTank)
         {
             int defualtRows = CircleTiles.GetLength(0);
             int defualtCols = CircleTiles.GetLength(1);
@@ -241,14 +237,25 @@ namespace TankGame
                 }
             }
         }
-
-        protected void pathFind(Point start, Point end)
+        private void getLOS()
         {
+            CircleTiles = curBoard.getRectanglesInRadius(
+            new Vector2(curPlayer.tanks[activeTankNum].gridLocation.X, curPlayer.tanks[activeTankNum].gridLocation.Y),
+            curPlayer.tanks[activeTankNum].range, objectLocations, out blockersInCircle);
+            findTilesInLOS(curPlayer.tanks[activeTankNum]);
+        }
+
+        protected void pathFind(Point start)
+        {
+            Point end = new Point();
+            curBoard.getGridSquare(worldPosition, out end);
+
            if (drawTankInfo)
            {
                 path = pathfinder.getPath(cellMap[start.X, start.Y], cellMap[end.X, end.Y], tankLocations);
            }
         }
+
 
         #region turnTakingCode
         //information for start of turn state
@@ -257,21 +264,45 @@ namespace TankGame
         /// <summary> Set the old information to represent the start of the turn. </summary>
         public void GetTurnState()
         {
-            curPlayer.oldItems = curPlayer.Items;
+            //curPlayer.oldItems.Clear()
+            curPlayer.oldTanks.Clear();
+            //create clones instead of references for the items and tanks to prevent unwanted list updates
+            foreach (Items item in curPlayer.Items)
+            {
+                //curPlayer.oldItems.Add(new Items(item))
+            }
+            foreach (Tank tank in curPlayer.tanks)
+            {
+                curPlayer.oldTanks.Add(new Tank(tank.curSquare, tank.gridLocation));
+            }
             curPlayer.oldSweeps = curPlayer.sweeps;
-            curPlayer.oldTanks = curPlayer.tanks;
-
-            oldEntities = entities;
+            curPlayer.oldAP = curPlayer.AP;          
         }
         /// <summary> Get the old information and apply it to the tracked information. 
         /// This will act as an undo effect. Setting the turn back to the beginning </summary>
         public void SetTurnState()
         {
-            curPlayer.Items = curPlayer.oldItems;
+            //clear the lists to clone and add from the old list versions
+            curPlayer.Items.Clear();
+            curPlayer.tanks.Clear();
+            //create clones instead of references for the items and tanks to prevent unwanted list updates
+            foreach (Items item in curPlayer.oldItems)
+            {
+                //curPlayer.oldItems.Add(new Items(item))
+            }
+            foreach (Tank tank in curPlayer.oldTanks)
+            {
+                curPlayer.tanks.Add(new Tank(tank.curSquare, tank.gridLocation));
+            }//load the tanks
+            foreach (Tank tank in curPlayer.tanks)
+            {
+                tank.LoadContent();
+            }
+            activeTankNum = -1;
+            drawTankInfo = false;
+            path = new List<Cell>();
             curPlayer.sweeps = curPlayer.oldSweeps;
-            curPlayer.tanks = curPlayer.oldTanks;
-
-            entities = oldEntities;
+            curPlayer.AP = curPlayer.oldAP;          
         }
         protected void MoveOrShoot()
         {
@@ -307,16 +338,32 @@ namespace TankGame
                                         curPlayer.AP -= path.Count - 1;
                                     }
                                     //redo the Line of Set check for the new position //should have a function here if I wanna be good coder
-                                    CircleTiles = curBoard.getRectanglesInRadius(
-                                        new Vector2(curPlayer.tanks[activeTankNum].gridLocation.X, curPlayer.tanks[activeTankNum].gridLocation.Y), 
-                                        curPlayer.tanks[activeTankNum].range, objectLocations, out blockersInCircle);
-                                    findTilesInLOS(curPlayer.tanks[activeTankNum]);
+                                    getLOS();
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+        #endregion
+        #region BUTTON EVENTS
+        protected void EndTurnPressed(object sender, EventArgs e)
+        {
+            if (curPlayerTurn == 1)
+            {
+                curPlayerTurn = 2;
+                curPlayer = P2;
+            }
+            else if (curPlayerTurn == 2)
+            {
+                curPlayerTurn = 1;
+                curPlayer = P1;
+            }
+            activeTankNum = -1;
+            path = new List<Cell>();
+            drawTankInfo = false;
+            GetTurnState();
         }
         #endregion
     }

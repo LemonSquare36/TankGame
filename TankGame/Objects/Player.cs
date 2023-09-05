@@ -12,6 +12,7 @@ namespace TankGame.Objects
     internal class Player
     {
         public int AP;
+        public int startAP;
         public int sweeps;
         public List<Items> Items = new List<Items>();
         public List<Tank> tanks = new List<Tank>();
@@ -21,6 +22,7 @@ namespace TankGame.Objects
         public int oldSweeps;
         public List<Items> oldItems = new List<Items>();
         public List<Tank> oldTanks = new List<Tank>();
+        public int oldAP = 0;
 
         private RectangleF[,] SpawnRows;
         public RectangleF[,] spawnRows
@@ -43,6 +45,7 @@ namespace TankGame.Objects
         public Player(int ActionPoints, int Sweeps)
         {
             AP = ActionPoints;
+            startAP = ActionPoints;
             sweeps = Sweeps;
         }
         public int getActiveTankNum()
@@ -55,6 +58,10 @@ namespace TankGame.Objects
                 }
             }
             return -1;
+        }
+        public void startTurn()
+        {
+            AP = startAP;
         }
     }
 }

@@ -190,6 +190,15 @@ namespace TankGame.Objects
             Vector2 gridPos = (Position - getInnerRectangle().Location) / IndividualSize;
             gridLocation.Y = Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.X)));
             gridLocation.X = Convert.ToInt16(Math.Floor(Convert.ToDouble(gridPos.Y)));
+            //if the gridlocation is out of bounds just return 0,0
+            if (gridLocation.X >= Rows || gridLocation.X < 0)
+            {
+                return gridarray[0, 0];
+            }
+            if (gridLocation.Y >= Columns || gridLocation.Y < 0)
+            {
+                return gridarray[0, 0];
+            }
             return gridarray[gridLocation.X, gridLocation.Y];
         }
         public Vector2 getOutlineSize()
