@@ -292,6 +292,7 @@ namespace TankGame.Objects
                 }
             }
             //return the subGrid with all rectangles in the radius being normal and all others null
+            subGrid[4, 4] = new RectangleF(); //set the center to null always. This way the object looking is not "in sight" of itself
             return subGrid;
         }
         /// <summary>

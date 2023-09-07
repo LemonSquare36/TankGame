@@ -128,7 +128,7 @@ namespace TankGame
                         tank.Active = true;
                         activeTankNum = curPlayer.getActiveTankNum();
                         //get the walls + current enemy tanks
-                        objectLocations = wallLocations;
+                        objectLocations = new List<Point>(wallLocations);
                         foreach (Point t in tankLocations)
                         {
                             objectLocations.Add(t);
@@ -138,11 +138,10 @@ namespace TankGame
                         //get the circle around the selected tank                   
                         CircleTiles = curBoard.getRectanglesInRadius(new Vector2(tank.gridLocation.X, tank.gridLocation.Y), tank.range, objectLocations, out blockersInCircle);
                         findTilesInLOS(tank);
-                        drawTankInfo = true;
-                        
-                        
+                        drawTankInfo = true;    
                     }
                 }
+                
                 if (drawTankInfo)
                 {        
                     pathFind(curPlayer.tanks[activeTankNum].gridLocation);
@@ -264,7 +263,7 @@ namespace TankGame
         /// <summary> Set the old information to represent the start of the turn. </summary>
         public void GetTurnState()
         {
-            //curPlayer.oldItems.Clear()
+            curPlayer.oldItems.Clear();
             curPlayer.oldTanks.Clear();
             //create clones instead of references for the items and tanks to prevent unwanted list updates
             foreach (Items item in curPlayer.Items)
@@ -354,15 +353,26 @@ namespace TankGame
             {
                 curPlayerTurn = 2;
                 curPlayer = P2;
+                
             }
             else if (curPlayerTurn == 2)
             {
                 curPlayerTurn = 1;
                 curPlayer = P1;
             }
+            //reset all tanks to inactive
             activeTankNum = -1;
+            foreach (Tank tank in curPlayer.tanks)
+            {
+                tank.Active = false;
+            }
+            //reset the players AP to the turn start AP
+            curPlayer.AP = curPlayer.startAP;
+            //clear the path for the pathfinder
             path = new List<Cell>();
+            //dont draw tank info immediatly
             drawTankInfo = false;
+            //get the current turn state at the start of the new turn
             GetTurnState();
         }
         #endregion

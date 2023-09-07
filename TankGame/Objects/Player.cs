@@ -57,7 +57,7 @@ namespace TankGame.Objects
                     return i;
                 }
             }
-            return -1;
+            return -2; //return -2 for no tanks active so that it can be compared to a turn start -1 and return true for currrent tank not active
         }
         public void startTurn()
         {
