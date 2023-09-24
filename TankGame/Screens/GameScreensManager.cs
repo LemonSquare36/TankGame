@@ -37,6 +37,7 @@ namespace TankGame
         private Pathfinder pathfinder;
         protected List<Cell> path = new List<Cell>();
 
+
         #region base functions
         public override void Initialize()
         {
@@ -85,8 +86,8 @@ namespace TankGame
         {
             List<Point> WallLocations = new List<Point>();
             foreach (Wall w in levelManager.getWallsList())
-            {                
-                WallLocations.Add(w.gridLocation);              
+            {
+                WallLocations.Add(w.gridLocation);
             }
             return WallLocations;
         }
@@ -138,12 +139,12 @@ namespace TankGame
                         //get the circle around the selected tank                   
                         CircleTiles = curBoard.getRectanglesInRadius(new Vector2(tank.gridLocation.X, tank.gridLocation.Y), tank.range, objectLocations, out blockersInCircle);
                         findTilesInLOS(tank);
-                        drawTankInfo = true;    
+                        drawTankInfo = true;
                     }
                 }
-                
+
                 if (drawTankInfo)
-                {        
+                {
                     pathFind(curPlayer.tanks[activeTankNum].gridLocation);
                 }
             }
@@ -173,7 +174,7 @@ namespace TankGame
 
                 //if the wall is to the left of the center tile
                 if (@object.X < CenterX)
-                { rows = X+1; } //shrink the iterations so nothing in front sideways is checked
+                { rows = X + 1; } //shrink the iterations so nothing in front sideways is checked
 
                 //if the wall is to the right of the center tile
                 else if (@object.X > CenterX)
@@ -181,7 +182,7 @@ namespace TankGame
 
                 //if the wall is above the center tile
                 if (@object.Y < CenterY)
-                { cols = Y+1; } //only check tiles equal or above the wall
+                { cols = Y + 1; } //only check tiles equal or above the wall
 
                 //if the wall is below the center tile
                 else if (@object.Y > CenterY)
@@ -206,11 +207,11 @@ namespace TankGame
                                 {
                                     //if it is blocked then empty/null the rectangle
                                     CircleTiles[i, j] = new RectangleF();
-                                }                                
-                            }                            
+                                }
+                            }
                         }
                     }
-                }               
+                }
             }
             foreach (Vector2 @object in blockersInCircle)
             {
@@ -249,10 +250,10 @@ namespace TankGame
             Point end = new Point();
             curBoard.getGridSquare(worldPosition, out end);
 
-           if (drawTankInfo)
-           {
+            if (drawTankInfo)
+            {
                 path = pathfinder.getPath(cellMap[start.X, start.Y], cellMap[end.X, end.Y], tankLocations);
-           }
+            }
         }
 
 
@@ -275,7 +276,7 @@ namespace TankGame
                 curPlayer.oldTanks.Add(new Tank(tank.curSquare, tank.gridLocation));
             }
             curPlayer.oldSweeps = curPlayer.sweeps;
-            curPlayer.oldAP = curPlayer.AP;          
+            curPlayer.oldAP = curPlayer.AP;
         }
         /// <summary> Get the old information and apply it to the tracked information. 
         /// This will act as an undo effect. Setting the turn back to the beginning </summary>
@@ -301,7 +302,7 @@ namespace TankGame
             drawTankInfo = false;
             path = new List<Cell>();
             curPlayer.sweeps = curPlayer.oldSweeps;
-            curPlayer.AP = curPlayer.oldAP;          
+            curPlayer.AP = curPlayer.oldAP;
         }
         protected void MoveOrShoot()
         {
@@ -323,7 +324,7 @@ namespace TankGame
                                 if (path.Count > 1)
                                 {
                                     //if its greater than the ap then use all ap
-                                    if (path.Count > curPlayer.AP +1)
+                                    if (path.Count > curPlayer.AP + 1)
                                     {
                                         curPlayer.tanks[activeTankNum].gridLocation = path[path.Count - 1 - curPlayer.AP].location;
                                         curPlayer.tanks[activeTankNum].curSquare = curBoard.getGrid()
@@ -340,6 +341,28 @@ namespace TankGame
                                     getLOS();
                                 }
                             }
+                            else if (curRightClick == ButtonState.Pressed && oldRightClick != ButtonState.Pressed)
+                            {
+                                foreach (Tank eTank in enemyPlayer.tanks)
+                                {
+                                    if (eTank.curSquare.Contains(worldPosition) && curPlayer.AP > 1)
+                                    {
+                                        foreach (RectangleF rectF in CircleTiles)
+                                        {
+                                            if (!rectF.Null)
+                                            {
+                                                if (eTank.curSquare.Location == rectF.Location)
+                                                {
+                                                    curPlayer.AP -= 2;
+                                                    //if (item logic)
+                                                    eTank.alterHP(-2);
+                                                }
+                                            }
+                                        }
+                                        
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -353,12 +376,13 @@ namespace TankGame
             {
                 curPlayerTurn = 2;
                 curPlayer = P2;
-                
+                enemyPlayer = P1;
             }
             else if (curPlayerTurn == 2)
             {
                 curPlayerTurn = 1;
                 curPlayer = P1;
+                enemyPlayer = P2;
             }
             //reset all tanks to inactive
             activeTankNum = -1;
