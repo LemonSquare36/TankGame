@@ -43,6 +43,8 @@ namespace TankGame
 
         #region board information 
         protected List<Entity> entities = new List<Entity>();
+        protected List<Entity> oldEntities = new List<Entity>();
+        //protected List<Wall> walls = new List<Wall>();
         protected List<Mine> curMines = new List<Mine>();
         protected Board curBoard;
         protected Point TanksAndMines;

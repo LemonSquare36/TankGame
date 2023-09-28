@@ -62,6 +62,7 @@ namespace TankGame
                     levelManager.LoadLevel(file, 0.2468F, 0.05F);
                     //grab the informatin from the levelManager
                     entities = levelManager.getEntities();
+                    //walls = levelManager.getWalls();
                     curBoard = levelManager.getGameBoard();
                     TanksAndMines = levelManager.getTanksAndMines();
                     sweeps = levelManager.getSweeps();
@@ -222,7 +223,7 @@ namespace TankGame
                     CircleTiles[(int)@object.X, (int)@object.Y].identifier = 1;
                     //get the subgrids location relative to the board to see if a tank is there
                     Point subgridLocation = new Point(selectedTank.gridLocation.X - selectedTank.range, selectedTank.gridLocation.Y - selectedTank.range);
-                    //check if the object is a friendly tank and make the rectangle null/untargetable
+                    //check if the object is a friendly tank and make the rectangle null/untargetable (remove it from eligble targets)
                     foreach (Tank tank in curPlayer.tanks)
                     {
                         Point tankLocation = tank.gridLocation - subgridLocation;
@@ -264,6 +265,7 @@ namespace TankGame
         /// <summary> Set the old information to represent the start of the turn. </summary>
         public void GetTurnState()
         {
+            oldEntities.Clear();
             curPlayer.oldItems.Clear();
             curPlayer.oldTanks.Clear();
             //create clones instead of references for the items and tanks to prevent unwanted list updates
@@ -274,6 +276,10 @@ namespace TankGame
             foreach (Tank tank in curPlayer.tanks)
             {
                 curPlayer.oldTanks.Add(new Tank(tank.curSquare, tank.gridLocation));
+            }
+            foreach (Entity e in entities)
+            {
+                oldEntities.Add(e);
             }
             curPlayer.oldSweeps = curPlayer.sweeps;
             curPlayer.oldAP = curPlayer.AP;
@@ -343,23 +349,53 @@ namespace TankGame
                             }
                             else if (curRightClick == ButtonState.Pressed && oldRightClick != ButtonState.Pressed)
                             {
-                                foreach (Tank eTank in enemyPlayer.tanks)
+                                bool fired = false; //track if something was fired at to prevent unnessacary checks
+                                foreach (RectangleF tile in CircleTiles)//if its in range
                                 {
-                                    if (eTank.curSquare.Contains(worldPosition) && curPlayer.AP > 1)
+                                    if (!tile.Null)//and not blocked
                                     {
-                                        foreach (RectangleF rectF in CircleTiles)
+                                        foreach (Vector2 @object in blockersInCircle)//check which object is targeted
                                         {
-                                            if (!rectF.Null)
+                                            RectangleF targetRectangle;
+                                            if (CircleTiles[(int)@object.X, (int)@object.Y].Contains(worldPosition))//get the rectangle the mouse is in
                                             {
-                                                if (eTank.curSquare.Location == rectF.Location)
+                                                targetRectangle = CircleTiles[(int)@object.X, (int)@object.Y];//set the target rectangle 
+
+                                                if (tile.identifier == 1 && !fired)//is targetable
                                                 {
-                                                    curPlayer.AP -= 2;
-                                                    //if (item logic)
-                                                    eTank.alterHP(-2);
+                                                    if (curPlayer.AP > 1)//if player has ap to fire
+                                                    {
+                                                        curPlayer.AP -= 2;//spend 2 ap to fire at the targetable object
+
+                                                        //if (item logic)
+                                                        int damage = 2;
+                                                        foreach (Tank eTank in enemyPlayer.tanks)//for each enemy tank
+                                                        {
+                                                            if (eTank.curSquare.Location == targetRectangle.Location)//and the tank is in the target rectangle
+                                                            {
+                                                                eTank.alterHP(-damage);//tank takes damage
+                                                                fired = true;
+                                                            }
+                                                        }
+                                                        if (!fired)
+                                                        {
+                                                            foreach (Entity wall in entities)
+                                                            {
+                                                                if (wall.Type == "wall")
+                                                                {
+                                                                    if (wall.curSquare.Location == targetRectangle.Location)
+                                                                    {
+                                                                        wall.alterHP(-damage);
+                                                                        wall.showHealth = true;
+                                                                        fired = true;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
-                                        
                                     }
                                 }
                             }

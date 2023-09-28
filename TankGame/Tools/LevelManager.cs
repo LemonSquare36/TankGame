@@ -178,6 +178,10 @@ namespace TankGame.Tools
         {
             return tanksMines;
         }
+        public List<Wall> getWalls()
+        {
+            return walls;
+        }
         public int getSweeps()
         {
             return sweeps;
