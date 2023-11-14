@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TankGame.Objects.Entities;
+using TankGame.Objects.Entities.Items;
 
 namespace TankGame.Objects
 {
@@ -18,11 +19,8 @@ namespace TankGame.Objects
         public List<Tank> tanks = new List<Tank>();
         public List<Mine> mines = new List<Mine>();
 
-        //information for start of turn state
-        public int oldSweeps;
-        public List<Items> oldItems = new List<Items>();
-        public List<Tank> oldTanks = new List<Tank>();
-        public int oldAP = 0;
+        private Color playerColor;
+
 
         private RectangleF[,] SpawnRows;
         public RectangleF[,] spawnRows

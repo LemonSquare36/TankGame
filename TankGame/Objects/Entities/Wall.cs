@@ -19,25 +19,23 @@ namespace TankGame.Objects.Entities
 {
     internal class Wall : Entity
     {
-        Vector2 size = new Vector2(50, 50);
         public Wall(RectangleF CurrentSquare, Point GridLocation) : base(CurrentSquare, GridLocation)
         {
             curSquare = CurrentSquare;
             texFile = "GameSprites/Wall";
             type = "wall";
-            size = curSquare.Size / size;
+            size = curSquare.Size / spriteSize;
 
-            HP = 4;
-            curHP = 4;
+            HP = 3;
+            curHP = 3;
             showHealth = false;
             SetHPBarPos();
             alive = true;
         }
         public override void Initialize(RectangleF newRectangle)
         {
-            size = new Vector2(50, 50);
             curSquare = newRectangle;
-            size = curSquare.Size / size;
+            size = curSquare.Size / spriteSize;
             showHealth = false;
         }
         public override void LoadContent()
@@ -52,6 +50,24 @@ namespace TankGame.Objects.Entities
                 drawHPBar(spriteBatch);
             }
            
+        }
+        public static Wall Clone(Wall ItemToClone)
+        {
+            Wall @new = new Wall(ItemToClone.curSquare, ItemToClone.gridLocation);
+            @new.Active = ItemToClone.Active;
+            @new.alive = ItemToClone.alive;
+            @new.curHP = ItemToClone.curHP;
+            @new.HP = ItemToClone.HP;
+            @new.hpBar = ItemToClone.hpBar;
+            @new.hpBarLoc = ItemToClone.hpBarLoc;
+            @new.hpBarLocStart = ItemToClone.hpBarLocStart;
+            @new.hpBarSize = ItemToClone.hpBarSize;
+            @new.showHealth = ItemToClone.showHealth;
+            @new.tex = ItemToClone.tex;
+            @new.texFile = ItemToClone.texFile;
+            @new.type = ItemToClone.type;
+
+            return @new;
         }
     }
 }

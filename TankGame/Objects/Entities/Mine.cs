@@ -18,13 +18,12 @@ namespace TankGame.Objects.Entities
 {
     internal class Mine : Entity
     {
-        Vector2 size = new Vector2(50, 50);
         public Mine(RectangleF CurrentSquare, Point GridLocation) : base(CurrentSquare, GridLocation)
         {
             curSquare = CurrentSquare;
             texFile = "GameSprites/BattleSprites/MineUH";
             type = "mine";
-            size = curSquare.Size / size;
+            size = curSquare.Size / spriteSize;
         }
         public override void LoadContent()
         {
@@ -33,6 +32,24 @@ namespace TankGame.Objects.Entities
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(tex, curSquare.Location, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        }
+        public static Mine Clone(Mine ItemToClone)
+        {
+            Mine @new = new Mine(ItemToClone.curSquare, ItemToClone.gridLocation);
+            @new.Active = ItemToClone.Active;
+            @new.alive = ItemToClone.alive;
+            @new.curHP = ItemToClone.curHP;
+            @new.HP = ItemToClone.HP;
+            @new.hpBar = ItemToClone.hpBar;
+            @new.hpBarLoc = ItemToClone.hpBarLoc;
+            @new.hpBarLocStart = ItemToClone.hpBarLocStart;
+            @new.hpBarSize = ItemToClone.hpBarSize;
+            @new.showHealth = ItemToClone.showHealth;
+            @new.tex = ItemToClone.tex;
+            @new.texFile = ItemToClone.texFile;
+            @new.type = ItemToClone.type;
+
+            return @new;
         }
     }
 }

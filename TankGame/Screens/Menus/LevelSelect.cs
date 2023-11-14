@@ -15,6 +15,7 @@ using System.IO;
 using System.Collections;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
+using TankGame.GameInfo;
 
 namespace TankGame
 {
@@ -66,7 +67,7 @@ namespace TankGame
                 curBoard.drawCheckers(spriteBatch);
                 curBoard.DrawOutline(spriteBatch);
 
-                foreach (Entity e in entities)
+                foreach (Entity e in boardState.entities)
                 {
                     e.Draw(spriteBatch);
                 }               
@@ -98,15 +99,12 @@ namespace TankGame
                 {
                     levelManager.LoadLevel(file, 0.028F, 0.05F);
                     //grab the informatin from the levelManager
-                    entities = levelManager.getEntities();
+                    boardState = new BoardState(levelManager.getEntities(), levelManager.getWalls(), levelManager.getItemBoxes());
                     curBoard = levelManager.getGameBoard();
                     TanksAndMines = levelManager.getTanksAndMines();
                     //finish loading the board
                     curBoard.LoadContent();
-                    for (int i = 0; i < entities.Count; i++)
-                    {
-                        entities[i].LoadContent();
-                    }
+                    boardState.LoadEntities();
                     //level can be drawn and updated now
                     levelLoaded = true;
                 }

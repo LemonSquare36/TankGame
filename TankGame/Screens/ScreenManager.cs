@@ -16,6 +16,7 @@ using System.Collections;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
 using TankGame.Objects;
+using TankGame.GameInfo;
 
 namespace TankGame
 {
@@ -32,6 +33,7 @@ namespace TankGame
         protected MouseState mouse;
         protected ButtonState curLeftClick, oldLeftClick, curRightClick, oldRightClick;
         protected Vector2 worldPosition;
+        protected Point curGridLocation;
         //keystate every screen uses and keystate to calculate if a key is held
         protected KeyboardState keyState;
         protected KeyboardState keyHeldState;
@@ -41,19 +43,15 @@ namespace TankGame
         protected LevelManager levelManager;
 
 
-        #region board information 
-        protected List<Entity> entities = new List<Entity>();
-        protected List<Entity> oldEntities = new List<Entity>();
-        //protected List<Wall> walls = new List<Wall>();
-        protected List<Mine> curMines = new List<Mine>();
+        #region game information 
         protected Board curBoard;
         protected Point TanksAndMines;
         //the rows and columns
         protected int RowsCol, sweeps;
         //board info declares
-        protected List<Point> gridLocations = new List<Point>();
-
         protected bool mouseInBoard = false;
+
+        protected BoardState boardState, previousBoardState;
         #endregion
 
         #region Held functions
@@ -63,7 +61,7 @@ namespace TankGame
         {
             keyState = new KeyboardState();
             levelManager = new LevelManager();
-            entities.Clear();
+            //curBoardState.entities.Clear();
             relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         }
         //Holds LoadContent and the font if called
@@ -81,6 +79,12 @@ namespace TankGame
             curLeftClick = mouse.LeftButton;
             oldRightClick = curRightClick;
             curRightClick = mouse.RightButton;
+
+            //current rectange the mouse is in
+            if (curBoard != null)
+            {
+                curBoard.getGridSquare(worldPosition, out curGridLocation);
+            }
         }
         //Holds Draw
         public virtual void Draw()
@@ -156,5 +160,6 @@ namespace TankGame
             }
         }
         #endregion
+
     }
 }

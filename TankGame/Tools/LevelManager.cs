@@ -15,6 +15,7 @@ namespace TankGame.Tools
         Board board;
         List<Entity> entities = new List<Entity>();
         List<Wall> walls = new List<Wall>();
+        List<ItemBox> itemBoxes = new List<ItemBox>();
         Cell[,] cellMap;
         Point tanksMines;
         int sweeps;
@@ -95,8 +96,10 @@ namespace TankGame.Tools
                         if (line != "END")
                         {
                             cords = line.Split(',');
-                            entities.Add(new ItemBox(board.getGridSquare(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])),
-                                new Point(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1]))));
+                            ItemBox itemBoxToAdd = new ItemBox(board.getGridSquare(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])),
+                                new Point(Convert.ToInt16(cords[0]), Convert.ToInt16(cords[1])));
+                            entities.Add(itemBoxToAdd);
+                            itemBoxes.Add(itemBoxToAdd);
                         }
                     }
                 }
@@ -178,10 +181,6 @@ namespace TankGame.Tools
         {
             return tanksMines;
         }
-        public List<Wall> getWalls()
-        {
-            return walls;
-        }
         public int getSweeps()
         {
             return sweeps;
@@ -208,9 +207,13 @@ namespace TankGame.Tools
                 }
             }
         }
-        public List<Wall> getWallsList()
+        public List<Wall> getWalls()
         {
             return walls;
+        }
+        public List<ItemBox> getItemBoxes()
+        {
+            return itemBoxes;
         }
     }
 }

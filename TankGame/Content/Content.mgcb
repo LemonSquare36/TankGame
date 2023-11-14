@@ -73,6 +73,30 @@
 /processorParam:TextureFormat=Color
 /build:Buttons/BattleScreen/ReadyUH.jpg
 
+#begin Buttons/BattleScreen/SweepH.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Buttons/BattleScreen/SweepH.png
+
+#begin Buttons/BattleScreen/SweepUH.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Buttons/BattleScreen/SweepUH.png
+
 #begin Buttons/BattleScreen/UndoH.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -439,6 +463,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:GameSprites/BattleSprites/MineUH.png
+
+#begin GameSprites/BattleSprites/TankDead.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/TankDead.png
 
 #begin GameSprites/BattleSprites/TankH.png
 /importer:TextureImporter

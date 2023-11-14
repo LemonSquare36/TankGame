@@ -6,6 +6,7 @@ using System.IO;
 using TankGame.Objects;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
+using TankGame.GameInfo;
 
 namespace TankGame
 {
@@ -32,6 +33,9 @@ namespace TankGame
         ListBox levelSelection;
         //colors for text
         Color rowColColor, tankColor, MineColor, sweepColor;
+
+        //boardState just for the levelEditor
+        BoardState boardState;
         #endregion
 
         //Initialize
@@ -218,7 +222,7 @@ namespace TankGame
                 //board draw 
                 curBoard.drawCheckers(spriteBatch);
                 curBoard.DrawOutline(spriteBatch);
-                foreach (Entity e in entities)
+                foreach (Entity e in boardState.entities)
                 {
                     e.Draw(spriteBatch);
                 }
@@ -268,15 +272,15 @@ namespace TankGame
                     RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);
                     Wall newWall = new Wall(curGrid, curGridLocation);
                     //if the grid has been used before then remove the current object there and add the new one
-                    if (gridLocations.Contains(newWall.gridLocation))
+                    if (boardState.gridLocations.Contains(newWall.gridLocation))
                     {
-                        for (int i = 0; i < entities.Count; i++)
+                        for (int i = 0; i < boardState.entities.Count; i++)
                         {
-                            if (entities[i].gridLocation == newWall.gridLocation)
+                            if (boardState.entities[i].gridLocation == newWall.gridLocation)
                             {
-                                entities.Remove(entities[i]);
+                                boardState.entities.Remove(boardState.entities[i]);
                                 newWall.LoadContent();
-                                entities.Add(newWall);
+                                boardState.entities.Add(newWall);
                             }
                         }
                     }
@@ -284,8 +288,8 @@ namespace TankGame
                     else
                     {
                         newWall.LoadContent();
-                        entities.Add(newWall);
-                        gridLocations.Add(newWall.gridLocation);
+                        boardState.entities.Add(newWall);
+                        boardState.gridLocations.Add(newWall.gridLocation);
                     }
                 }
             }
@@ -304,15 +308,15 @@ namespace TankGame
                     RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);
                     ItemBox newItem = new ItemBox(curGrid, curGridLocation);
                     //if the grid has been used before then remove the current object there and add the new one
-                    if (gridLocations.Contains(newItem.gridLocation))
+                    if (boardState.gridLocations.Contains(newItem.gridLocation))
                     {
-                        for (int i = 0; i < entities.Count; i++)
+                        for (int i = 0; i < boardState.entities.Count; i++)
                         {
-                            if (entities[i].gridLocation == newItem.gridLocation)
+                            if (boardState.entities[i].gridLocation == newItem.gridLocation)
                             {
-                                entities.Remove(entities[i]);
+                                boardState.entities.Remove(boardState.entities[i]);
                                 newItem.LoadContent();
-                                entities.Add(newItem);
+                                boardState.entities.Add(newItem);
                             }
                         }
                     }
@@ -320,8 +324,8 @@ namespace TankGame
                     else
                     {
                         newItem.LoadContent();
-                        entities.Add(newItem);
-                        gridLocations.Add(newItem.gridLocation);
+                        boardState.entities.Add(newItem);
+                        boardState.gridLocations.Add(newItem.gridLocation);
                     }
                 }
             }
@@ -339,12 +343,12 @@ namespace TankGame
                     Point curGridLocation;
                     RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);                    
                     //if the grid has been used before then remove the current object there and add the new one
-                        for (int i = 0; i < entities.Count; i++)
+                        for (int i = 0; i < boardState.entities.Count; i++)
                         {
-                            if (entities[i].gridLocation == curGridLocation)
+                            if (boardState.entities[i].gridLocation == curGridLocation)
                             {
-                                entities.Remove(entities[i]);
-                                gridLocations.Remove(curGridLocation);
+                                boardState.entities.Remove(boardState.entities[i]);
+                                boardState.gridLocations.Remove(curGridLocation);
                             }
                     }
                 }
@@ -364,17 +368,16 @@ namespace TankGame
                 {
                     levelManager.LoadLevel(file, 0.028F, 0.05F);
                     //grab the informatin from the levelManager
-                    entities = levelManager.getEntities();
+                    boardState = new BoardState(levelManager.getEntities(), levelManager.getWalls(), levelManager.getItemBoxes());
+
                     curBoard = levelManager.getGameBoard();
                     TanksAndMines = levelManager.getTanksAndMines();
                     sweeps = levelManager.getSweeps();
                     //finish loading the board
                     curBoard.LoadContent();
-                    for (int i = 0; i <entities.Count; i++)
-                    {
-                        entities[i].LoadContent();
-                        gridLocations.Add(entities[i].gridLocation);
-                    }
+                    boardState.LoadEntities();
+                    boardState.getGridLocations();
+
                     nameField.Text = Path.GetFileName(file).Split(".")[0];
                     //level can be drawn and updated now. New thread can be made
                     levelLoaded = true;
@@ -404,7 +407,7 @@ namespace TankGame
                 {
                     string fileName = nameField.Text.Replace(" ", "");
                     file = relativePath + "\\TankGame\\" + fileName + ".lvl";
-                    levelManager.SaveLevel(file, curBoard, entities, TanksAndMines, sweeps);
+                    levelManager.SaveLevel(file, curBoard, boardState.entities, TanksAndMines, sweeps);
                 }
             }
             //load the listBox for level selection
@@ -418,8 +421,8 @@ namespace TankGame
             float size = Camera.ViewboxScale.Y * 0.9F;
             Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.X * .028F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
             curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 20, 20, 8);
-            entities.Clear();
-            gridLocations.Clear();
+            boardState.entities.Clear();
+            boardState.gridLocations.Clear();
             curBoard.LoadContent();
             curBoard.setColor(new Color(235, 235, 235), new Color(200,200,200), Color.Black);
             nameField.Text = "New";           
@@ -443,8 +446,8 @@ namespace TankGame
             float size = Camera.ViewboxScale.Y * 0.9F;
             Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
             curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 20, 20, 8);
-            entities.Clear();
-            gridLocations.Clear();
+            boardState.entities.Clear();
+            boardState.gridLocations.Clear();
             curBoard.LoadContent();
             curBoard.setColor(new Color(235, 235, 235), new Color(200, 200, 200), Color.Black);
             nameField.Text = "New";
@@ -561,16 +564,16 @@ namespace TankGame
                 curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), RowsCol, RowsCol, 8);
                 curBoard.LoadContent();
                 curBoard.setColor(new Color(235, 235, 235), new Color(200, 200, 200), Color.Black);
-                int counter = entities.Count;
+                int counter = boardState.entities.Count;
                 for (int i = 0; i < counter; i++)
                 {
                     try
-                    {                        
-                        entities[i].Initialize(curBoard.getGridSquare(entities[i].gridLocation.X, entities[i].gridLocation.Y)); 
+                    {
+                        boardState.entities[i].Initialize(curBoard.getGridSquare(boardState.entities[i].gridLocation.X, boardState.entities[i].gridLocation.Y)); 
                     }
                     catch {
-                        gridLocations.Remove(entities[i].gridLocation);
-                        entities.Remove(entities[i]);
+                        boardState.gridLocations.Remove(boardState.entities[i].gridLocation);
+                        boardState.entities.Remove(boardState.entities[i]);
                         i--;
                     }
                     

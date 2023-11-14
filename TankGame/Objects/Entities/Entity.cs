@@ -21,6 +21,8 @@ namespace TankGame.Objects.Entities
     internal class Entity
     {
         public RectangleF curSquare { get; set; }
+        protected Vector2 spriteSize = new Vector2(50, 50);
+        protected Vector2 size;
 
         protected Texture2D tex, hpBar;
         protected string texFile;
@@ -43,6 +45,7 @@ namespace TankGame.Objects.Entities
         {
             curSquare = CurrentSquare;
             gridLocation = GridLocation;
+            size = curSquare.Size / spriteSize;
         }
         public virtual void Initialize(RectangleF newRectangle)
         {
@@ -59,20 +62,29 @@ namespace TankGame.Objects.Entities
         }
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            //spriteBatch.Draw(tex, curSquare.Location, null, Color.White, 0, Vector2.Zero, curSquare.Size, SpriteEffects.None, 0);
+            spriteBatch.Draw(tex, curSquare.Location, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            if (showHealth)
+            {
+                drawHPBar(spriteBatch);
+            }
         }
-
-        public static Tank ConvertToTank(Entity e)
+        public static Entity Clone(Entity ItemToClone)
         {
-            Tank t = new Tank(e.curSquare, e.gridLocation);
-            t.LoadContent();
-            return t;
-        }
-        public static Mine ConvertToMine(Entity e)
-        {
-            Mine m = new Mine(e.curSquare, e.gridLocation);
-            m.LoadContent();
-            return m;
+            Entity @new = new Entity(ItemToClone.curSquare, ItemToClone.gridLocation);
+            @new.Active = ItemToClone.Active;
+            @new.alive = ItemToClone.alive;
+            @new.curHP = ItemToClone.curHP;
+            @new.HP = ItemToClone.HP;
+            @new.hpBar = ItemToClone.hpBar;
+            @new.hpBarLoc = ItemToClone.hpBarLoc;
+            @new.hpBarLocStart = ItemToClone.hpBarLocStart;
+            @new.hpBarSize = ItemToClone.hpBarSize;
+            @new.showHealth = ItemToClone.showHealth;
+            @new.tex = ItemToClone.tex;
+            @new.texFile = ItemToClone.texFile;
+            @new.type = ItemToClone.type;
+            
+            return @new;
         }
 
         protected void SetHPBarPos()
@@ -113,6 +125,7 @@ namespace TankGame.Objects.Entities
             if (curHP <= 0)
             {
                 alive = false;
+                curHP = 0;
             }
         }
     }

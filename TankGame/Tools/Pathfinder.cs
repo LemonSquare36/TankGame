@@ -274,5 +274,14 @@ namespace TankGame.Tools
                 }
             }
         }
+        /// <summary>
+        /// Use this to change the originalcellmap one cell at a time. Useful for removing walls or something similar
+        /// </summary>
+        /// <param name="cellLocation"></param>
+        /// <param name="newIdentifier">0 for nothing blocking, 1 for blocking</param>
+        public void AlterCell(Point cellLocation, int newIdentifier)
+        {
+            originalCellMap[cellLocation.X, cellLocation.Y].Identifier = newIdentifier;
+        }
     }
 }
