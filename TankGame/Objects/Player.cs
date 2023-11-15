@@ -21,6 +21,7 @@ namespace TankGame.Objects
 
         private Color playerColor;
 
+        public List<Point> SpawnTiles;
 
         private RectangleF[,] SpawnRows;
         public RectangleF[,] spawnRows
@@ -35,7 +36,7 @@ namespace TankGame.Objects
                 //set the spawn rectangle based on SpawnRows size information
                 int test = SpawnRows.GetUpperBound(0);
                 int test2 = SpawnRows.GetUpperBound(1);
-                spawn = new RectangleF(SpawnRows[0,0].Location, (SpawnRows[SpawnRows.GetUpperBound(0), SpawnRows.GetUpperBound(1)].Location - SpawnRows[0, 0].Location) + SpawnRows[0, 0].Size);
+                spawn = new RectangleF(SpawnRows[0, 0].Location, (SpawnRows[SpawnRows.GetUpperBound(0), SpawnRows.GetUpperBound(1)].Location - SpawnRows[0, 0].Location) + SpawnRows[0, 0].Size);
             }
         }
         public RectangleF spawn;

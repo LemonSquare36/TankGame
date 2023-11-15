@@ -7,6 +7,7 @@ using TankGame.Objects;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
 using TankGame.GameInfo;
+using System.Runtime.CompilerServices;
 
 namespace TankGame
 {
@@ -16,26 +17,31 @@ namespace TankGame
         //for words
         SpriteFont font;
         //generic buttons
-        Button Load, Save, New, Delete, Back;
+        Button Load, Save, New, Delete, Back, ArrowRight, ArrowLeft;
         Button SetRowCol, SetTankCount, SetMineCount, SetSweepCount;
         //add object buttons
-        Button addWall, addItem, erase;
-        List<Button> Buttons = new List<Button>();
+        Button addWall, addItem, erase, addSpawn;
+        List<Button> PageOneButtons = new List<Button>();
+        List<Button> PageTwoButtons = new List<Button>();
         //level loading logic
         bool levelLoaded = false;
         string file;
         //objects selected logic
-        bool wallSelected = false, itemSelected = false, eraseSelected = false;
+        bool wallSelected = false, itemSelected = false, eraseSelected = false, spawnSelected = false;
         //input box
         InputBox nameField, sizeField, tankField, mineField, sweepField;
-        List<InputBox> Fields = new List<InputBox>();
+        List<InputBox> PageOneFields = new List<InputBox>();
         //List Box
         ListBox levelSelection;
         //colors for text
         Color rowColColor, tankColor, MineColor, sweepColor;
+        //selectors
+        Selector playerCount; 
 
-        //boardState just for the levelEditor
-        BoardState boardState;
+        int activePage = 1;
+        int selectedPlayer = -1;
+        List<List<Point>> spawnLists = new List<List<Point>>();
+        List<Point> curSpawnList = new List<Point>();
         #endregion
 
         //Initialize
@@ -53,6 +59,7 @@ namespace TankGame
 
 
             levelSelection = new ListBox(new Vector2(1100, 570), new Vector2(740, 450), 11, Color.White, Color.Black,Color.DarkGray, 4);
+            playerCount = new Selector(new Vector2(1414, 100), new Vector2(100, 100), "PlusMinus", 8, 2, Color.Black);
             #endregion
 
             #region default font colors
@@ -73,11 +80,14 @@ namespace TankGame
             #endregion
 
             #region load buttons
+            //page 1 
             Load = new Button(new Vector2(1130, 440), 100, 50, "Buttons/Editor/Load", "load");
             Save = new Button(new Vector2(1280, 440), 100, 50, "Buttons/Editor/Save", "save");
             New = new Button(new Vector2(1430, 440), 100, 50, "Buttons/Editor/New", "new");
             Delete = new Button(new Vector2(1580, 440), 100, 50, "Buttons/Editor/Delete", "delete");
             Back = new Button(new Vector2(1730, 440), 100, 50, "Buttons/Editor/Back", "back", 0);
+            ArrowRight = new Button(new Vector2(1690, 300), 100, 50, "Buttons/Editor/ArrowRight", "arrowright");
+
 
             SetRowCol = new Button(new Vector2(1180, 110), 70, 50, "Buttons/Editor/Set", "setrowcol");
             SetTankCount = new Button(new Vector2(1380, 110), 70, 50, "Buttons/Editor/Set", "settankcount");
@@ -87,14 +97,21 @@ namespace TankGame
             addWall = new Button(new Vector2(1290, 300), 50, 50, "Buttons/Editor/Wall", "addWall", "toggle");
             addItem = new Button(new Vector2(1440, 300), 50, 50, "Buttons/Editor/ItemBox", "addItem", "toggle");
             erase = new Button(new Vector2(1590, 300), 50, 50, "Buttons/Editor/Clear", "erase", "toggle");
+
+            //page 2
+            ArrowLeft = new Button(new Vector2(1190, 300), 100, 50, "Buttons/Editor/ArrowLeft", "arrowleft");
+
+            addSpawn = new Button(new Vector2(1290, 300), 100, 50, "Buttons/Editor/SpawnButton", "addspawn", "toggle");
             #endregion
 
             #region Button Events
+            //page 1
             Load.ButtonClicked += LoadPressed;
             Save.ButtonClicked += SavePressed;
             New.ButtonClicked += NewPressed;
             Delete.ButtonClicked += DeletePressed;
             Back.ButtonClicked += ScreenChangeEvent;
+            ArrowRight.ButtonClicked += ArrowRightPressed;
 
             SetRowCol.ButtonClicked += SetRowColPressed;
             SetTankCount.ButtonClicked += SetTanksPressed;
@@ -104,39 +121,49 @@ namespace TankGame
             addWall.ButtonClicked += SelectWall;
             addItem.ButtonClicked += SelectItem;
             erase.ButtonClicked += SelectErase;
+
+            //page 2
+            ArrowLeft.ButtonClicked += ArrowLeftPressed;
+
+            addSpawn.ButtonClicked += SelectSpawn;
             #endregion
 
             #region ButtonList
-            Buttons.Clear();
-            Buttons.Add(Load);
-            Buttons.Add(Save);
-            Buttons.Add(New);
-            Buttons.Add(Delete);
-            Buttons.Add(Back);
-            Buttons.Add(addWall);
-            Buttons.Add(addItem);
-            Buttons.Add(erase);
-            Buttons.Add(SetRowCol);
-            Buttons.Add(SetTankCount);
-            Buttons.Add(SetMineCount);
-            Buttons.Add(SetSweepCount);
+            PageOneButtons.Clear();
+            PageOneButtons.Add(Load);
+            PageOneButtons.Add(Save);
+            PageOneButtons.Add(New);
+            PageOneButtons.Add(Delete);
+            PageOneButtons.Add(Back);
+            PageOneButtons.Add(addWall);
+            PageOneButtons.Add(addItem);
+            PageOneButtons.Add(erase);
+            PageOneButtons.Add(SetRowCol);
+            PageOneButtons.Add(SetTankCount);
+            PageOneButtons.Add(SetMineCount);
+            PageOneButtons.Add(SetSweepCount);
+            PageOneButtons.Add(ArrowRight);
 
+            PageTwoButtons.Add(ArrowLeft);
+            PageTwoButtons.Add(addSpawn);
+            PageTwoButtons.Add(erase);
             #endregion
 
             #region input box list
-            Fields.Add(nameField);
-            Fields.Add(sizeField);
-            Fields.Add(tankField);
-            Fields.Add(mineField);
-            Fields.Add(sweepField);
+            PageOneFields.Add(nameField);
+            PageOneFields.Add(sizeField);
+            PageOneFields.Add(tankField);
+            PageOneFields.Add(mineField);
+            PageOneFields.Add(sweepField);
             #endregion
 
-            foreach (InputBox box in Fields)
+            foreach (InputBox box in PageOneFields)
             {
                 box.LoadContent();
             }
             //load the listBox for level selection
             LevelListLoad();
+            playerCount.LoadContent();
 
 
         }
@@ -145,73 +172,102 @@ namespace TankGame
         {
             base.Update();
             //update buttons
-            foreach (Button b in Buttons)
+            if (activePage == 1)
             {
-                b.Update(mouse, worldPosition);
-            }
+                foreach (Button b in PageOneButtons)
+                {
+                    b.Update(mouse, worldPosition);
+                }
 
-            //update to all the text boxes
-            foreach (InputBox box in Fields)
+                //update to all the text boxes
+                foreach (InputBox box in PageOneFields)
+                {
+                    box.Update(mouse, worldPosition, keyState, keyHeldState);
+                }
+
+                levelSelection.Update(mouse, worldPosition);
+
+
+                //check for changes in the text boxes
+                //if changed but not set, change the color to red to indicated unset changes
+                #region color checks
+                try
+                {
+                    if (Convert.ToInt16(sizeField.Text) != RowsCol)
+                    {
+                        rowColColor = Color.Red;
+                    }
+                    else { rowColColor = Color.Black; }
+                    if (Convert.ToInt16(tankField.Text) != TanksAndMines.X)
+                    {
+                        tankColor = Color.Red;
+                    }
+                    else { tankColor = Color.Black; }
+                    if (Convert.ToInt16(mineField.Text) != TanksAndMines.Y)
+                    {
+                        MineColor = Color.Red;
+                    }
+                    else { MineColor = Color.Black; }
+                    if (Convert.ToInt16(sweepField.Text) != sweeps)
+                    {
+                        sweepColor = Color.Red;
+                    }
+                    else { MineColor = Color.Black; }
+                }
+                catch { }
+                #endregion
+
+
+                //if the level is loaded
+                if (levelLoaded)
+                {
+                    //if the board is loaded, check if the mouse is inside it or not
+                    getMouseInBoard();
+                    //the tools on page 1
+                    if (wallSelected)
+                    {
+                        AddWall();
+                    }
+                    else if (itemSelected)
+                    {
+                        AddItem();
+                    }
+                    else if (eraseSelected)
+                    {
+                        EraserTool();
+                    }
+                    if (mouse.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                    {
+                        EraserTool();
+                    }
+                }
+            }
+            else if (activePage == 2)
             {
-                box.Update(mouse, worldPosition, keyState, keyHeldState);
-            }
-
-            levelSelection.Update(mouse, worldPosition);
-
-            //check for changes in the text boxes
-            //if changed but not set, change the color to red to indicated unset changes
-            #region color checks
-            try
-            {
-                if (Convert.ToInt16(sizeField.Text) != RowsCol)
+                foreach (Button b in PageTwoButtons)
                 {
-                    rowColColor = Color.Red;
+                    b.Update(mouse, worldPosition);
                 }
-                else { rowColColor = Color.Black; }
-                if (Convert.ToInt16(tankField.Text) != TanksAndMines.X)
+                playerCount.Update(mouse, worldPosition);
+                if (levelLoaded)
                 {
-                    tankColor = Color.Red;
-                }
-                else { tankColor = Color.Black; }
-                if (Convert.ToInt16(mineField.Text) != TanksAndMines.Y)
-                {
-                    MineColor = Color.Red;
-                }
-                else { MineColor = Color.Black; }
-                if (Convert.ToInt16(sweepField.Text) != sweeps)
-                {
-                    sweepColor = Color.Red;
-                }
-                else { MineColor = Color.Black; }
-            }
-            catch { }
-            #endregion
-
-            //if the level is loaded
-            if (levelLoaded)
-            {
-                //if the board is loaded, check if the mouse is inside it or not
-                getMouseInBoard();
-                //if walls are selected this code allows for the addition of walls
-                if (wallSelected)
-                {
-                    AddWall();
-                }
-                else if (itemSelected)
-                {
-                    AddItem();
-                }
-                else if (eraseSelected)
-                {
-                    EraserTool();
-                }
-                if (mouse.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
-                {
-                    EraserTool();
+                    //if the board is loaded, check if the mouse is inside it or not
+                    getMouseInBoard();
+                    //the tools on page 2
+                    if (eraseSelected)
+                    {
+                        EraserTool();
+                    }
+                    else if (spawnSelected)
+                    {
+                        AddSpawn();
+                    }
+                    if (mouse.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                    {
+                        EraserTool();
+                    }
                 }
             }
-
-
         }
         //Draw
         public override void Draw()
@@ -228,33 +284,53 @@ namespace TankGame
                 }
             }
 
-            //regular draw
-            //draw buttons
-            foreach (Button b in Buttons)
+            #region PageOne Draw
+
+            if (activePage == 1)
             {
-                b.Draw(spriteBatch);
-            }
-            //input box list draw
-            foreach (InputBox box in Fields)
-            {
-                box.Draw(spriteBatch);
-            }
-            levelSelection.Draw(spriteBatch);
+                //draw buttons
+                foreach (Button b in PageOneButtons)
+                {
+                    b.Draw(spriteBatch);
+                }
+                //input box list draw
+                foreach (InputBox box in PageOneFields)
+                {
+                    box.Draw(spriteBatch);
+                }
+                levelSelection.Draw(spriteBatch);
 
 
-            #region drawing text to screen
-            //spriteBatch.DrawString(font, "Add an Object ", new Vector2(1100, 100), Color.Black);
-            spriteBatch.DrawString(font, "Right Click to Erase", new Vector2(1300, 350), Color.Black);
-            spriteBatch.DrawString(font, "Walls", new Vector2(1270, 250), Color.Black);
-            spriteBatch.DrawString(font, "ItemBoxes", new Vector2(1382, 250), Color.Black);
-            spriteBatch.DrawString(font, "Eraser", new Vector2(1570, 250), Color.Black);
-            spriteBatch.DrawString(font, "Level Name: ", new Vector2(1200, 505), Color.Black);
-            spriteBatch.DrawString(font, "Size", new Vector2(1095, 50), rowColColor);
-            spriteBatch.DrawString(font, "# of Tanks", new Vector2(1240, 50), tankColor);
-            spriteBatch.DrawString(font, "# of Mines", new Vector2(1440, 50), MineColor);
-            spriteBatch.DrawString(font, "# of Sweeps", new Vector2(1640, 50), sweepColor);
-            spriteBatch.DrawString(font, "Red Text = Change Not Set", new Vector2(1250, 180), Color.Red);
+                #region drawing text to screen
+                //spriteBatch.DrawString(font, "Add an Object ", new Vector2(1100, 100), Color.Black);
+                spriteBatch.DrawString(font, "Right Click to Erase", new Vector2(1300, 350), Color.Black);
+                spriteBatch.DrawString(font, "Walls", new Vector2(1270, 250), Color.Black);
+                spriteBatch.DrawString(font, "ItemBoxes", new Vector2(1382, 250), Color.Black);
+                spriteBatch.DrawString(font, "Eraser", new Vector2(1570, 250), Color.Black);
+                spriteBatch.DrawString(font, "Level Name: ", new Vector2(1200, 505), Color.Black);
+                spriteBatch.DrawString(font, "Size", new Vector2(1095, 50), rowColColor);
+                spriteBatch.DrawString(font, "# of Tanks", new Vector2(1240, 50), tankColor);
+                spriteBatch.DrawString(font, "# of Mines", new Vector2(1440, 50), MineColor);
+                spriteBatch.DrawString(font, "# of Sweeps", new Vector2(1640, 50), sweepColor);
+                spriteBatch.DrawString(font, "Red Text = Change Not Set", new Vector2(1250, 180), Color.Red);
+                #endregion
+            }
             #endregion
+            else if (activePage == 2)
+            {
+                foreach (Button b in PageTwoButtons)
+                {
+                    b.Draw(spriteBatch);
+                }
+                
+                playerCount.Draw(spriteBatch, font);
+                #region draw text to screen page 2
+
+                spriteBatch.DrawString(font, "Player Count", new Vector2(1355, 50), Color.Black);
+                spriteBatch.DrawString(font, "Eraser", new Vector2(1570, 250), Color.Black);
+
+                #endregion
+            }
         }
 
         #region Adding objects functions
@@ -354,6 +430,10 @@ namespace TankGame
                 }
             }
         }
+        private void AddSpawn()
+        {
+
+        }
         #endregion
 
 
@@ -421,8 +501,7 @@ namespace TankGame
             float size = Camera.ViewboxScale.Y * 0.9F;
             Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.X * .028F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
             curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 20, 20, 8);
-            boardState.entities.Clear();
-            boardState.gridLocations.Clear();
+            boardState = new BoardState(new(), new(), new());
             curBoard.LoadContent();
             curBoard.setColor(new Color(235, 235, 235), new Color(200,200,200), Color.Black);
             nameField.Text = "New";           
@@ -434,6 +513,7 @@ namespace TankGame
             RowsCol = 20;
             TanksAndMines = new Point(3, 3);
             sweeps = 3;
+            playerCount.Value = 2;
 
             rowColColor = Color.Black;
             tankColor = Color.Black;
@@ -446,8 +526,7 @@ namespace TankGame
             float size = Camera.ViewboxScale.Y * 0.9F;
             Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
             curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 20, 20, 8);
-            boardState.entities.Clear();
-            boardState.gridLocations.Clear();
+            boardState = new BoardState(new(), new(), new());
             curBoard.LoadContent();
             curBoard.setColor(new Color(235, 235, 235), new Color(200, 200, 200), Color.Black);
             nameField.Text = "New";
@@ -459,6 +538,7 @@ namespace TankGame
             RowsCol = 20;
             TanksAndMines = new Point(3, 3);
             sweeps = 3;
+            playerCount.Value = 2;
 
             rowColColor = Color.Black;
             tankColor = Color.Black;
@@ -494,7 +574,8 @@ namespace TankGame
             }
             itemSelected = false;
             eraseSelected = false;
-            
+            spawnSelected = false;
+
             if (addItem.Texture == addItem.Pressed)
             {
                 addItem.toggleTexture();
@@ -502,6 +583,10 @@ namespace TankGame
             if (erase.Texture == erase.Pressed)
             {
                 erase.toggleTexture();
+            }
+            if (addSpawn.Texture == addSpawn.Pressed)
+            {
+                addSpawn.toggleTexture();
             }
         }
         private void SelectItem(object sender, EventArgs e)
@@ -516,6 +601,7 @@ namespace TankGame
             }
             wallSelected = false;
             eraseSelected = false;
+            spawnSelected = false;
 
             if (addWall.Texture == addWall.Pressed)
             {
@@ -524,6 +610,10 @@ namespace TankGame
             if (erase.Texture == erase.Pressed)
             {
                 erase.toggleTexture();
+            }
+            if (addSpawn.Texture == addSpawn.Pressed)
+            {
+                addSpawn.toggleTexture();
             }
         }
         private void SelectErase(object sender, EventArgs e)
@@ -538,6 +628,7 @@ namespace TankGame
             }
             itemSelected = false;
             wallSelected = false;
+            spawnSelected = false;
 
             if (addItem.Texture == addItem.Pressed)
             {
@@ -546,6 +637,37 @@ namespace TankGame
             if (addWall.Texture == addWall.Pressed)
             {
                 addWall.toggleTexture();
+            }
+            if (addSpawn.Texture == addSpawn.Pressed)
+            {
+                addSpawn.toggleTexture();
+            }
+        }
+        private void SelectSpawn(object sender, EventArgs e)
+        {
+            if (!spawnSelected)
+            {
+                spawnSelected = true;
+            }
+            else
+            {
+                spawnSelected = false;
+            }
+            itemSelected = false;
+            wallSelected = false;
+            eraseSelected = false;
+
+            if (addItem.Texture == addItem.Pressed)
+            {
+                addItem.toggleTexture();
+            }
+            if (addWall.Texture == addWall.Pressed)
+            {
+                addWall.toggleTexture();
+            }
+            if (erase.Texture == erase.Pressed)
+            {
+                erase.toggleTexture();
             }
         }
         #endregion
@@ -559,24 +681,35 @@ namespace TankGame
             try
             {
                 RowsCol = Convert.ToInt16(sizeField.Text);
+                //limit of board size of 40x40
+                if (RowsCol > 40)
+                {
+                    //set actaul value, then displayed value
+                    RowsCol = 40;
+                    sizeField.Text = "40";
+                }
                 float size = Camera.ViewboxScale.Y * 0.9F;
                 Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
                 curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), RowsCol, RowsCol, 8);
                 curBoard.LoadContent();
                 curBoard.setColor(new Color(235, 235, 235), new Color(200, 200, 200), Color.Black);
-                int counter = boardState.entities.Count;
-                for (int i = 0; i < counter; i++)
+                //if there are entities to check
+                if (boardState != null)
                 {
-                    try
+                    for (int i = 0; i < boardState.entities.Count; i++)
                     {
-                        boardState.entities[i].Initialize(curBoard.getGridSquare(boardState.entities[i].gridLocation.X, boardState.entities[i].gridLocation.Y)); 
+                        //see if the current entitie is within the new grid size before initializing it
+                        if (boardState.entities[i].gridLocation.X < RowsCol && boardState.entities[i].gridLocation.Y < RowsCol)
+                        {
+                            boardState.entities[i].Initialize(curBoard.getGridSquare(boardState.entities[i].gridLocation.X, boardState.entities[i].gridLocation.Y));
+                        }
+                        else //if it isnt in the grid then remove it from exisitance
+                        {
+                            boardState.gridLocations.Remove(boardState.entities[i].gridLocation);
+                            boardState.entities.Remove(boardState.entities[i]);
+                            i--;
+                        }
                     }
-                    catch {
-                        boardState.gridLocations.Remove(boardState.entities[i].gridLocation);
-                        boardState.entities.Remove(boardState.entities[i]);
-                        i--;
-                    }
-                    
                 }
             }
             //if not a number make it a numbe but dont scale anything
@@ -588,6 +721,13 @@ namespace TankGame
             try
             {
                 TanksAndMines.X = Convert.ToInt16(tankField.Text);
+                //limit of 8 on the tanks
+                if (TanksAndMines.X > 8)
+                {
+                    //set actaul value, then displayed value
+                    TanksAndMines.X = 8;
+                    tankField.Text = "8";
+                }
                 tankColor = Color.Black;
             }
             catch { }
@@ -597,6 +737,13 @@ namespace TankGame
             try
             {
                 TanksAndMines.Y = Convert.ToInt16(mineField.Text);
+                //limit of 12 on the mines
+                if (TanksAndMines.Y > 12)
+                {
+                    //set actaul value, then displayed value
+                    TanksAndMines.Y = 12;
+                    mineField.Text = "12";
+                }
                 MineColor = Color.Black;
             }
             catch { }
@@ -609,6 +756,16 @@ namespace TankGame
                 sweepColor = Color.Black;
             }
             catch { }
+        }
+        #endregion
+        #region pageChanges
+        private void ArrowRightPressed(object sender, EventArgs e)
+        {
+            activePage = 2;
+        }
+        private void ArrowLeftPressed(object sender, EventArgs e)
+        {
+            activePage = 1;
         }
         #endregion
 
@@ -630,7 +787,7 @@ namespace TankGame
         public override void ButtonReset()
         {
             //resets everybutton to prevent unwanted button clicks
-            foreach (Button b in Buttons)
+            foreach (Button b in PageOneButtons)
             {
                 b.ButtonReset();
             }

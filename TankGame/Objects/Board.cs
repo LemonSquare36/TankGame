@@ -11,7 +11,7 @@ namespace TankGame.Objects
         RectangleF[,] gridarray, gridLines;
         Vector2 TopLeft, BottomRight;
 
-        RectangleF InnerRectangle, 
+        RectangleF InnerRectangle,
             horizontalOutline, horizontalOutline2,
             verticalOutline, verticalOutline2;
         Color color, color2, borderColor;
@@ -21,13 +21,16 @@ namespace TankGame.Objects
         private Vector2 individualSize;
         public Vector2 IndividualSize { get { return individualSize; } }
 
+        public bool gridArrayAccessible { get 
+            {if (gridarray.LongLength == 0) return false; else return true; } }
+
         public int Columns
         {
             get { return Col; }
         }
         public int Rows
         {
-            get { return Row;  }
+            get { return Row; }
         }
         /// <summary>Checkerboard color 1</summary>
         public Color Color1
@@ -63,9 +66,9 @@ namespace TankGame.Objects
             Location = new Vector2(topLeft.X, topLeft.Y);
             TopLeft = new Vector2(topLeft.X, topLeft.Y);
             FullSize = new Vector2(bottomRight.X, bottomRight.Y);
-            BottomRight = new Vector2(bottomRight.X-thickness, bottomRight.Y - thickness);
+            BottomRight = new Vector2(bottomRight.X - thickness, bottomRight.Y - thickness);
             Col = col;
-            Row = rows;         
+            Row = rows;
 
             borderThickness = thickness;
             individualSize = new Vector2((BottomRight.X - borderThickness + 1) / Col, (BottomRight.Y - borderThickness + 1) / Row);
@@ -79,7 +82,7 @@ namespace TankGame.Objects
 
             gridLines = getGridLines(gridarray);
             setBorderDimensions();
-           
+
         }
         /// <summary>
         /// sets the colors for the checkers and border
@@ -101,7 +104,7 @@ namespace TankGame.Objects
             {
                 for (int j = 0; j <= gridLines.GetUpperBound(1); j++)
                 {
-                    spriteBatch.Draw(Outline, gridLines[i, j].Location,null, color,0,Vector2.Zero, gridLines[i, j].Size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(Outline, gridLines[i, j].Location, null, color, 0, Vector2.Zero, gridLines[i, j].Size, SpriteEffects.None, 0);
                 }
             }
         }
@@ -129,7 +132,7 @@ namespace TankGame.Objects
                         if (j % 2 == 0 || j == 0)
                         {
                             spriteBatch.Draw(Outline, gridarray[i, j].Location, null, color2, 0, Vector2.Zero, gridarray[i, j].Size, SpriteEffects.None, 0);
-                            
+
                         }
                         else
                         {
@@ -165,7 +168,7 @@ namespace TankGame.Objects
                     gridarray[i, j] = new RectangleF(location, individualSize);
 
                     location.X += individualSize.X;
-                }          
+                }
                 location.X = TopLeft.X + (borderThickness);
                 location.Y += individualSize.Y;
             }
@@ -181,7 +184,7 @@ namespace TankGame.Objects
         /// <summary>Gets the specific rectangle from grid array with Col and Row</summary>
         public RectangleF getGridSquare(int Row, int Col)
         {
-            return gridarray[Row,Col];
+            return gridarray[Row, Col];
         }
 
         /// <summary>Gets the specific rectangle from grid array with Vector2 Position, and returns the grid loction</summary>
@@ -220,7 +223,7 @@ namespace TankGame.Objects
         {
             //get the sub grid for looping
             RectangleF originRectangle = gridarray[(int)origin.X, (int)origin.Y];
-            RectangleF[,] subGrid = getSubGrid(new Vector2(origin.X-radius, origin.Y-radius), new Vector2(radius*2, radius*2));
+            RectangleF[,] subGrid = getSubGrid(new Vector2(origin.X - radius, origin.Y - radius), new Vector2(radius * 2, radius * 2));
 
             //multiplay radius by size of the rectangles to get an in game accurate size
             float realRadius = ((float)radius * originRectangle.Size.X) + (originRectangle.Size.X / 2);
@@ -230,7 +233,7 @@ namespace TankGame.Objects
                 //columns
                 for (int j = 0; j < subGrid.GetLength(1); j++)
                 {
-                  //make sure the rectangle isnt a defualt rectangle
+                    //make sure the rectangle isnt a defualt rectangle
                     if (!subGrid[i, j].Null)
                     {
                         //find distance between the center of the circle and center of current rectangle center
@@ -254,7 +257,7 @@ namespace TankGame.Objects
         /// <param name="items">A list of items that function will check. See which items fall in the circle</param>
         /// <param name="itemsInCircle">The return list of items in the circle</param>
         /// <returns></returns>
-        public RectangleF[,] getRectanglesInRadius(Vector2 origin, int radius, List<Point> items ,out List<Vector2> itemsInCircle)
+        public RectangleF[,] getRectanglesInRadius(Vector2 origin, int radius, List<Point> items, out List<Vector2> itemsInCircle)
         {
             itemsInCircle = new List<Vector2>();
             //get the sub grid for looping
@@ -262,7 +265,7 @@ namespace TankGame.Objects
             Vector2 subGridLocation = new Vector2(origin.X - radius, origin.Y - radius);
             RectangleF[,] subGrid = getSubGrid(subGridLocation, new Vector2((radius * 2) + 1, (radius * 2) + 1));
             //multiplay radius by size of the rectangles to get an in game accurate size
-            float realRadius = ((float)radius * originRectangle.Size.X) + (originRectangle.Size.X/3);
+            float realRadius = ((float)radius * originRectangle.Size.X) + (originRectangle.Size.X / 3);
 
             for (int i = 0; i < subGrid.GetLength(0); i++)
             {
@@ -316,7 +319,8 @@ namespace TankGame.Objects
                     {
                         subGrid[i, j] = gridarray[locX, locY];
                     }
-                    else {
+                    else
+                    {
                         subGrid[i, j] = new RectangleF();
                     }
 
@@ -378,7 +382,7 @@ namespace TankGame.Objects
 
                     //get bottom and right walls
                     RectangleF horizontalBorder2 = new RectangleF(grid[i, j].Location.X, grid[i, j].Location.Y + grid[i, j].Height, grid[i, j].Width, 1);
-                    RectangleF verticalBorder2 = new RectangleF(grid[i, j].Location.X+ grid[i, j].Width, grid[i, j].Location.Y, 1, grid[i, j].Height);
+                    RectangleF verticalBorder2 = new RectangleF(grid[i, j].Location.X + grid[i, j].Width, grid[i, j].Location.Y, 1, grid[i, j].Height);
 
                     //apply those walls to thier proper posistion and grid rectangle
                     Lines[k, 2] = horizontalBorder2;

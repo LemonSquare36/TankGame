@@ -149,6 +149,10 @@ namespace TankGame
                     checkSelectedTank();
                     MoveOrShoot();
                 }
+                else if (!mouseInBoard)
+                {
+                    path.Clear();
+                }
             }
         }
 

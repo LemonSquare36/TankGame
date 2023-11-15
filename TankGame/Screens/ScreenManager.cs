@@ -83,6 +83,7 @@ namespace TankGame
             //current rectange the mouse is in
             if (curBoard != null)
             {
+                if (curBoard.gridArrayAccessible)
                 curBoard.getGridSquare(worldPosition, out curGridLocation);
             }
         }

@@ -237,7 +237,7 @@ namespace TankGame
         }
         private void getObjectLocationsForVision()
         {
-            
+
             objectLocations = new List<Point>(boardState.getWallLocations());
             foreach (Point t in boardState.tankGridLocations)
             {
@@ -277,7 +277,7 @@ namespace TankGame
             activeTankNum = -1;
             drawTankInfo = false;
             path = new List<Cell>();
-            
+
         }
         protected void MoveOrShoot()
         {
@@ -370,7 +370,7 @@ namespace TankGame
                                                 if (tile.identifier == 1 && !fired)//is targetable
                                                 {
                                                     if (boardState.playerList[boardState.curPlayerNum].AP > 1)//if player has ap to fire
-                                                    {                                                        
+                                                    {
                                                         //if (item logic)
                                                         //damge being delt 
                                                         int damage = boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].damage;
@@ -487,7 +487,7 @@ namespace TankGame
                                         }
                                     }
                                 }
-                                
+
                             }
                         }
                     }
