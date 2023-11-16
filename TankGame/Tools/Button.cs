@@ -15,12 +15,13 @@ namespace TankGame
         private MouseState mouse;
         public ButtonState oldClick;
         public ButtonState curClick;
-        private bool toggle = false, toggleOneTex = false; 
+        private bool toggle = false, toggleOneTex = false;
         public bool OneTexPressed = false;
 
+        public float textureWidth, textureHeight;
 
         Color buttonColor = Color.White;
-        Vector3 offSetColor = new Vector3(20,20,20);
+        Vector3 offSetColor = new Vector3(20, 20, 20);
 
         //Holds the Name or Function the button does
         private string Bname;
@@ -63,13 +64,15 @@ namespace TankGame
             oldClick = ButtonState.Pressed;
             Pos = pos;
             rectangle = new RectangleF(pos.X, pos.Y, width, height);
-            unPressed = Main.GameContent.Load<Texture2D>(fileLocation+"UH");
-            pressed = Main.GameContent.Load<Texture2D>(fileLocation+"H");
+            this.textureWidth = width;
+            this.textureHeight = height;
+            unPressed = Main.GameContent.Load<Texture2D>(fileLocation + "UH");
+            pressed = Main.GameContent.Load<Texture2D>(fileLocation + "H");
             Bname = ButtonName;
             Texture = unPressed;
             Purpose = ButtonPurpose;
         }
-       
+
         /// <summary>Create the Image, HitBox, and eventInformation when calling the button in this Constructer</summary>
         /// <param name="pos">Where the button is in the game world</param>
         /// <param name="width">How wide is the TEX</param>
@@ -82,12 +85,35 @@ namespace TankGame
             oldClick = ButtonState.Pressed;
             Pos = pos;
             rectangle = new RectangleF(pos.X, pos.Y, width, height);
+            this.textureWidth = width;
+            this.textureHeight = height;
             unPressed = Main.GameContent.Load<Texture2D>(fileLocation + "UH");
             pressed = Main.GameContent.Load<Texture2D>(fileLocation + "H");
             Bname = ButtonName;
             Texture = unPressed;
         }
-       
+        /// <summary>Create the Image, HitBox, and eventInformation when calling the button in this Constructer</summary>
+        /// <param name="pos">Where the button is in the game world</param>
+        /// <param name="width">How big the actaull button is, regardless of texture</param>
+        /// <param name="height">How big the actaull button is, regardless of texture</param>
+        /// <param name="textureWidth">How wide is the TEX</param>
+        /// <param name="textureHeight">How tall is the TEX</param>
+        /// <param name="fileLocation">The location of the two files that make a button. Ex: load for loadUH and loadH</param>
+        /// <param name="ButtonName">For a switch case. Name tells it what event to call</param>
+        public Button(Vector2 pos, int textureWidth, int textureHeight, float width, float height, string fileLocation, string ButtonName)//Button Name is super important becuase it determines what it does
+        {
+            curClick = ButtonState.Pressed;
+            oldClick = ButtonState.Pressed;
+            Pos = pos;
+            rectangle = new RectangleF(pos.X, pos.Y, width, height);
+            this.textureWidth = textureWidth;
+            this.textureHeight = textureHeight;
+            unPressed = Main.GameContent.Load<Texture2D>(fileLocation + "UH");
+            pressed = Main.GameContent.Load<Texture2D>(fileLocation + "H");
+            Bname = ButtonName;
+            Texture = unPressed;
+        }
+
         /// <summary>Create the Image, HitBox, and eventInformation when calling the button in this Constructer</summary>
         /// <param name="pos">Where the button is in the game world</param>
         /// <param name="width">How wide is the TEX</param>
@@ -101,7 +127,7 @@ namespace TankGame
             curClick = ButtonState.Pressed;
             oldClick = ButtonState.Pressed;
             Pos = pos;
-            if(buttonBehaviour == "oneTex")
+            if (buttonBehaviour == "oneTex")
             {
                 unPressed = Main.GameContent.Load<Texture2D>(fileLocation);
                 pressed = Main.GameContent.Load<Texture2D>(fileLocation);
@@ -123,7 +149,9 @@ namespace TankGame
                 toggle = true;
             }
             rectangle = new RectangleF(pos.X, pos.Y, width, height);
-            
+            this.textureWidth = width;
+            this.textureHeight = height;
+
             Bname = ButtonName;
             Texture = unPressed;
         }
@@ -131,7 +159,7 @@ namespace TankGame
         //Reads for inputs of the mouse in correspondence for the button
         public void Update(MouseState Mouse, Vector2 worldMousePosition)
         {
-            mouse = Mouse;       
+            mouse = Mouse;
             oldClick = curClick;
             curClick = mouse.LeftButton;
             if (!toggle)
@@ -150,7 +178,7 @@ namespace TankGame
             else if (toggle)
             {
                 if (rectangle.Contains(worldMousePosition))
-                {      
+                {
                     //Edge Detection
                     if (curClick == ButtonState.Pressed && oldClick == ButtonState.Released)
                     {
@@ -188,7 +216,8 @@ namespace TankGame
                         }
                         spriteBatch.Draw(Texture, rectangle.Location + tempPos, buttonColor);
                     }
-                    else { spriteBatch.Draw(Texture, rectangle.Location, buttonColor); }
+                    else
+                    { spriteBatch.Draw(Texture, rectangle.Location, null, buttonColor, 0, Vector2.Zero, new Vector2(rectangle.Width/textureWidth, rectangle.Height/textureHeight), SpriteEffects.None, 0); }
                 }
                 else
                 {
@@ -197,7 +226,7 @@ namespace TankGame
 
             }
             //draw normally if not pressed
-            else { spriteBatch.Draw(Texture, rectangle.Location, buttonColor); }
+            else { spriteBatch.Draw(Texture, rectangle.Location, null, buttonColor, 0, Vector2.Zero, new Vector2(rectangle.Width / textureWidth, rectangle.Height / textureHeight), SpriteEffects.None, 0); }
         }
         public void Draw(SpriteBatch spriteBatch, bool singlePixel)
         {
@@ -219,18 +248,19 @@ namespace TankGame
                         }
                         spriteBatch.Draw(Texture, rectangle.Location + tempPos, buttonColor);
                     }
-                    else { spriteBatch.Draw(Texture, rectangle.Location, buttonColor); }
+                    else { spriteBatch.Draw(Texture, rectangle.Location, null, buttonColor, 0, Vector2.Zero, new Vector2(rectangle.Width / textureWidth, rectangle.Height / textureHeight), SpriteEffects.None, 0); }
                 }
                 else
                 {
                     Texture = unPressed;
-                    spriteBatch.Draw(Texture, rectangle.Location, null, new Color(buttonColor.R - Convert.ToInt16(offSetColor.X), buttonColor.G - Convert.ToInt16(offSetColor.Y), buttonColor.B - Convert.ToInt16(offSetColor.Z)),
-                        0, Vector2.Zero, rectangle.Size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(Texture, rectangle.Location, null, new Color(buttonColor.R - Convert.ToInt16(offSetColor.X), buttonColor.G - Convert.ToInt16(offSetColor.Y), buttonColor.B - Convert.ToInt16(offSetColor.Z)), 
+                        0, Vector2.Zero, new Vector2(rectangle.Width / textureWidth, rectangle.Height / textureHeight), SpriteEffects.None, 0);
                 }
 
             }
             //draw normally if not pressed
-            else {
+            else
+            {
                 spriteBatch.Draw(Texture, rectangle.Location, null, buttonColor,
                         0, Vector2.Zero, rectangle.Size, SpriteEffects.None, 0);
             }
@@ -251,7 +281,7 @@ namespace TankGame
                 OneTexPressed = false;
             }
 
-            else {Texture = pressed; OneTexPressed = true; }      
+            else { Texture = pressed; OneTexPressed = true; }
         }
         /// <summary>
         /// the color buttons draw with - defualt is white

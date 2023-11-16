@@ -21,7 +21,7 @@ namespace TankGame.Objects
 
         private Color playerColor;
 
-        public List<Point> SpawnTiles;
+        public List<SpawnTile> SpawnTiles;
 
         private RectangleF[,] SpawnRows;
         public RectangleF[,] spawnRows

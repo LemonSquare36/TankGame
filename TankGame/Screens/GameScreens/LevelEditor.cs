@@ -36,12 +36,11 @@ namespace TankGame
         //colors for text
         Color rowColColor, tankColor, MineColor, sweepColor;
         //selectors
-        Selector playerCount; 
+        List<Selector> SelectorList = new List<Selector>();
+        Selector playerCount, selectedPlayer; 
 
         int activePage = 1;
-        int selectedPlayer = -1;
-        List<List<Point>> spawnLists = new List<List<Point>>();
-        List<Point> curSpawnList = new List<Point>();
+        List<List<SpawnTile>> spawnLists = new List<List<SpawnTile>>();
         #endregion
 
         //Initialize
@@ -59,7 +58,8 @@ namespace TankGame
 
 
             levelSelection = new ListBox(new Vector2(1100, 570), new Vector2(740, 450), 11, Color.White, Color.Black,Color.DarkGray, 4);
-            playerCount = new Selector(new Vector2(1414, 100), new Vector2(100, 100), "PlusMinus", 8, 2, Color.Black);
+            playerCount = new Selector(new Vector2(1265, 100), new Vector2(100, 100), "PlusMinus", 8, 2, Color.Black);
+            selectedPlayer = new Selector(new Vector2(1565, 100), new Vector2(100, 100), "Arrows", 2, 1, Color.Black);
             #endregion
 
             #region default font colors
@@ -157,13 +157,23 @@ namespace TankGame
             PageOneFields.Add(sweepField);
             #endregion
 
+            #region selector list
+            SelectorList.Add(playerCount);
+            SelectorList.Add(selectedPlayer);
+
+            playerCount.ValueChanged += SelectorListSizeChange;
+            #endregion
+
             foreach (InputBox box in PageOneFields)
             {
                 box.LoadContent();
             }
             //load the listBox for level selection
             LevelListLoad();
-            playerCount.LoadContent();
+            foreach (Selector selector in SelectorList)
+            {
+                selector.LoadContent();
+            }
 
 
         }
@@ -248,7 +258,10 @@ namespace TankGame
                 {
                     b.Update(mouse, worldPosition);
                 }
-                playerCount.Update(mouse, worldPosition);
+                foreach (Selector selector in SelectorList)
+                {
+                    selector.Update(mouse, worldPosition);
+                }
                 if (levelLoaded)
                 {
                     //if the board is loaded, check if the mouse is inside it or not
@@ -268,6 +281,11 @@ namespace TankGame
                     }
                 }
             }
+
+            //always make sure that you cant select a player past the maxium players allowed
+            selectedPlayer.max = playerCount.Value;
+            if (selectedPlayer.Value > selectedPlayer.max)
+            { selectedPlayer.Value = selectedPlayer.max; }
         }
         //Draw
         public override void Draw()
@@ -278,9 +296,29 @@ namespace TankGame
                 //board draw 
                 curBoard.drawCheckers(spriteBatch);
                 curBoard.DrawOutline(spriteBatch);
+                //draw all the entities accept the spawntiles
                 foreach (Entity e in boardState.entities)
                 {
+                    if (e.Type != "spawn")
                     e.Draw(spriteBatch);
+                }
+                //for the spawntiles, draw the tiles of the currently selected player brighter than the unselected players
+                for (int i = 0; i < spawnLists.Count; i++)
+                {
+                    if ((i+1) == selectedPlayer.Value)
+                    {
+                        foreach (SpawnTile tile in spawnLists[i])
+                        {
+                            tile.Draw(spriteBatch, Color.Green);
+                        }
+                    }
+                    else
+                    {
+                        foreach (SpawnTile tile in spawnLists[i])
+                        {
+                            tile.Draw(spriteBatch);
+                        }
+                    }
                 }
             }
 
@@ -322,11 +360,15 @@ namespace TankGame
                 {
                     b.Draw(spriteBatch);
                 }
-                
-                playerCount.Draw(spriteBatch, font);
+
+                foreach (Selector selector in SelectorList)
+                {
+                    selector.Draw(spriteBatch, font);
+                }
                 #region draw text to screen page 2
 
-                spriteBatch.DrawString(font, "Player Count", new Vector2(1355, 50), Color.Black);
+                spriteBatch.DrawString(font, "Player Count", new Vector2(1205, 50), Color.Black);
+                spriteBatch.DrawString(font, "Selected Player", new Vector2(1493, 50), Color.Black);
                 spriteBatch.DrawString(font, "Eraser", new Vector2(1570, 250), Color.Black);
 
                 #endregion
@@ -354,6 +396,13 @@ namespace TankGame
                         {
                             if (boardState.entities[i].gridLocation == newWall.gridLocation)
                             {
+                                if (boardState.entities[i].Type == "spawn")
+                                {
+                                    for (int j = 0; j < spawnLists.Count; j++)
+                                    {
+                                        spawnLists[j].Remove(spawnLists[j].Find(spawn => spawn.gridLocation == curGridLocation));
+                                    }
+                                }
                                 boardState.entities.Remove(boardState.entities[i]);
                                 newWall.LoadContent();
                                 boardState.entities.Add(newWall);
@@ -390,6 +439,13 @@ namespace TankGame
                         {
                             if (boardState.entities[i].gridLocation == newItem.gridLocation)
                             {
+                                if (boardState.entities[i].Type == "spawn")
+                                {
+                                    for (int j = 0; j < spawnLists.Count; j++)
+                                    {
+                                        spawnLists[j].Remove(spawnLists[j].Find(spawn => spawn.gridLocation == curGridLocation));
+                                    }
+                                }
                                 boardState.entities.Remove(boardState.entities[i]);
                                 newItem.LoadContent();
                                 boardState.entities.Add(newItem);
@@ -417,22 +473,49 @@ namespace TankGame
                 {
                     //get the current rectangle the mouse is within
                     Point curGridLocation;
-                    RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);                    
+                    RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);
                     //if the grid has been used before then remove the current object there and add the new one
+                    if (boardState.gridLocations.Contains(curGridLocation))
+                    {
                         for (int i = 0; i < boardState.entities.Count; i++)
                         {
                             if (boardState.entities[i].gridLocation == curGridLocation)
                             {
+                                if (boardState.entities[i].Type == "spawn")
+                                {
+                                    for (int j = 0; j < spawnLists.Count; j++)
+                                    {
+                                        spawnLists[j].Remove(spawnLists[j].Find(spawn => spawn.gridLocation == curGridLocation));
+                                    }                                    
+                                }
                                 boardState.entities.Remove(boardState.entities[i]);
                                 boardState.gridLocations.Remove(curGridLocation);
                             }
+                        }
                     }
                 }
             }
         }
         private void AddSpawn()
         {
+            if (mouseInBoard)
+            {
+                //if the mouse is clicked once inside the board
+                if (mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                {
+                    Point curGridLocation;
+                    RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);
+                    SpawnTile newSpawn = new SpawnTile(curGrid, curGridLocation);
+                    if (!boardState.gridLocations.Contains(newSpawn.gridLocation))
+                    {
+                        newSpawn.LoadContent();
+                        boardState.entities.Add(newSpawn);
+                        boardState.gridLocations.Add(newSpawn.gridLocation);
 
+                        spawnLists[selectedPlayer.Value-1].Add(newSpawn);
+                    }
+                }
+            }
         }
         #endregion
 
@@ -514,6 +597,7 @@ namespace TankGame
             TanksAndMines = new Point(3, 3);
             sweeps = 3;
             playerCount.Value = 2;
+            selectedPlayer.Value = 1;
 
             rowColColor = Color.Black;
             tankColor = Color.Black;
@@ -539,6 +623,7 @@ namespace TankGame
             TanksAndMines = new Point(3, 3);
             sweeps = 3;
             playerCount.Value = 2;
+            selectedPlayer.Value = 1;
 
             rowColColor = Color.Black;
             tankColor = Color.Black;
@@ -754,8 +839,31 @@ namespace TankGame
             {
                 sweeps = Convert.ToInt16(sweepField.Text);
                 sweepColor = Color.Black;
+                if (sweeps > 10)
+                {
+                    sweepField.Text = "10";
+                    sweeps = 10;
+                }
             }
             catch { }
+        }
+        private void SelectorListSizeChange(object sender, EventArgs e)
+        {
+            while (true)
+            {
+                if (playerCount.Value < spawnLists.Count)
+                {
+                    spawnLists.Remove(spawnLists[spawnLists.Count - 1]);
+                }
+                else if (playerCount.Value > spawnLists.Count)
+                {
+                    spawnLists.Add(new());
+                }
+                if (playerCount.Value == spawnLists.Count)
+                {
+                    break;
+                }
+            }
         }
         #endregion
         #region pageChanges
