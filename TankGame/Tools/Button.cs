@@ -47,6 +47,7 @@ namespace TankGame
             curClick = ButtonState.Pressed;
             oldClick = ButtonState.Pressed;
             this.Texture = unPressed;
+            OneTexPressed = false;
         }
         public Texture2D UnPressed { get { return unPressed; } }
         public Texture2D Pressed { get { return pressed; } }

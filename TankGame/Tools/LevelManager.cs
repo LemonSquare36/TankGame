@@ -23,6 +23,7 @@ namespace TankGame.Tools
         Cell[,] cellMap;
         Point tanksMines;
         List<List<SpawnTile>> PlayerSpawns = new List<List<SpawnTile>>();
+        List<SpawnTile> AllSpawns = new List<SpawnTile>();
         int sweeps, playerCount;
 
         /// <summary>
@@ -145,6 +146,7 @@ namespace TankGame.Tools
                     SpawnTile tempSpawnTile = new SpawnTile(board.getGridSquare(X, Y), new Point(X, Y));
                     //add the spawn tile to the appropriate players list
                     PlayerSpawns[i].Add(tempSpawnTile);
+                    AllSpawns.Add(tempSpawnTile);
                     //add to entities list for level editor
                     entities.Add(tempSpawnTile);
                 }
@@ -265,6 +267,10 @@ namespace TankGame.Tools
         public List<List<SpawnTile>> getPlayerSpawns()
         {
             return PlayerSpawns;
+        }
+        public List<SpawnTile> getAllSpawnTiles()
+        {
+            return AllSpawns;
         }
         public int getPlayerCount()
         {

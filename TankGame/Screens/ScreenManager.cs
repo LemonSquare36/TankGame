@@ -69,6 +69,10 @@ namespace TankGame
         {
             spriteBatch = spriteBatchmain;
         }
+        public virtual void UnloadContent()
+        {
+
+        }
         //Holds Update
         public virtual void Update()
         {

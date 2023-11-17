@@ -8,6 +8,8 @@ using TankGame.Objects;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
 using TankGame.GameInfo;
+using System.Linq;
+
 namespace TankGame
 {
     internal class BattleScreenLocal : GameScreensManager
@@ -59,9 +61,7 @@ namespace TankGame
             base.LoadContent(spriteBatchmain);
 
             //load the board (load for host before sending to peer)
-            LoadBoardfromFile();
-            //player spawn rows calc
-            getSpawnRegion();
+            LoadLevelFile();
 
             //font
             font = Main.GameContent.Load<SpriteFont>("Fonts/DefualtFont");
@@ -196,7 +196,20 @@ namespace TankGame
                     spriteBatch.DrawString(font, "You still have Tanks and\n    Mines left to place", new Vector2(1485, 500), Color.DarkRed);
                 }
                 //draw the tank spawn region highlight for visual indication of where tanks can go
-                spriteBatch.Draw(spawnTex, boardState.playerList[boardState.curPlayerNum].spawn.Location, null, Color.LightGray, 0, Vector2.Zero, boardState.playerList[boardState.curPlayerNum].spawn.Size, SpriteEffects.None, 0);
+                for (int i = 0; i < levelManager.getPlayerSpawns().Count; i++)
+                {
+                    foreach (SpawnTile spawntile in levelManager.getPlayerSpawns()[i])
+                    {
+                        if (i == boardState.curPlayerNum)
+                        {
+                            spriteBatch.Draw(spawnTex, spawntile.curSquare.Location, null, Color.Green, 0, Vector2.Zero, spawntile.curSquare.Size, SpriteEffects.None, 0);
+                        }
+                        else
+                        {
+                            spriteBatch.Draw(spawnTex, spawntile.curSquare.Location, null, Color.LightGray, 0, Vector2.Zero, spawntile.curSquare.Size, SpriteEffects.None, 0);
+                        }
+                    }
+                }
             }
 
             //draw code for if the battle has started. All players ready to begin the fight
@@ -207,9 +220,15 @@ namespace TankGame
                 {
                     b.Draw(spriteBatch);
                 }
+                //draw walls
                 foreach (Wall wall in boardState.walls)
                 {
                     wall.Draw(spriteBatch);
+                }
+                //draw itemboxes
+                foreach (ItemBox itembox in boardState.itemBoxes)
+                {
+                    itembox.Draw(spriteBatch);
                 }
                 //draw friendly mines
                 foreach (Mine mine in boardState.playerList[boardState.curPlayerNum].mines)
@@ -290,14 +309,7 @@ namespace TankGame
                 AddEntity("mine");
             }
         }
-        private void getSpawnRegion()
-        {
-            int spawnRows = Convert.ToInt32(curBoard.Rows * .1F);
-            if (spawnRows == 0) { spawnRows = 1; }
 
-            boardState.playerList[1].spawnRows = curBoard.getSubGrid(new Vector2(0, 0), new Vector2(spawnRows, curBoard.Columns));
-            boardState.playerList[0].spawnRows = curBoard.getSubGrid(new Vector2(curBoard.Rows - spawnRows, 0), new Vector2(spawnRows, curBoard.Columns));
-        }
         #region Add objects code
         private void AddTankPressed(object sender, EventArgs e)
         {
@@ -353,35 +365,32 @@ namespace TankGame
                     if (type == "tank" || type == "mine")
                     {
                         //check if the type of object has some count left //Tanks Check (also checks for mouse in spawn)
-                        if (((type == "tank" && Convert.ToInt16(tanksCount.Text) > 0) && boardState.playerList[boardState.curPlayerNum].spawn.Contains(worldPosition))
+                        if (((type == "tank" && Convert.ToInt16(tanksCount.Text) > 0))
                             //mines check
                             || (type == "mine" && Convert.ToInt16(minesCount.Text) > 0))
                         {
                             //if the grid has nothing there then add the object
                             if (!boardState.gridLocations.Contains(curGridLocation))
                             {
-                                entity.LoadContent();
-                                boardState.entities.Add(entity);
-                                boardState.gridLocations.Add(entity.gridLocation);
-                                //remove one from the count
-                                if (type == "tank")
+                                if (type == "tank" && boardState.playerList[boardState.curPlayerNum].SpawnTiles.Any(x => x.gridLocation == curGridLocation)
+                                    || (type == "mine" && !levelManager.getAllSpawnTiles().Any(x => x.gridLocation == curGridLocation)))
                                 {
-                                    tanksUsed++;
-                                    tempTank.LoadContent();
-                                    boardState.playerList[boardState.curPlayerNum].tanks.Add(new Tank(curGrid, curGridLocation));
-                                }
-                                else if (type == "mine")
-                                {
-                                    /*foreach (Player player in curBoardState.playerList)
+                                    entity.LoadContent();
+                                    boardState.entities.Add(entity);
+                                    boardState.gridLocations.Add(entity.gridLocation);
+                                    //remove one from the count
+                                    if (type == "tank")
                                     {
-                                        if (!player.spawn.Contains(worldPosition))
-                                        {
-
-                                        }
-                                    }*/
-                                    minesUsed++;
-                                    tempMine.LoadContent();
-                                    boardState.playerList[boardState.curPlayerNum].mines.Add(tempMine);
+                                        tanksUsed++;
+                                        tempTank.LoadContent();
+                                        boardState.playerList[boardState.curPlayerNum].tanks.Add(tempTank);
+                                    }
+                                    else if (type == "mine")
+                                    {
+                                        minesUsed++;
+                                        tempMine.LoadContent();
+                                        boardState.playerList[boardState.curPlayerNum].mines.Add(tempMine);
+                                    }
                                 }
                             }
                         }
@@ -458,7 +467,7 @@ namespace TankGame
             else
             {
                 //make number of players 0 based. If the current player isnt the last player move to next
-                if (boardState.curPlayerNum < numOfPlayers - 1)
+                if (boardState.curPlayerNum < levelManager.getPlayerCount() - 1)
                 {
                     //load the new tanks
                     foreach (Tank tank in boardState.playerList[boardState.curPlayerNum].tanks)

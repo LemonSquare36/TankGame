@@ -47,6 +47,13 @@ namespace TankGame
         public override void Initialize()
         {
             base.Initialize();
+            //reset all bools to correct starts
+            wallSelected = false;
+            itemSelected = false; 
+            eraseSelected = false;
+            spawnSelected = false;
+            levelLoaded = false;
+            spawnWarning = false;
 
             //create the text field
             #region initializing textboxes
@@ -129,6 +136,7 @@ namespace TankGame
             #endregion
 
             #region ButtonList
+            //clear the list on load so the buttons to stack up
             PageOneButtons.Clear();
             PageOneButtons.Add(Load);
             PageOneButtons.Add(Save);
@@ -144,12 +152,16 @@ namespace TankGame
             PageOneButtons.Add(SetSweepCount);
             PageOneButtons.Add(ArrowRight);
 
+            //clear the list on load so the buttons to stack up
+            PageTwoButtons.Clear();
             PageTwoButtons.Add(ArrowLeft);
             PageTwoButtons.Add(addSpawn);
             PageTwoButtons.Add(erase);
             #endregion
 
             #region input box list
+            //clear the list on load so the buttons to stack up
+            PageOneFields.Clear();
             PageOneFields.Add(nameField);
             PageOneFields.Add(sizeField);
             PageOneFields.Add(tankField);
@@ -158,6 +170,8 @@ namespace TankGame
             #endregion
 
             #region selector list
+            //clear the list on load so the buttons to stack up
+            SelectorList.Clear();
             SelectorList.Add(playerCount);
             SelectorList.Add(selectedPlayer);
 
@@ -174,7 +188,8 @@ namespace TankGame
             {
                 selector.LoadContent();
             }
-
+            //create a new board on entry
+            NewPressed();
 
         }
         //Update
@@ -618,6 +633,9 @@ namespace TankGame
             sweeps = 3;
             playerCount.Value = 2;
             selectedPlayer.Value = 1;
+            //player spawn lists cleared and the 2 for the 2 players
+            playerSpawns.Clear();
+            playerSpawns.Add(new()); playerSpawns.Add(new());
 
             rowColColor = Color.Black;
             tankColor = Color.Black;
@@ -644,6 +662,9 @@ namespace TankGame
             sweeps = 3;
             playerCount.Value = 2;
             selectedPlayer.Value = 1;
+            //player spawn lists cleared and the 2 for the 2 players
+            playerSpawns.Clear();
+            playerSpawns.Add(new()); playerSpawns.Add(new());
 
             rowColColor = Color.Black;
             tankColor = Color.Black;

@@ -18,8 +18,6 @@ namespace TankGame
     {
         //hold the level file location
         private string file;
-        //variables needed by the the local and networking battlescreens
-        protected int numOfPlayers;
         //Action points per turn
         int AP = 4;
         //turn tracker
@@ -54,23 +52,33 @@ namespace TankGame
             base.LoadContent(spriteBatchmain);
         }
         #endregion
-        protected void LoadBoardfromFile()
+        protected void LoadLevelFile()
         {
 
             //load the board and additional data from the file passed in levelselect.
             file = relativePath + "\\TankGame\\LevelFiles\\" + selectedFile + ".lvl";
             if (file != relativePath + "\\TankGame\\LevelFiles\\" + "" + ".lvl")
             {
+
                 try
                 {
                     levelManager.LoadLevel(file, 0.2468F, 0.05F);
                     //grab the informatin from the levelManager
                     boardState = new BoardState(levelManager.getEntities(), levelManager.getWalls(), levelManager.getItemBoxes());
                     sweeps = levelManager.getSweeps();
-                    numOfPlayers = 2;
+
+                    //get player amount and make players with spawn regions for each one
+                    int numOfPlayers = levelManager.getPlayerCount();
                     for (int i = 0; i < numOfPlayers; i++)
                     {
                         boardState.playerList.Add(new Player(AP, sweeps));
+                        boardState.playerList[i].SpawnTiles = levelManager.getPlayerSpawns()[i];
+                        //remove them from the entities list. They dont need to be there. Only there for the level editors purposes
+                        foreach(SpawnTile tile in boardState.playerList[i].SpawnTiles)
+                        {
+                            var e = boardState.entities.Find(x => x.gridLocation == tile.gridLocation);
+                            boardState.entities.Remove(e);
+                        }
                     }
 
                     curBoard = levelManager.getGameBoard();
@@ -504,7 +512,7 @@ namespace TankGame
         protected void EndTurnPressed(object sender, EventArgs e)
         {
             //make number of players 0 based. If the current player isnt the last player move to next
-            if (boardState.curPlayerNum < numOfPlayers - 1)
+            if (boardState.curPlayerNum < levelManager.getPlayerCount() - 1)
             {
                 boardState.curPlayerNum++;
             }
