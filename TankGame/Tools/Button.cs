@@ -254,7 +254,7 @@ namespace TankGame
                 {
                     Texture = unPressed;
                     spriteBatch.Draw(Texture, rectangle.Location, null, new Color(buttonColor.R - Convert.ToInt16(offSetColor.X), buttonColor.G - Convert.ToInt16(offSetColor.Y), buttonColor.B - Convert.ToInt16(offSetColor.Z)), 
-                        0, Vector2.Zero, new Vector2(rectangle.Width / textureWidth, rectangle.Height / textureHeight), SpriteEffects.None, 0);
+                        0, Vector2.Zero, rectangle.Size, SpriteEffects.None, 0);
                 }
 
             }

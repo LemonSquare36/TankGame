@@ -83,7 +83,7 @@ namespace TankGame
         private void LevelListLoad()
         {
             //gets all the files in the relative folder and sends them as an array to the listbox to populate the levels
-            string[] filepaths = Directory.GetFiles(relativePath + "\\TankGame");
+            string[] filepaths = Directory.GetFiles(relativePath + "\\TankGame\\LevelFiles");
             for (int i = 0; i < filepaths.Length; i++)
             {
                 filepaths[i] = Path.GetFileName(filepaths[i].Split(".")[0]);
@@ -92,8 +92,8 @@ namespace TankGame
         }
         private void DisplayPreview(Object sender, EventArgs e)
         {
-            file = relativePath + "\\TankGame\\" + levelSelection.curSelection + ".lvl";
-            if (file != relativePath + "\\TankGame\\" + "" + ".lvl")
+            file = relativePath + "\\TankGame\\LevelFiles\\" + levelSelection.curSelection + ".lvl";
+            if (file != relativePath + "\\TankGame\\LevelFiles\\" + "" + ".lvl")
             {
                 try
                 {

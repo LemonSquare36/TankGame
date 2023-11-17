@@ -24,7 +24,7 @@ namespace TankGame
         List<Button> PageOneButtons = new List<Button>();
         List<Button> PageTwoButtons = new List<Button>();
         //level loading logic
-        bool levelLoaded = false;
+        bool levelLoaded = false, spawnWarning = false;
         string file;
         //objects selected logic
         bool wallSelected = false, itemSelected = false, eraseSelected = false, spawnSelected = false;
@@ -37,10 +37,10 @@ namespace TankGame
         Color rowColColor, tankColor, MineColor, sweepColor;
         //selectors
         List<Selector> SelectorList = new List<Selector>();
-        Selector playerCount, selectedPlayer; 
+        Selector playerCount, selectedPlayer;
 
         int activePage = 1;
-        List<List<SpawnTile>> spawnLists = new List<List<SpawnTile>>();
+        List<List<SpawnTile>> playerSpawns = new List<List<SpawnTile>>();
         #endregion
 
         //Initialize
@@ -57,7 +57,7 @@ namespace TankGame
             sweepField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1690, 100), new Vector2(80, 70), 2);
 
 
-            levelSelection = new ListBox(new Vector2(1100, 570), new Vector2(740, 450), 11, Color.White, Color.Black,Color.DarkGray, 4);
+            levelSelection = new ListBox(new Vector2(1100, 570), new Vector2(740, 450), 11, Color.White, Color.Black, Color.DarkGray, 4);
             playerCount = new Selector(new Vector2(1265, 100), new Vector2(100, 100), "PlusMinus", 8, 2, Color.Black);
             selectedPlayer = new Selector(new Vector2(1565, 100), new Vector2(100, 100), "Arrows", 2, 1, Color.Black);
             #endregion
@@ -300,21 +300,21 @@ namespace TankGame
                 foreach (Entity e in boardState.entities)
                 {
                     if (e.Type != "spawn")
-                    e.Draw(spriteBatch);
+                        e.Draw(spriteBatch);
                 }
                 //for the spawntiles, draw the tiles of the currently selected player brighter than the unselected players
-                for (int i = 0; i < spawnLists.Count; i++)
+                for (int i = 0; i < playerSpawns.Count; i++)
                 {
-                    if ((i+1) == selectedPlayer.Value)
+                    if ((i + 1) == selectedPlayer.Value)
                     {
-                        foreach (SpawnTile tile in spawnLists[i])
+                        foreach (SpawnTile tile in playerSpawns[i])
                         {
                             tile.Draw(spriteBatch, Color.Green);
                         }
                     }
                     else
                     {
-                        foreach (SpawnTile tile in spawnLists[i])
+                        foreach (SpawnTile tile in playerSpawns[i])
                         {
                             tile.Draw(spriteBatch);
                         }
@@ -373,6 +373,10 @@ namespace TankGame
 
                 #endregion
             }
+            if (spawnWarning)
+            {
+                spriteBatch.DrawString(font, "You  need  more  spawn  tiles!", new Vector2(65, 350), Color.Red, 0, Vector2.Zero, 1.95F, SpriteEffects.None, 0);
+            }
         }
 
         #region Adding objects functions
@@ -398,9 +402,9 @@ namespace TankGame
                             {
                                 if (boardState.entities[i].Type == "spawn")
                                 {
-                                    for (int j = 0; j < spawnLists.Count; j++)
+                                    for (int j = 0; j < playerSpawns.Count; j++)
                                     {
-                                        spawnLists[j].Remove(spawnLists[j].Find(spawn => spawn.gridLocation == curGridLocation));
+                                        playerSpawns[j].Remove(playerSpawns[j].Find(spawn => spawn.gridLocation == curGridLocation));
                                     }
                                 }
                                 boardState.entities.Remove(boardState.entities[i]);
@@ -441,9 +445,9 @@ namespace TankGame
                             {
                                 if (boardState.entities[i].Type == "spawn")
                                 {
-                                    for (int j = 0; j < spawnLists.Count; j++)
+                                    for (int j = 0; j < playerSpawns.Count; j++)
                                     {
-                                        spawnLists[j].Remove(spawnLists[j].Find(spawn => spawn.gridLocation == curGridLocation));
+                                        playerSpawns[j].Remove(playerSpawns[j].Find(spawn => spawn.gridLocation == curGridLocation));
                                     }
                                 }
                                 boardState.entities.Remove(boardState.entities[i]);
@@ -483,10 +487,10 @@ namespace TankGame
                             {
                                 if (boardState.entities[i].Type == "spawn")
                                 {
-                                    for (int j = 0; j < spawnLists.Count; j++)
+                                    for (int j = 0; j < playerSpawns.Count; j++)
                                     {
-                                        spawnLists[j].Remove(spawnLists[j].Find(spawn => spawn.gridLocation == curGridLocation));
-                                    }                                    
+                                        playerSpawns[j].Remove(playerSpawns[j].Find(spawn => spawn.gridLocation == curGridLocation));
+                                    }
                                 }
                                 boardState.entities.Remove(boardState.entities[i]);
                                 boardState.gridLocations.Remove(curGridLocation);
@@ -503,6 +507,7 @@ namespace TankGame
                 //if the mouse is clicked once inside the board
                 if (mouse.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
                 {
+                    spawnWarning = false;
                     Point curGridLocation;
                     RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);
                     SpawnTile newSpawn = new SpawnTile(curGrid, curGridLocation);
@@ -512,7 +517,7 @@ namespace TankGame
                         boardState.entities.Add(newSpawn);
                         boardState.gridLocations.Add(newSpawn.gridLocation);
 
-                        spawnLists[selectedPlayer.Value-1].Add(newSpawn);
+                        playerSpawns[selectedPlayer.Value - 1].Add(newSpawn);
                     }
                 }
             }
@@ -524,8 +529,8 @@ namespace TankGame
         //Events for saving and loading
         private void LoadPressed(object sender, EventArgs e)
         {
-            file = relativePath + "\\TankGame\\" + levelSelection.curSelection + ".lvl";
-            if (file != relativePath + "\\TankGame\\" + "" + ".lvl")
+            file = relativePath + "\\TankGame\\LevelFiles\\" + levelSelection.curSelection + ".lvl";
+            if (file != relativePath + "\\TankGame\\LevelFiles\\" + "" + ".lvl")
             {
                 try
                 {
@@ -549,6 +554,10 @@ namespace TankGame
                     tankField.Text = Convert.ToString(TanksAndMines.X);
                     mineField.Text = Convert.ToString(TanksAndMines.Y);
                     sweepField.Text = Convert.ToString(sweeps);
+                    playerCount.Value = levelManager.getPlayerCount();
+                    selectedPlayer.Value = 1;
+
+                    playerSpawns = levelManager.getPlayerSpawns();
 
                     rowColColor = Color.Black;
                     tankColor = Color.Black;
@@ -560,17 +569,28 @@ namespace TankGame
         }
         private void SavePressed(object sender, EventArgs e)
         {
+            bool canSave = true;
             if (levelLoaded)
             {
                 if (nameField.Text == "")
                 {
                     nameField.Text = "Needs a file name";
+                    canSave = false;
                 }
-                else
+
+                for (int i = 0; i < playerSpawns.Count; i++)
+                {
+                    if (playerSpawns[i].Count < TanksAndMines.X)
+                    {
+                        canSave = false;
+                        spawnWarning = true;
+                    }
+                }
+                if (canSave)
                 {
                     string fileName = nameField.Text.Replace(" ", "");
-                    file = relativePath + "\\TankGame\\" + fileName + ".lvl";
-                    levelManager.SaveLevel(file, curBoard, boardState.entities, TanksAndMines, sweeps);
+                    file = relativePath + "\\TankGame\\LevelFiles\\" + fileName + ".lvl";
+                    levelManager.SaveLevel(file, fileName, curBoard, boardState.entities, playerSpawns, TanksAndMines, sweeps, playerCount.Value);
                 }
             }
             //load the listBox for level selection
@@ -586,8 +606,8 @@ namespace TankGame
             curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), 20, 20, 8);
             boardState = new BoardState(new(), new(), new());
             curBoard.LoadContent();
-            curBoard.setColor(new Color(235, 235, 235), new Color(200,200,200), Color.Black);
-            nameField.Text = "New";           
+            curBoard.setColor(new Color(235, 235, 235), new Color(200, 200, 200), Color.Black);
+            nameField.Text = "New";
             levelLoaded = true;
             sizeField.Text = "20";
             tankField.Text = "3";
@@ -633,8 +653,8 @@ namespace TankGame
 
         private void DeletePressed(object sender, EventArgs e)
         {
-            file = relativePath + "\\TankGame\\" + levelSelection.curSelection + ".lvl";
-            if (file != relativePath + "\\TankGame\\" + "" + ".lvl")
+            file = relativePath + "\\TankGame\\LevelFiles\\" + levelSelection.curSelection + ".lvl";
+            if (file != relativePath + "\\TankGame\\LevelFiles\\" + "" + ".lvl")
             {
                 File.Delete(file);
                 LevelListLoad();
@@ -649,6 +669,7 @@ namespace TankGame
         //toggle thier highlighted texture one and toggle the rest off
         private void SelectWall(object sender, EventArgs e)
         {
+            spawnWarning = false;
             if (!wallSelected)
             {
                 wallSelected = true;
@@ -676,6 +697,7 @@ namespace TankGame
         }
         private void SelectItem(object sender, EventArgs e)
         {
+            spawnWarning = false;
             if (!itemSelected)
             {
                 itemSelected = true;
@@ -703,6 +725,7 @@ namespace TankGame
         }
         private void SelectErase(object sender, EventArgs e)
         {
+            spawnWarning = false;
             if (!eraseSelected)
             {
                 eraseSelected = true;
@@ -730,6 +753,7 @@ namespace TankGame
         }
         private void SelectSpawn(object sender, EventArgs e)
         {
+            spawnWarning = false;
             if (!spawnSelected)
             {
                 spawnSelected = true;
@@ -848,18 +872,32 @@ namespace TankGame
             catch { }
         }
         private void SelectorListSizeChange(object sender, EventArgs e)
-        {
+        {                
+            //check if the player count and spawns list count are the same (prevent more spawn zones existing than players
             while (true)
             {
-                if (playerCount.Value < spawnLists.Count)
+                //if the spawn zones outnumber players
+                if (playerCount.Value < playerSpawns.Count)
                 {
-                    spawnLists.Remove(spawnLists[spawnLists.Count - 1]);
+                    //before removeing the spawnlist, make sure all the spawns are removed from the editors needed lists
+                    foreach(SpawnTile tile in playerSpawns[playerSpawns.Count - 1])
+                    {
+                        Entity entityToRemove = boardState.entities.Find(x => x.gridLocation == tile.gridLocation);
+                        boardState.entities.Remove(entityToRemove);
+
+                        Point gridLocationToRemove = boardState.gridLocations.Find(x => x == tile.gridLocation);
+                        boardState.gridLocations.Remove(gridLocationToRemove);
+                    }
+                    //remove a spawnlist until they are equal
+                    playerSpawns.Remove(playerSpawns[playerSpawns.Count - 1]);
                 }
-                else if (playerCount.Value > spawnLists.Count)
+                //if the players outnumber the spawnzones
+                else if (playerCount.Value > playerSpawns.Count)
                 {
-                    spawnLists.Add(new());
+                    //make a new empty zone for adding spawn tiles
+                    playerSpawns.Add(new());
                 }
-                if (playerCount.Value == spawnLists.Count)
+                if (playerCount.Value == playerSpawns.Count)
                 {
                     break;
                 }
@@ -880,11 +918,11 @@ namespace TankGame
         private void LevelListLoad()
         {
             //gets all the files in the relative folder and sends them as an array to the listbox to populate the levels
-            if (!Directory.Exists(relativePath + "\\TankGame"))
+            if (!Directory.Exists(relativePath + "\\TankGame\\LevelFiles"))
             {
-                Directory.CreateDirectory(relativePath + "\\TankGame");
+                Directory.CreateDirectory(relativePath + "\\TankGame\\LevelFiles");
             }
-            string[] filepaths = Directory.GetFiles(relativePath + "\\TankGame");
+            string[] filepaths = Directory.GetFiles(relativePath + "\\TankGame\\LevelFiles");
             for (int i = 0; i < filepaths.Length; i++)
             {
                 filepaths[i] = Path.GetFileName(filepaths[i].Split(".")[0]);

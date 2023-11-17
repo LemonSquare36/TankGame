@@ -58,8 +58,8 @@ namespace TankGame
         {
 
             //load the board and additional data from the file passed in levelselect.
-            file = relativePath + "\\TankGame\\" + selectedFile + ".lvl";
-            if (file != relativePath + "\\TankGame\\" + "" + ".lvl")
+            file = relativePath + "\\TankGame\\LevelFiles\\" + selectedFile + ".lvl";
+            if (file != relativePath + "\\TankGame\\LevelFiles\\" + "" + ".lvl")
             {
                 try
                 {
