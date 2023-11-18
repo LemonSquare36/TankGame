@@ -30,15 +30,13 @@ namespace TankGame
         protected RectangleF[,] CircleTiles;
         protected bool drawTankInfo = false;
 
-        //info storage for UI elements
-        private RectangleF[,] UITiles;
-
         //pathfinding information
         private Cell[,] cellMap;
-        private Pathfinder pathfinder;
+        protected Pathfinder pathfinder;
         protected List<Cell> path = new List<Cell>();
 
-        protected bool ActiveItemWarning = false;
+        protected bool ActiveItemWarning = false, itemActive = false;
+        protected string selectedItem;
 
 
         #region base functions
@@ -50,6 +48,22 @@ namespace TankGame
         public override void LoadContent(SpriteBatch spriteBatchmain)
         {
             base.LoadContent(spriteBatchmain);
+        }
+        public override void Update()
+        {
+            base.Update();
+            //if a tank is selected then an object is active
+            if (drawTankInfo)
+            {
+                anyObjectActive = true;
+            }
+            //if escape was pressed with an active object turn off the selected tank
+            if (escapePressed && anyObjectActive)
+            {
+                drawTankInfo = false;
+                boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active = false;
+                activeTankNum = -1;
+            }
         }
         #endregion
         protected void LoadLevelFile()
@@ -74,7 +88,7 @@ namespace TankGame
                         boardState.playerList.Add(new Player(AP, sweeps));
                         boardState.playerList[i].SpawnTiles = levelManager.getPlayerSpawns()[i];
                         //remove them from the entities list. They dont need to be there. Only there for the level editors purposes
-                        foreach(SpawnTile tile in boardState.playerList[i].SpawnTiles)
+                        foreach (SpawnTile tile in boardState.playerList[i].SpawnTiles)
                         {
                             var e = boardState.entities.Find(x => x.gridLocation == tile.gridLocation);
                             boardState.entities.Remove(e);
@@ -156,93 +170,7 @@ namespace TankGame
             }
         }
         #region LOS Methods
-        /// <summary>Find out which tiles are in the line of sight of the tank (not blocked by walls)</summary>
-        private void findTilesInLOS(Tank selectedTank)
-        {
-            int defualtRows = CircleTiles.GetLength(0);
-            int defualtCols = CircleTiles.GetLength(1);
-            //get the center point
-            int CenterX = defualtRows / 2;
-            int CenterY = defualtCols / 2;
-            Vector2 Center = CircleTiles[CenterX, CenterY].Center;
 
-            //use each wall to check what tiles they are blocking
-            foreach (Vector2 @object in blockersInCircle)
-            {
-                //where the loops will start when iterating the 2darray
-                int starti = 0;
-                int startj = 0;
-                int rows = defualtRows;
-                int cols = defualtCols;
-
-                int X = (int)@object.X;
-                int Y = (int)@object.Y;
-
-                //if the wall is to the left of the center tile
-                if (@object.X < CenterX)
-                { rows = X + 1; } //shrink the iterations so nothing in front sideways is checked
-
-                //if the wall is to the right of the center tile
-                else if (@object.X > CenterX)
-                { starti = X; } //start the iteration at that value, only checking what is behind the wall
-
-                //if the wall is above the center tile
-                if (@object.Y < CenterY)
-                { cols = Y + 1; } //only check tiles equal or above the wall
-
-                //if the wall is below the center tile
-                else if (@object.Y > CenterY)
-                { startj = Y; }//only check tiles equal or below the wall
-
-                //if the tile falls on the center for the rows or columns, then leave it alone and check the whole row lenght or column length
-
-                //iterate the 2darray quadrant that the wall is in and check to see if its blocking any blocks
-                for (int i = starti; i < rows; i++)
-                {
-                    for (int j = startj; j < cols; j++)
-                    {
-                        //if the rectangle isnt null
-                        if (!CircleTiles[i, j].Null)
-                        {
-                            //make sure the wall and current tile checking arent the same
-                            if (!(i == X && j == Y))
-                            {
-                                //check if it is visiable with the current wall as argument
-                                Line templine = new Line(CircleTiles[i, j].Center, Center);
-                                if (templine.LineSegmentIntersectsRectangle(CircleTiles[X, Y]))
-                                {
-                                    //if it is blocked then empty/null the rectangle
-                                    CircleTiles[i, j] = new RectangleF();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            foreach (Vector2 @object in blockersInCircle)
-            {
-                //check the walls/tanks to see if thier rectangle isnt null. 
-                if (!CircleTiles[(int)@object.X, (int)@object.Y].Null)
-                {
-                    //If it isnt null then it is in sight and give the identifier of 1 to make it draw different
-                    CircleTiles[(int)@object.X, (int)@object.Y].identifier = 1;
-                    //get the subgrids location relative to the board to see if a tank is there
-                    Point subgridLocation = new Point(selectedTank.gridLocation.X - selectedTank.range, selectedTank.gridLocation.Y - selectedTank.range);
-                    //check if the object is a friendly tank and make the rectangle null/untargetable (remove it from eligble targets)
-                    foreach (Tank tank in boardState.playerList[boardState.curPlayerNum].tanks)
-                    {
-                        Point tankLocation = tank.gridLocation - subgridLocation;
-                        if (tankLocation == new Point((int)@object.X, (int)@object.Y))
-                        {
-                            CircleTiles[(int)@object.X, (int)@object.Y] = new RectangleF();
-                        }
-                    }
-                    //make the selected tanks rectangle null
-                    Point selectedTankLocation = selectedTank.gridLocation - subgridLocation;
-                    CircleTiles[selectedTankLocation.X, selectedTankLocation.Y] = new RectangleF();
-                }
-            }
-        }
         private void getObjectLocationsForVision()
         {
 
@@ -259,7 +187,7 @@ namespace TankGame
             CircleTiles = curBoard.getRectanglesInRadius(
             new Vector2(boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].gridLocation.X, boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].gridLocation.Y),
             boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].range, objectLocations, out blockersInCircle);
-            findTilesInLOS(boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum]);
+            Tank.findTilesInLOS(boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum], CircleTiles, blockersInCircle, boardState);
         }
         #endregion
         protected void pathFind(Point start)
@@ -435,79 +363,8 @@ namespace TankGame
             }
         }
 
-        #endregion
-        #region Items Code
-        /// <summary>Draws the sweeper range for the user to see</summary>
-        protected void SweeperPressedDrawUI(Texture2D plainTexture, SpriteFont font)
-        {
-            if (mouseInBoard)
-            {
-                if (UITiles.LongLength > 0)
-                {
-                    for (int i = 0; i < UITiles.GetUpperBound(0); i++)
-                    {
-                        for (int j = 0; j < UITiles.GetUpperBound(1); j++)
-                        {
-                            spriteBatch.Draw(plainTexture, UITiles[i, j].Location, null, Color.LightSlateGray, 0, Vector2.Zero, UITiles[i, j].Size, SpriteEffects.None, 0);
-                        }
-                    }
-                }
-            }
-            if (ActiveItemWarning)
-            {
-                //ItemWarningSystem("No more sweeps!", font, Color.Black, 2500);
-            }
-        }
-        /// <summary>This code runs when the sweeper item button is pressed down.</summary>
-        protected void SweeperPressed()
-        {
-            //deselect tanks when selecting sweeper
-            if (drawTankInfo)
-            {
-                drawTankInfo = false;
-                boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active = false;
-                activeTankNum = -1;
-            }
-            if (mouseInBoard)
-            {
-                UITiles = curBoard.getSubGrid(new Vector2(curGridLocation.X - 1, curGridLocation.Y - 1), new Vector2(4, 4));
-                //check if the sweeper is used on a square
-                if (curLeftClick == ButtonState.Pressed && oldLeftClick != ButtonState.Pressed)
-                {
-                    if (boardState.playerList[boardState.curPlayerNum].sweeps > 0)
-                    {
-                        boardState.playerList[boardState.curPlayerNum].sweeps--;
-                        for (int i = 0; i < UITiles.GetUpperBound(0); i++)
-                        {
-                            for (int j = 0; j < UITiles.GetUpperBound(1); j++)
-                            {
-                                for (int k = 0; k < boardState.playerList.Count; k++)
-                                {
-                                    if (k != boardState.curPlayerNum) //means its an enemy player
-                                    {
-                                        foreach (Mine mine in boardState.playerList[k].mines)
-                                        {
-                                            if (curBoard.getGridSquare(mine.gridLocation.X, mine.gridLocation.Y).Location == UITiles[i, j].Location)
-                                            {
-                                                boardState.playerList[boardState.curPlayerNum].mines.Add(mine);
-                                                UpdatePathFinderWithMines();
-                                            }
-                                        }
-                                    }
-                                }
+        #endregion   
 
-                            }
-                        }
-                    }
-                    else if (boardState.playerList[boardState.curPlayerNum].sweeps == 0)
-                    {
-                        ActiveItemWarning = true;
-                    }
-                }
-            }
-        }
-
-        #endregion
         #region BUTTON EVENTS
         protected void EndTurnPressed(object sender, EventArgs e)
         {
@@ -534,7 +391,7 @@ namespace TankGame
             //dont draw tank info immediatly
             drawTankInfo = false;
             //update the pathfiner with mine locations
-            UpdatePathFinderWithMines();
+            UpdatePathFinderWithMines(boardState, pathfinder);
             //set the previous board state to be the start of the next turn
             previousBoardState = BoardState.SavePreviousBoardState(boardState);
         }
@@ -542,7 +399,7 @@ namespace TankGame
 
         #region random methods without home
         /// <summary>this method makes friendly mines avoided by the pathfinder while making enemy mines invisible to the pathfinder </summary>
-        protected void UpdatePathFinderWithMines()
+        public static void UpdatePathFinderWithMines(BoardState boardState, Pathfinder pathfinder)
         {
             //update enemies first to invis before allied to wall.
             //If an allied on is on an enemies, it should override the invis portion making it still unpassable
@@ -562,7 +419,45 @@ namespace TankGame
             {
                 pathfinder.AlterCell(mine.gridLocation, 1);
             }
-
+        }
+        /// <summary>
+        /// runs the update code for items if an item is currently selected
+        /// </summary>
+        /// <param name="Item">string name for the item in use</param>
+        protected void UseItem(string Item)
+        {
+            if (itemActive)
+            {
+                if (Item == "sweeper")
+                {
+                    DeselectTank();
+                }
+                if (mouseInBoard)
+                boardState.playerList[boardState.curPlayerNum].inventory.UseItem(Item, boardState, curBoard, pathfinder, curGridLocation, drawTankInfo, activeTankNum, curLeftClick, oldLeftClick);
+            }
+        }
+        /// <summary>
+        ///  runs the draw code for items if an item is currently selected
+        /// </summary>
+        /// <param name="item">string name for the item in use</param>
+        /// <param name="UITexture">Texture2D needed for the Items unique drawing to the screen. THe items UI</param>
+        /// <param name="font"></param>
+        /// <param name="warningMessageColor"></param>
+        /// <param name="warningLength">in milliseconds</param>
+        protected void DrawItemUI(string item, Texture2D UITexture, SpriteFont font, Color warningMessageColor, int warningLength)
+        {
+            if (itemActive)
+                boardState.playerList[boardState.curPlayerNum].inventory.DrawItemUI(selectedItem, spriteBatch, UITexture);
+        }
+        private void DeselectTank()
+        {
+            //deselect tanks when selecting sweeper
+            if (drawTankInfo)
+            {
+                drawTankInfo = false;
+                boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active = false;
+                activeTankNum = -1;
+            }
         }
         #endregion
     }

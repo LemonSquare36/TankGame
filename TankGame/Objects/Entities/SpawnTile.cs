@@ -12,6 +12,11 @@ namespace TankGame.Objects.Entities
             type = "spawn";
             size = curSquare.Size / spriteSize;
         }
+        public override void Initialize(RectangleF newRectangle)
+        {
+            curSquare = newRectangle;
+            size = curSquare.Size / spriteSize;
+        }
         public override void LoadContent()
         {
             base.LoadContent();

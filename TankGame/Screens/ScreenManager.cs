@@ -17,6 +17,7 @@ using TankGame.Tools;
 using TankGame.Objects.Entities;
 using TankGame.Objects;
 using TankGame.GameInfo;
+using System.Runtime.CompilerServices;
 
 namespace TankGame
 {
@@ -28,7 +29,7 @@ namespace TankGame
         //gets sent to GameState to inform the manager which screen to load
         public string nextScreen, selectedFile;   
         //puases the game when true
-        protected bool pause = false;
+        protected bool pause = false, anyObjectActive = false, escapePressed = false;
         //mouse that every screen uses
         protected MouseState mouse;
         protected ButtonState curLeftClick, oldLeftClick, curRightClick, oldRightClick;
@@ -84,12 +85,15 @@ namespace TankGame
             oldRightClick = curRightClick;
             curRightClick = mouse.RightButton;
 
+
             //current rectange the mouse is in
             if (curBoard != null)
             {
                 if (curBoard.gridArrayAccessible)
                 curBoard.getGridSquare(worldPosition, out curGridLocation);
             }
+            //this handles what happens when escape gets pressed
+            EscapeKeyManager();
         }
         //Holds Draw
         public virtual void Draw()
@@ -165,6 +169,39 @@ namespace TankGame
             }
         }
         #endregion
-
+        private void EscapeKeyManager()
+        {
+            //escape isnt currently "pressed" for anything that needs that info
+            escapePressed = false;
+            //if escape is pressed then
+            if (keyState.IsKeyDown(Keys.Escape))
+            {
+                //if it "wasnt" but is
+                if (!escapePressed)
+                {
+                    //and a button is active
+                    if (anyObjectActive)
+                    {
+                        //set escape to pressed and button active to false
+                        anyObjectActive = false;
+                        escapePressed = true;
+                    }
+                    //if no active buttons, and the game is paused, then we will unpuase the game
+                    else if (pause)
+                    {
+                        //unpuase code
+                    }
+                    //if escape gets pressed without any active buttons, then pause the game
+                    else
+                    {
+                        //puase code
+                        escapePressed = true;
+                        pause = true;
+                    }
+                }
+            }
+            //if a button is pressed then in the update section of the game it will catch it. If its not then this will stay false
+            anyObjectActive = false;
+        }
     }
 }

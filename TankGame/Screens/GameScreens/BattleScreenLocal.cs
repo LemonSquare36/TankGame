@@ -80,7 +80,7 @@ namespace TankGame
             ready = new Button(new Vector2(1590, 800), 200, 100, "Buttons/BattleScreen/Ready", "ready");
             endturn = new Button(new Vector2(1590, 800), 200, 100, "Buttons/BattleScreen/EndTurn", "endturn");
             undo = new Button(new Vector2(1590, 600), 100, 50, "Buttons/BattleScreen/Undo", "undo");
-            sweep = new Button(new Vector2(110, 100), 50, 50, "Buttons/BattleScreen/Sweep", "sweep", "toggle");
+            sweep = new Button(new Vector2(110, 100), 50, 50, "Buttons/BattleScreen/Sweep", "sweeper", "toggle");
 
             //load inputboxes
             tanksCount.LoadContent();
@@ -127,6 +127,10 @@ namespace TankGame
                 foreach (Button b in placementButtonList)
                 {
                     b.Update(mouse, worldPosition);
+                    if (b.ButtonActive)
+                    {
+                        anyObjectActive = true;
+                    }
                 }
                 //code for placing and picking up tanks
                 Placement();
@@ -138,21 +142,42 @@ namespace TankGame
                 foreach (Button b in battleButtonList)
                 {
                     b.Update(mouse, worldPosition);
+                    //look for active buttons to see if there is an active object
+                    if (b.ButtonActive)
+                    {
+                        anyObjectActive = true;
+                    }
+                    //if the button name == selected item name then it is that items buttons
+                    if (b.bName == selectedItem)
+                    {
+                        //if the button is no longer active, then that item is deselected
+                        if (!b.ButtonActive)
+                        {
+                            itemActive = false;
+                        }
+                    }
                 }
                 //check if the mouse is in the board
-                if (sweep.Texture == sweep.Pressed)
-                {
-                    SweeperPressed();
-                }
-                else if (mouseInBoard)
+                if (mouseInBoard)
                 {
                     checkSelectedTank();
-                    MoveOrShoot();
+                    MoveOrShoot();                   
                 }
                 else if (!mouseInBoard)
                 {
                     path.Clear();
                 }
+                UseItem(selectedItem);
+                /*if ()
+                {
+                    itemActive = false;
+                    sweep.ButtonReset();
+                }*/ //
+            }
+            //unselect the button(s) that are currently active
+            if (escapePressed && anyObjectActive)
+            {
+                ButtonReset();
             }
         }
 
@@ -275,10 +300,7 @@ namespace TankGame
                 }
                 if (mouseInBoard)
                 {
-                    if (sweep.Texture == sweep.Pressed)
-                    {
-                        SweeperPressedDrawUI(spawnTex, font);
-                    }
+                    DrawItemUI(selectedItem, spawnTex, font, Color.Red, 2500);
                 }
             }
 
@@ -289,12 +311,19 @@ namespace TankGame
             spriteBatch.DrawString(font, "Items", new Vector2(150, 30), Color.Black);
             spriteBatch.DrawString(font, "______", new Vector2(130, 35), Color.Black);
 
-            spriteBatch.DrawString(font, Convert.ToString(boardState.playerList[boardState.curPlayerNum].sweeps), new Vector2(170, 100), Color.Black);
+            spriteBatch.DrawString(font, Convert.ToString(boardState.playerList[boardState.curPlayerNum].inventory.sweeps), new Vector2(170, 100), Color.Black);
         }
 
         public override void ButtonReset()
         {
-
+            foreach (Button b in placementButtonList)
+            {
+                b.ButtonReset();
+            }
+            foreach (Button b in battleButtonList)
+            {
+                b.ButtonReset();
+            }
         }
 
         #region placement Phase Code
@@ -507,7 +536,7 @@ namespace TankGame
                     previousBoardState = BoardState.SavePreviousBoardState(boardState);
                 }
 
-                UpdatePathFinderWithMines();
+                UpdatePathFinderWithMines(boardState, pathfinder);
                 foreach (Button b in placementButtonList)
                 {
                     b.ButtonReset();
@@ -524,6 +553,13 @@ namespace TankGame
         }
         protected void SweepPressed(object sender, EventArgs e)
         {
+            if (boardState.playerList[boardState.curPlayerNum].inventory.sweeps <= 0)
+            {
+                itemActive = false;
+                sweep.ButtonReset();
+            }
+            itemActive = true;
+            selectedItem = "sweeper";          
         }
         #endregion
 

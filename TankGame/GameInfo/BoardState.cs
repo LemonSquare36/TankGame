@@ -51,7 +51,7 @@ namespace TankGame.GameInfo
             //clone the players in the player list
             for (int i = 0; i < curBoardState.playerList.Count; i++)
             {
-                @newBoardState.playerList.Add(new Player(curBoardState.playerList[i].AP, curBoardState.playerList[i].sweeps));
+                @newBoardState.playerList.Add(new Player(curBoardState.playerList[i].AP, curBoardState.playerList[i].inventory.sweeps));
                 foreach (Tank tank in curBoardState.playerList[i].tanks)
                 {
                     @newBoardState.playerList[i].tanks.Add(Tank.Clone(tank));
@@ -115,11 +115,17 @@ namespace TankGame.GameInfo
                     }
                 }
             }
+            //get walls
             foreach (Wall wall in previousState.walls)
             {
                 walls.Add(Wall.Clone(wall));
             }
             getWallLocations();
+            //get itemboxes
+            foreach (ItemBox itembox in previousState.itemBoxes)
+            {
+                itemBoxes.Add(ItemBox.Clone(itembox));
+            }
 
             //redo all entities list
             getAllEntities();

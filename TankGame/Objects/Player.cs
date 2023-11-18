@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TankGame.GameInfo;
 using TankGame.Objects.Entities;
 using TankGame.Objects.Entities.Items;
 
@@ -14,10 +15,12 @@ namespace TankGame.Objects
     {
         public int AP;
         public int startAP;
-        public int sweeps;
         public List<Items> Items = new List<Items>();
         public List<Tank> tanks = new List<Tank>();
         public List<Mine> mines = new List<Mine>();
+
+        //inventory for the player
+        public Inventory inventory;
 
         private Color playerColor;
 
@@ -27,7 +30,7 @@ namespace TankGame.Objects
         {
             AP = ActionPoints;
             startAP = ActionPoints;
-            sweeps = Sweeps;
+            inventory = new Inventory(Sweeps);
         }
         public int getActiveTankNum()
         {

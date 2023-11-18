@@ -818,6 +818,12 @@ namespace TankGame
                     RowsCol = 40;
                     sizeField.Text = "40";
                 }
+                if (RowsCol < 40)
+                {
+                    //set actaul value, then displayed value
+                    RowsCol = 10;
+                    sizeField.Text = "10";
+                }
                 float size = Camera.ViewboxScale.Y * 0.9F;
                 Point pos = new Point(Convert.ToInt16(Camera.ViewboxScale.Y * .05F), Convert.ToInt16(Convert.ToInt16(Camera.ViewboxScale.Y * .05F)));
                 curBoard = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), RowsCol, RowsCol, 8);
@@ -858,6 +864,12 @@ namespace TankGame
                     TanksAndMines.X = 8;
                     tankField.Text = "8";
                 }
+                if (TanksAndMines.X < 1)
+                {
+                    //set actaul value, then displayed value
+                    TanksAndMines.X = 1;
+                    tankField.Text = "1";
+                }
                 tankColor = Color.Black;
             }
             catch { }
@@ -874,6 +886,12 @@ namespace TankGame
                     TanksAndMines.Y = 12;
                     mineField.Text = "12";
                 }
+                if (TanksAndMines.Y < 0)
+                {
+                    //set actaul value, then displayed value
+                    TanksAndMines.Y = 0;
+                    mineField.Text = "0";
+                }
                 MineColor = Color.Black;
             }
             catch { }
@@ -888,6 +906,11 @@ namespace TankGame
                 {
                     sweepField.Text = "10";
                     sweeps = 10;
+                }
+                if (sweeps < 0)
+                {
+                    sweepField.Text = "0";
+                    sweeps = 0;
                 }
             }
             catch { }

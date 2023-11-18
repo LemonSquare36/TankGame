@@ -100,8 +100,6 @@ namespace TankGame
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
             //runs the current game action - state of game
             gameState.Update();
 

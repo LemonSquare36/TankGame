@@ -17,6 +17,9 @@ namespace TankGame
         public ButtonState curClick;
         private bool toggle = false, toggleOneTex = false;
         public bool OneTexPressed = false;
+        //returns if the button is curently active
+        private bool buttonActive = false;
+        public bool ButtonActive { get { return buttonActive; } }
 
         public float textureWidth, textureHeight;
 
@@ -48,6 +51,7 @@ namespace TankGame
             oldClick = ButtonState.Pressed;
             this.Texture = unPressed;
             OneTexPressed = false;
+            buttonActive = false;
         }
         public Texture2D UnPressed { get { return unPressed; } }
         public Texture2D Pressed { get { return pressed; } }
@@ -187,13 +191,17 @@ namespace TankGame
                         {
                             Texture = unPressed;
                             OneTexPressed = false;
+                            buttonActive = false;
                         }
 
                         else { Texture = pressed; OneTexPressed = true; }
                         OnButtonClicked();
                     }
                 }
-
+                if (Texture == Pressed || OneTexPressed == true)
+                {
+                    buttonActive = true;
+                }
             }
         }
         //Draws the Buttons

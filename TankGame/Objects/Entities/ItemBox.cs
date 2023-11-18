@@ -29,7 +29,7 @@ namespace TankGame.Objects.Entities
         public static ItemBox Clone(ItemBox ItemToClone)
         {
             ItemBox @new = new ItemBox(ItemToClone.curSquare, ItemToClone.gridLocation);
-            /* @new.Active = ItemToClone.Active;
+            @new.Active = ItemToClone.Active;
             @new.alive = ItemToClone.alive;
             @new.curHP = ItemToClone.curHP;
             @new.HP = ItemToClone.HP;
@@ -40,7 +40,7 @@ namespace TankGame.Objects.Entities
             @new.showHealth = ItemToClone.showHealth;
             @new.tex = ItemToClone.tex;
             @new.texFile = ItemToClone.texFile;
-            @new.type = ItemToClone.type; */
+            @new.type = ItemToClone.type; 
 
             return @new;
         }

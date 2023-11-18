@@ -6,16 +6,11 @@ using TankGame.Objects.Entities;
 using TankGame.Objects;
 using System.Linq;
 using System.Xml.Linq;
-using System.Security.Cryptography;
-using System.Xml;
 
 namespace TankGame.Tools
 {
     internal class LevelManager
     {
-        StreamReader reader;
-        StreamWriter writer;
-        XDocument document;
         Board board;
         List<Entity> entities = new List<Entity>();
         List<Wall> walls = new List<Wall>();
@@ -183,7 +178,7 @@ namespace TankGame.Tools
             //File.Create(FileLocation).Close();
 
 
-            document = new XDocument(
+            XDocument document = new XDocument(
                 new XDeclaration("1.0", "utf-8", "yes"),
                 new XComment("Level File for " + FileName),
                 new XElement("LevelFile",
