@@ -167,12 +167,15 @@ namespace TankGame
                 {
                     path.Clear();
                 }
+                //item use code
                 UseItem(selectedItem);
-                /*if ()
+                //if the selected item is empty then reset the button responsible and make itemActive false
+                if (boardState.playerList[boardState.curPlayerNum].inventory.selectedItemsCount <= 0 && selectedItem != null)
                 {
+                    battleButtonList.Find(x => x.bName == selectedItem).ButtonReset();
                     itemActive = false;
-                    sweep.ButtonReset();
-                }*/ //
+                    selectedItem = null;
+                }
             }
             //unselect the button(s) that are currently active
             if (escapePressed && anyObjectActive)

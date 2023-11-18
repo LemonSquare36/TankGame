@@ -432,7 +432,10 @@ namespace TankGame
                 {
                     DeselectTank();
                 }
-                if (mouseInBoard)
+                //get the amount of the current selected item. 
+                boardState.playerList[boardState.curPlayerNum].inventory.setSelectedItemCount(selectedItem);
+                //use the update code if the mouse is in the board
+                if (mouseInBoard && boardState.playerList[boardState.curPlayerNum].inventory.selectedItemsCount > 0)
                 boardState.playerList[boardState.curPlayerNum].inventory.UseItem(Item, boardState, curBoard, pathfinder, curGridLocation, drawTankInfo, activeTankNum, curLeftClick, oldLeftClick);
             }
         }

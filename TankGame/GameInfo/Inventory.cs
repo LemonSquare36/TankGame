@@ -16,6 +16,7 @@ namespace TankGame.GameInfo
 {
     internal class Inventory
     {
+        public int selectedItemsCount;
         public int sweeps;
         public int missile, shotgun, builder, wallDestroyer, teleport, superSweeper;
         Items items = new Items();
@@ -47,6 +48,7 @@ namespace TankGame.GameInfo
             {
                 case "sweeper":
                     items.UseSweeper(boardState, curBoard, pathfinder, curGridLocation, drawTankInfo, activeTankNum, curLeftClick, oldLeftClick);
+                    selectedItemsCount = sweeps;
                     break;
                 case "superSweeper":
 
@@ -95,6 +97,36 @@ namespace TankGame.GameInfo
                     break;
                 case "teleport":
 
+                    break;
+                default:
+
+                    break;
+            }
+        }
+        public void setSelectedItemCount(string selectedItem)
+        {
+            switch (selectedItem)
+            {
+                case "sweeper":                    
+                    selectedItemsCount = sweeps;
+                    break;
+                case "superSweeper":
+                    selectedItemsCount = superSweeper;
+                    break;
+                case "missile":
+                    selectedItemsCount = missile;
+                    break;
+                case "shotgun":
+                    selectedItemsCount = shotgun;
+                    break;
+                case "builder":
+                    selectedItemsCount = builder;
+                    break;
+                case "wallDestroyer":
+                    selectedItemsCount = wallDestroyer;
+                    break;
+                case "teleport":
+                    selectedItemsCount = teleport;
                     break;
                 default:
 
