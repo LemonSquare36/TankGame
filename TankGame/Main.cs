@@ -50,6 +50,12 @@ namespace TankGame
             get { return graphicsAdaptr; }
             set { graphicsAdaptr = value; }
         }
+        private static GameTime gametime;
+        public static GameTime gameTime
+        {
+            get { return gametime; }
+            set { gametime = value; }
+        }
         //constructor
         public Main()
         {
@@ -102,8 +108,9 @@ namespace TankGame
         {
             //runs the current game action - state of game
             gameState.Update();
-
+            gametime = gameTime;
             base.Update(gameTime);
+
         }
 
         protected override void Draw(GameTime gameTime)
@@ -124,7 +131,7 @@ namespace TankGame
             //spriteBatch.End();
             //---------------------------------------------------------------------
 
-            base.Draw(gameTime); ;
+            base.Draw(gameTime);
         }
         public static Matrix DefualtMatrix()
         {

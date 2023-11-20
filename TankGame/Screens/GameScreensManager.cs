@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using TankGame.Objects.Entities.Items;
 using TankGame.GameInfo;
+using Microsoft.Xna.Framework.Audio;
 
 namespace TankGame
 {
@@ -68,12 +69,10 @@ namespace TankGame
         #endregion
         protected void LoadLevelFile()
         {
-
             //load the board and additional data from the file passed in levelselect.
             file = relativePath + "\\TankGame\\LevelFiles\\" + selectedFile + ".lvl";
             if (file != relativePath + "\\TankGame\\LevelFiles\\" + "" + ".lvl")
             {
-
                 try
                 {
                     levelManager.LoadLevel(file, 0.2468F, 0.05F);
@@ -107,6 +106,9 @@ namespace TankGame
                     //get the cellMap and load the pathfinder with it
                     cellMap = levelManager.getCellMap();
                     pathfinder = new Pathfinder(cellMap);
+
+                    //set noises
+                    Tank.setTankNoises("Sounds/tankshot", "Sounds/tankdeath");
                 }
                 catch { }
             }
@@ -222,140 +224,30 @@ namespace TankGame
             {
                 if (boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active && boardState.playerList[boardState.curPlayerNum].AP > 0)
                 {
-                    //if there is a path
-                    if (path != null)
+                    //if the mouse is within the board
+                    if (mouseInBoard)
                     {
-                        //if the mouse is within the board
-                        if (mouseInBoard)
+                        //if the mouse gets clicked while there is a mouse
+                        if (curLeftClick == ButtonState.Pressed && oldLeftClick != ButtonState.Pressed)
                         {
-                            //if the mouse gets clicked while there is a mouse
-                            if (curLeftClick == ButtonState.Pressed && oldLeftClick != ButtonState.Pressed)
+                            //if there is a path
+                            if (path != null)
                             {
-                                //get the AP and then move that distance, starting from the back of the list (the list is in reverse move order)
-                                if (path.Count > 1)
-                                {
-                                    //keep track of the tanks path through the list of tiles
-                                    int checkedTiles = 0;
-                                    //keep checking as long as the player has ap to spend and the path has more tiles to check
-                                    while (checkedTiles <= boardState.playerList[boardState.curPlayerNum].AP && checkedTiles < path.Count)
-                                    {
-                                        //check each of the item boxes for collision 
-                                        for (int i = 0; i < boardState.itemBoxes.Count; i++)//(checked before mines since mines killing a tank exits the loop)
-                                        {
-                                            if (boardState.itemBoxes[i].gridLocation == path[path.Count - 1 - checkedTiles].location)
-                                            {
-
-                                            }
-                                        }
-
-                                        for (int i = 0; i < boardState.playerList.Count; i++)
-                                        {
-                                            if (i != boardState.curPlayerNum)//means its an enemy
-                                            {
-                                                for (int j = 0; j < boardState.playerList[i].mines.Count; j++) //check each of the enemies mines for collision
-                                                {
-                                                    //cross reference the enemy mines locations with the current tile being checked's location
-                                                    if (boardState.playerList[i].mines[j].gridLocation == path[path.Count - 1 - checkedTiles].location)
-                                                    {
-                                                        //if there was a mine in one of the tiles traveled through
-                                                        boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].alterHP(-8);//kill the tank
-                                                        //move the tank where the mine was/current tile checked
-                                                        boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].gridLocation = path[path.Count - 1 - checkedTiles].location;
-                                                        boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].curSquare = curBoard.getGrid()
-                                                        [path[path.Count - 1 - checkedTiles].location.X, path[path.Count - 1 - checkedTiles].location.Y];
-                                                        //spend the AP required to move there
-                                                        boardState.playerList[boardState.curPlayerNum].AP -= checkedTiles;
-                                                        //remove the mine from the game
-                                                        boardState.playerList[i].mines.Remove(boardState.playerList[i].mines[j]);
-                                                        drawTankInfo = false;
-                                                        //make sure you CANNOT UNDO a death by mine by updating the previous turn state
-                                                        previousBoardState = BoardState.SavePreviousBoardState(boardState);
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        checkedTiles++;
-                                    }
-                                    if (boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].alive)
-                                    {
-                                        checkedTiles--; //do this since if the tank lived, it added 1 extra at the end of the loop
-                                        boardState.playerList[boardState.curPlayerNum].AP -= checkedTiles;
-                                        boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].gridLocation = path[path.Count - 1 - checkedTiles].location;
-                                        boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].curSquare = curBoard.getGrid()
-                                            [path[path.Count - 1 - checkedTiles].location.X, path[path.Count - 1 - checkedTiles].location.Y];
-                                    }
-                                    //redo the Line of Set check for the new position
-                                    getLOS();
-                                }
+                                boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankMove(curBoard, ref boardState, ref previousBoardState, path, out drawTankInfo);
+                                //redo the Line of Set check for the new position
+                                getLOS();
                             }
-                            else if (curRightClick == ButtonState.Pressed && oldRightClick != ButtonState.Pressed)
+                        }
+                        //-----------------------------------------------------------------------
+                        //FIRE CODE
+                        //-----------------------------------------------------------------------
+                        else if (curRightClick == ButtonState.Pressed && oldRightClick != ButtonState.Pressed)
+                        {
+                            int wallToRemove = -1;
+                            boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankShoot(boardState, CircleTiles, blockersInCircle, worldPosition, out wallToRemove);
+                            if (wallToRemove != -1)
                             {
-                                bool fired = false; //track if something was fired at to prevent unnessacary checks
-                                foreach (RectangleF tile in CircleTiles)//if its in range
-                                {
-                                    if (!tile.Null)//and not blocked
-                                    {
-                                        foreach (Vector2 @object in blockersInCircle)//check which object is targeted
-                                        {
-                                            RectangleF targetRectangle;
-                                            if (CircleTiles[(int)@object.X, (int)@object.Y].Contains(worldPosition))//get the rectangle the mouse is in
-                                            {
-                                                targetRectangle = CircleTiles[(int)@object.X, (int)@object.Y];//set the target rectangle 
-
-                                                if (tile.identifier == 1 && !fired)//is targetable
-                                                {
-                                                    if (boardState.playerList[boardState.curPlayerNum].AP > 1)//if player has ap to fire
-                                                    {
-                                                        //if (item logic)
-                                                        //damge being delt 
-                                                        int damage = boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].damage;
-                                                        //check to see if it is a tank being fired at 
-                                                        for (int i = 0; i < boardState.playerList.Count; i++)
-                                                        {
-                                                            if (i != boardState.curPlayerNum)
-                                                            {
-                                                                foreach (Tank eTank in boardState.playerList[i].tanks)//for each enemy tank
-                                                                {
-                                                                    if (eTank.alive)
-                                                                    {
-                                                                        if (eTank.curSquare.Location == targetRectangle.Location)//and the tank is in the target rectangle
-                                                                        {
-                                                                            eTank.alterHP(-damage);//tank takes damage
-                                                                            fired = true;
-                                                                            boardState.playerList[boardState.curPlayerNum].AP -= 2;
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        //if it wasnt a tank, then check which wall it must be then
-                                                        if (!fired)
-                                                        {
-                                                            for (int i = 0; i < boardState.walls.Count; i++)
-                                                            {
-                                                                if (boardState.walls[i].Type == "wall")
-                                                                {
-                                                                    if (boardState.walls[i].curSquare.Location == targetRectangle.Location)
-                                                                    {
-                                                                        boardState.playerList[boardState.curPlayerNum].AP -= 2;
-                                                                        boardState.walls[i].alterHP(-(damage - 1));
-                                                                        boardState.walls[i].showHealth = true;
-                                                                        fired = true;
-                                                                        if (!boardState.walls[i].alive)
-                                                                        {
-                                                                            removeWallDuringGame(i);
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                removeWallDuringGame(wallToRemove);
                             }
                         }
                     }
@@ -432,11 +324,9 @@ namespace TankGame
                 {
                     DeselectTank();
                 }
-                //get the amount of the current selected item. 
-                boardState.playerList[boardState.curPlayerNum].inventory.setSelectedItemCount(selectedItem);
                 //use the update code if the mouse is in the board
-                if (mouseInBoard && boardState.playerList[boardState.curPlayerNum].inventory.selectedItemsCount > 0)
-                boardState.playerList[boardState.curPlayerNum].inventory.UseItem(Item, boardState, curBoard, pathfinder, curGridLocation, drawTankInfo, activeTankNum, curLeftClick, oldLeftClick);
+                if (mouseInBoard)
+                    boardState.playerList[boardState.curPlayerNum].inventory.UseItem(Item, boardState, curBoard, pathfinder, curGridLocation, drawTankInfo, activeTankNum, curLeftClick, oldLeftClick);
             }
         }
         /// <summary>
@@ -452,6 +342,10 @@ namespace TankGame
             if (itemActive)
                 boardState.playerList[boardState.curPlayerNum].inventory.DrawItemUI(selectedItem, spriteBatch, UITexture);
         }
+        protected void PlayItemAnimations(SpriteBatch spriteBatch)
+        {
+            boardState.playerList[boardState.curPlayerNum].inventory.DrawItemAnimation(spriteBatch, curBoard.getGridSquare(1, 1).Size.X / 50);
+        }
         private void DeselectTank()
         {
             //deselect tanks when selecting sweeper
@@ -461,6 +355,21 @@ namespace TankGame
                 boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active = false;
                 activeTankNum = -1;
             }
+        }
+        #endregion
+        #region Sounds and Music
+        /// <summary>Assign a noise to every button in the list</summary>
+        protected void AssignButtonNoise(List<Button> buttonList, string FileLocation)
+        {
+            foreach (Button button in buttonList)
+            {
+                button.addSoundEffect(FileLocation);
+            }
+        }
+        /// <summary>assign a noise to only one button</summary>
+        protected void AssignButtonNoise(Button button, string FileLocation)
+        {
+            button.addSoundEffect(FileLocation);
         }
         #endregion
     }

@@ -69,6 +69,7 @@ namespace TankGame
         public virtual void LoadContent(SpriteBatch spriteBatchmain)
         {
             spriteBatch = spriteBatchmain;
+            SoundManager.LoadSoundSettings();
         }
         public virtual void UnloadContent()
         {

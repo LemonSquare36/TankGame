@@ -656,6 +656,18 @@
 /processorParam:TextureFormat=Color
 /build:GameSprites/spawnHighlight.png
 
+#begin GameSprites/SpriteSheets/BattleSprites/radar.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/SpriteSheets/BattleSprites/radar.png
+
 #begin GameSprites/Wall.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -691,4 +703,28 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:GameSprites/WhiteRectangle.png
+
+#begin Sounds/click.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/click.mp3
+
+#begin Sounds/sweeper.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/sweeper.mp3
+
+#begin Sounds/tankdeath.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/tankdeath.mp3
+
+#begin Sounds/tankshot.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/tankshot.mp3
 

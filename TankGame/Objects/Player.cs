@@ -13,7 +13,7 @@ namespace TankGame.Objects
     //stores the information for a player
     internal class Player
     {
-        public int AP;
+        public float AP;
         public int startAP;
         public List<Items> Items = new List<Items>();
         public List<Tank> tanks = new List<Tank>();

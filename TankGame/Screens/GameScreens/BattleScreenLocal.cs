@@ -31,6 +31,7 @@ namespace TankGame
         Button tanks, mines, ready, endturn, undo, sweep;
         List<Button> placementButtonList = new List<Button>();
         List<Button> battleButtonList = new List<Button>();
+        List<Button> inventoryButtonList = new List<Button>();
 
         int tanksUsed = 0, minesUsed = 0;
 
@@ -98,7 +99,12 @@ namespace TankGame
             //battle stage buttons
             battleButtonList.Add(endturn);
             battleButtonList.Add(undo);
-            battleButtonList.Add(sweep);
+            //inventory buttons
+            inventoryButtonList.Add(sweep);
+            #endregion
+
+            #region ButtonNoises Load
+            AssignButtonNoise(inventoryButtonList, "Sounds/click");
             #endregion
 
             #region Event listeners
@@ -139,7 +145,18 @@ namespace TankGame
             else if (battleStarted)
             {
                 boardState.getTankLocations();
+                //non inventoy button update
                 foreach (Button b in battleButtonList)
+                {
+                    b.Update(mouse, worldPosition);
+                    //look for active buttons to see if there is an active object
+                    if (b.ButtonActive)
+                    {
+                        anyObjectActive = true;
+                    }
+                }
+                //update for inventory buttons
+                foreach (Button b in inventoryButtonList)
                 {
                     b.Update(mouse, worldPosition);
                     //look for active buttons to see if there is an active object
@@ -170,11 +187,15 @@ namespace TankGame
                 //item use code
                 UseItem(selectedItem);
                 //if the selected item is empty then reset the button responsible and make itemActive false
-                if (boardState.playerList[boardState.curPlayerNum].inventory.selectedItemsCount <= 0 && selectedItem != null)
+                if (boardState.playerList[boardState.curPlayerNum].inventory.getSelectedItemsCount(selectedItem) <= 0 && selectedItem != null)
                 {
-                    battleButtonList.Find(x => x.bName == selectedItem).ButtonReset();
-                    itemActive = false;
-                    selectedItem = null;
+                    try
+                    {
+                        inventoryButtonList.Find(x => x.bName == selectedItem).ButtonReset();
+                        itemActive = false;
+                        selectedItem = null;
+                    }
+                    catch { }
                 }
             }
             //unselect the button(s) that are currently active
@@ -248,6 +269,10 @@ namespace TankGame
                 {
                     b.Draw(spriteBatch);
                 }
+                foreach (Button b in inventoryButtonList)
+                {
+                    b.Draw(spriteBatch);
+                }
                 //draw walls
                 foreach (Wall wall in boardState.walls)
                 {
@@ -305,6 +330,8 @@ namespace TankGame
                 {
                     DrawItemUI(selectedItem, spawnTex, font, Color.Red, 2500);
                 }
+                PlayItemAnimations(spriteBatch);
+
             }
 
             //draw current players turn info
@@ -372,7 +399,7 @@ namespace TankGame
                     RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);
                     if (type == "tank")
                     {
-                        tempTank = new Tank(curGrid, curGridLocation);
+                        tempTank = new Tank(curGrid, curGridLocation, "Regular");
                         entity = tempTank;
 
                         //to satisfy bs of needed to be declared in some way
@@ -384,7 +411,7 @@ namespace TankGame
                         entity = tempMine;
 
                         //to satisfy bs of needed to be declared in some way
-                        tempTank = new Tank(curGrid, curGridLocation);
+                        tempTank = new Tank(curGrid, curGridLocation, "Regular");
                         //
                         //
                     }
@@ -392,7 +419,7 @@ namespace TankGame
                     {
                         entity = new Entity(curGrid, curGridLocation);
                         tempMine = new Mine(curGrid, curGridLocation);
-                        tempTank = new Tank(curGrid, curGridLocation);
+                        tempTank = new Tank(curGrid, curGridLocation, "Regular");
                     }
                     if (type == "tank" || type == "mine")
                     {

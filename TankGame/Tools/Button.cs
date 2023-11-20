@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using TankGame.Objects;
+using Microsoft.Xna.Framework.Audio;
+using TankGame.Tools;
 
 namespace TankGame
 {
@@ -17,6 +19,9 @@ namespace TankGame
         public ButtonState curClick;
         private bool toggle = false, toggleOneTex = false;
         public bool OneTexPressed = false;
+
+        private SoundEffectInstance soundEffect;
+
         //returns if the button is curently active
         private bool buttonActive = false;
         public bool ButtonActive { get { return buttonActive; } }
@@ -176,6 +181,7 @@ namespace TankGame
                     //Edge Detection
                     if (curClick == ButtonState.Pressed && oldClick == ButtonState.Released)
                     {
+                        PlaySound();
                         OnButtonClicked();
                     }
                 }
@@ -195,6 +201,7 @@ namespace TankGame
                         }
 
                         else { Texture = pressed; OneTexPressed = true; }
+                        PlaySound();
                         OnButtonClicked();
                     }
                 }
@@ -307,6 +314,17 @@ namespace TankGame
         public void ChangeOffSetColor(Vector3 OffSetColor)
         {
             offSetColor = OffSetColor;
+        }
+        public void addSoundEffect(string fileLocation)
+        {
+            soundEffect = SoundManager.CreateSound(fileLocation);
+        }
+        private void PlaySound()
+        {
+            if (soundEffect != null)
+            {
+                soundEffect.Play();
+            }
         }
     }
 }

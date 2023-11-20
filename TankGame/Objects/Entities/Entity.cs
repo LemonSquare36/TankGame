@@ -29,7 +29,7 @@ namespace TankGame.Objects.Entities
         public bool Active = false;
 
         protected Vector2 hpBarLoc, hpBarLocStart;
-        protected Vector2 hpBarSize = new Vector2(10, 5);
+        protected Vector2 hpBarSize;
         protected int HP, curHP;
         public bool alive = true;
         public bool showHealth;
@@ -55,6 +55,9 @@ namespace TankGame.Objects.Entities
         {
             tex = Main.GameContent.Load<Texture2D>(texFile);
             hpBar = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
+
+            //scale HP bar size to map size
+            hpBarSize = new Vector2(10, 5) * size;
         }
         public virtual void Update()
         {
@@ -68,6 +71,49 @@ namespace TankGame.Objects.Entities
                 drawHPBar(spriteBatch);
             }
         }
+
+        protected void SetHPBarPos()
+        {
+            hpBarLocStart = new Vector2(curSquare.Location.X - (30 * size.X), curSquare.Location.Y + (60 * size.Y));
+            hpBarLoc = new Vector2(hpBarLocStart.X + (20 * size.X), hpBarLocStart.Y);
+        }
+        protected void drawHPBar(SpriteBatch spriteBatch)
+        {
+            for (int i = 0; i < curHP; i++)
+            {
+                if (i < HP)
+                {
+                    spriteBatch.Draw(hpBar, hpBarLoc, null, Color.Red, 0, Vector2.Zero, hpBarSize, SpriteEffects.None, 0);
+                    hpBarLoc = new Vector2(hpBarLoc.X + (20 * size.X), hpBarLoc.Y);
+                }
+                else if (i == HP)
+                {
+                    hpBarLoc = new Vector2(hpBarLocStart.X, hpBarLocStart.Y);
+                    spriteBatch.Draw(hpBar, hpBarLoc, null, Color.DeepSkyBlue, 0, Vector2.Zero, hpBarSize, SpriteEffects.None, 0);
+                    hpBarLoc = new Vector2(hpBarLoc.X + (20 * size.X), hpBarLoc.Y);
+                }
+                else if (i >= HP + 1)
+                {
+                    spriteBatch.Draw(hpBar, hpBarLoc, null, Color.DeepSkyBlue, 0, Vector2.Zero, hpBarSize, SpriteEffects.None, 0);
+                    hpBarLoc = new Vector2(hpBarLoc.X + (20 * size.X), hpBarLoc.Y);
+                }
+            }
+            SetHPBarPos();
+        }
+        public virtual void alterHP(int HPChange)
+        {
+            curHP += HPChange;
+            if (curHP > HP * 2)
+            {
+                curHP = HP * 2;
+            }
+            if (curHP <= 0)
+            {
+                alive = false;
+                curHP = 0;
+            }
+        }
+
         public static Entity Clone(Entity ItemToClone)
         {
             Entity @new = new Entity(ItemToClone.curSquare, ItemToClone.gridLocation);
@@ -83,50 +129,8 @@ namespace TankGame.Objects.Entities
             @new.tex = ItemToClone.tex;
             @new.texFile = ItemToClone.texFile;
             @new.type = ItemToClone.type;
-            
-            return @new;
-        }
 
-        protected void SetHPBarPos()
-        {
-            hpBarLocStart = new Vector2(curSquare.Location.X - 10, curSquare.Location.Y + 60);
-            hpBarLoc = new Vector2(hpBarLocStart.X, hpBarLocStart.Y);
-        }
-        protected void drawHPBar(SpriteBatch spriteBatch)
-        {
-            for (int i = 0; i < curHP; i++)
-            {
-                if (i < HP)
-                {
-                    spriteBatch.Draw(hpBar, hpBarLoc, null, Color.Red, 0, Vector2.Zero, hpBarSize, SpriteEffects.None, 0);
-                    hpBarLoc = new Vector2(hpBarLoc.X + 20, hpBarLoc.Y);
-                }
-                else if (i == HP)
-                {
-                    hpBarLoc = new Vector2(hpBarLocStart.X, hpBarLocStart.Y);
-                    spriteBatch.Draw(hpBar, hpBarLoc, null, Color.DeepSkyBlue, 0, Vector2.Zero, hpBarSize, SpriteEffects.None, 0);
-                    hpBarLoc = new Vector2(hpBarLoc.X + 20, hpBarLoc.Y);
-                }
-                else if (i >= HP + 1)
-                {
-                    spriteBatch.Draw(hpBar, hpBarLoc, null, Color.DeepSkyBlue, 0, Vector2.Zero, hpBarSize, SpriteEffects.None, 0);
-                    hpBarLoc = new Vector2(hpBarLoc.X + 20, hpBarLoc.Y);
-                }
-            }
-            SetHPBarPos();
-        }
-        public void alterHP(int HPChange)
-        {
-            curHP += HPChange;
-            if (curHP > HP * 2)
-            {
-                curHP = HP * 2;
-            }
-            if (curHP <= 0)
-            {
-                alive = false;
-                curHP = 0;
-            }
+            return @new;
         }
     }
 }
