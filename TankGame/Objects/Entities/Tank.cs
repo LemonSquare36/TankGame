@@ -109,6 +109,7 @@ namespace TankGame.Objects.Entities
         public void TankMove(Board curBoard, ref BoardState boardState, ref BoardState previousBoardState, List<Cell> path, out bool drawTankInfo)
         {
             drawTankInfo = true;
+            bool itemGotten = false;
             //get the AP and then move that distance, starting from the back of the list (the list is in reverse move order)
             if (path.Count > 1)
             {
@@ -122,7 +123,8 @@ namespace TankGame.Objects.Entities
                     {
                         if (boardState.itemBoxes[i].gridLocation == path[path.Count - 1 - checkedTiles].location)
                         {
-
+                            itemGotten = true;
+                            
                         }
                     }
 
@@ -161,6 +163,11 @@ namespace TankGame.Objects.Entities
                     boardState.playerList[boardState.curPlayerNum].AP -= checkedTiles * movementCost;
                     gridLocation = path[path.Count - 1 - checkedTiles].location;
                     curSquare = curBoard.getGrid()[path[path.Count - 1 - checkedTiles].location.X, path[path.Count - 1 - checkedTiles].location.Y];
+                    if (itemGotten)
+                    {
+                        //getting an item is permanant descision
+                        previousBoardState = BoardState.SavePreviousBoardState(boardState);
+                    }
                 }
             }
         }

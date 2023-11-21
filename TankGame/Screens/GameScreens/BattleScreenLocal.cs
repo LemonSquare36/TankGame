@@ -73,7 +73,7 @@ namespace TankGame
 
             #region load buttons
             //load tank buttons when allowed
-            foreach (string allowed in allowedTanks)
+            foreach (string allowed in rules.allowedTanks)
             {
                 switch (allowed)
                 {
@@ -92,7 +92,7 @@ namespace TankGame
                 }
             }
             //load tank buttons when not allowed
-            foreach (string notAllowed in notAllowedTanks)
+            foreach (string notAllowed in rules.notAllowedTanks)
             {
                 switch (notAllowed)
                 {
@@ -431,7 +431,7 @@ namespace TankGame
                 }
             }
             //if its not in allowed list, dont let the button be pressable
-            if (!allowedTanks.Contains(((Button)sender).bName))
+            if (!rules.allowedTanks.Contains(((Button)sender).bName))
             {
                 ((Button)sender).ButtonReset();
             }

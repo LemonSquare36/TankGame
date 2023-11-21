@@ -41,14 +41,31 @@ namespace TankGame.GameInfo
         /// <param name="StartingSweeps">Number of Sweepers players have</param>
         /// <param name="AllowedItems">Current list of items to random from when a box is picked up</param>
         /// <param name="NumOfPlayers">Can only be as high as the map supports</param>
-        public RuleSet(int TankPoints, int NumOfMines, int StartingSweeps, List<string> AllowedItems, List<string> AllowedTanks, int NumOfPlayers)
+        public RuleSet(int TankPoints, int NumOfMines, int StartingSweeps, List<string> AllowedItems, List<string> AllowedTanks, List<string> NotAllowedItems, List<string> NotAllowedTanks, int NumOfPlayers)
         {
             tankPoints = TankPoints;
-            numOfMines = NumOfMines;   
+            numOfMines = NumOfMines;
             startingSweeps = StartingSweeps;
             allowedItems = AllowedItems;
             allowedTanks = AllowedTanks;
+            notAllowedItems = NotAllowedItems;
+            notAllowedTanks = NotAllowedTanks;
             numOfPlayers = NumOfPlayers;
+        }
+        //save the rule set to be loaded later
+        public void SaveRuleSet()
+        {
+
+        }
+        //load the rule set to be used
+        public void LoadRuleSet()
+        {
+
+        }
+        //this save feature saves the rule set to the replay file for accurate replays
+        public void SaveRuleSetToReplay()
+        {
+
         }
     }
 }

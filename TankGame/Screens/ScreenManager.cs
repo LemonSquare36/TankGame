@@ -47,7 +47,7 @@ namespace TankGame
         #region game information 
         protected Board curBoard;
         //the rows and columns
-        protected int RowsCol, sweeps;
+        protected int RowsCol;
         //board info declares
         protected bool mouseInBoard = false;
 

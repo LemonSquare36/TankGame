@@ -524,7 +524,6 @@ namespace TankGame
                     boardState = new BoardState(levelManager.getEntities(), levelManager.getWalls(), levelManager.getItemBoxes());
 
                     curBoard = levelManager.getGameBoard();
-                    sweeps = rules.startingSweeps;
                     //finish loading the board
                     curBoard.LoadContent();
                     boardState.LoadEntities();
@@ -592,7 +591,6 @@ namespace TankGame
             levelLoaded = true;
             sizeField.Text = "20";
             RowsCol = 20;
-            sweeps = 3;
             playerCount.Value = 2;
             selectedPlayer.Value = 1;
             //player spawn lists cleared and the 2 for the 2 players
@@ -617,7 +615,6 @@ namespace TankGame
             levelLoaded = true;
             sizeField.Text = "20";
             RowsCol = 20;
-            sweeps = 3;
             playerCount.Value = 2;
             selectedPlayer.Value = 1;
             //player spawn lists cleared and the 2 for the 2 players
