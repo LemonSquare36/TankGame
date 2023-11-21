@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System.IO;
 using TankGame.Objects;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
 using TankGame.GameInfo;
-using System.Linq;
 
 namespace TankGame
 {
@@ -74,21 +71,55 @@ namespace TankGame
 
             //SendLoadToPeer();
 
-            #region load buttons and input boxes
-            //load buttons
-            regTank = new Button(new Vector2(1520, 550), 50, 50, "GameSprites/BattleSprites/Tanks/Tank", "tank", "toggle");
-            regTank.ChangeButtonColor(Color.Black);
-            sniperTank = new Button(new Vector2(1620, 550), 50, 50, "GameSprites/BattleSprites/Tanks/SniperTank", "snipertank", "toggle");
-            sniperTank.ChangeButtonColor(Color.Black);
-            scoutTank = new Button(new Vector2(1720, 550), 50, 50, "GameSprites/BattleSprites/Tanks/ScoutTank", "scouttank", "toggle");
-            scoutTank.ChangeButtonColor(Color.Black);
-
+            #region load buttons
+            //load tank buttons when allowed
+            foreach (string allowed in allowedTanks)
+            {
+                switch (allowed)
+                {
+                    case "Regular":
+                        regTank = new Button(new Vector2(1520, 550), 50, 50, "GameSprites/BattleSprites/Tanks/Tank", "Regular", "toggle");
+                        regTank.ChangeButtonColor(Color.Black);
+                        break;
+                    case "Sniper":
+                        sniperTank = new Button(new Vector2(1620, 550), 50, 50, "GameSprites/BattleSprites/Tanks/SniperTank", "Sniper", "toggle");
+                        sniperTank.ChangeButtonColor(Color.Black);
+                        break;
+                    case "Scout":
+                        scoutTank = new Button(new Vector2(1720, 550), 50, 50, "GameSprites/BattleSprites/Tanks/ScoutTank", "Scout", "toggle");
+                        scoutTank.ChangeButtonColor(Color.Black);
+                        break;
+                }
+            }
+            //load tank buttons when not allowed
+            foreach (string notAllowed in notAllowedTanks)
+            {
+                switch (notAllowed)
+                {
+                    case "Regular":
+                        regTank = new Button(new Vector2(1520, 550), 50, 50, "GameSprites/BattleSprites/Tanks/TankDead", "Regular", "toggleOneTex");
+                        regTank.ChangeButtonColor(Color.Black);
+                        break;
+                    case "Sniper":
+                        sniperTank = new Button(new Vector2(1620, 550), 50, 50, "GameSprites/BattleSprites/Tanks/TankDead", "Sniper", "toggleOneTex");
+                        sniperTank.ChangeButtonColor(Color.Black);
+                        break;
+                    case "Scout":
+                        scoutTank = new Button(new Vector2(1720, 550), 50, 50, "GameSprites/BattleSprites/Tanks/TankDead", "Scout", "toggleOneTex");
+                        scoutTank.ChangeButtonColor(Color.Black);
+                        break;
+                }
+            }
+            //load other placement code buttons
             mines = new Button(new Vector2(1800, 550), 50, 50, "GameSprites/BattleSprites/Mine", "mines", "toggle");
             ready = new Button(new Vector2(1590, 800), 200, 100, "Buttons/BattleScreen/Ready", "ready");
             endturn = new Button(new Vector2(1590, 800), 200, 100, "Buttons/BattleScreen/EndTurn", "endturn");
             undo = new Button(new Vector2(1590, 600), 100, 50, "Buttons/BattleScreen/Undo", "undo");
             sweep = new Button(new Vector2(110, 100), 50, 50, "Buttons/BattleScreen/Sweep", "sweeper", "toggle");
 
+
+            #endregion
+            #region input box load
             //load inputboxes
             tanksCount.LoadContent();
             minesCount.LoadContent();
@@ -112,6 +143,8 @@ namespace TankGame
             #endregion
 
             #region ButtonNoises Load
+            AssignButtonNoise(placementButtonList, "Sounds/click");
+            AssignButtonNoise(battleButtonList, "Sounds/click");
             AssignButtonNoise(inventoryButtonList, "Sounds/click");
             #endregion
 
@@ -349,7 +382,7 @@ namespace TankGame
 
             //draw current players turn info
             spriteBatch.DrawString(font, "Current Player: " + (boardState.curPlayerNum + 1), new Vector2(1550, 250), Color.Black);
-            spriteBatch.DrawString(font, "Current AP: " + boardState.playerList[boardState.curPlayerNum].AP, new Vector2(1600, 350), Color.Black);                    
+            spriteBatch.DrawString(font, "Current AP: " + boardState.playerList[boardState.curPlayerNum].AP, new Vector2(1600, 350), Color.Black);
         }
 
         public override void ButtonReset()
@@ -389,16 +422,23 @@ namespace TankGame
         #region Add objects code
         private void AddTankPressed(object sender, EventArgs e)
         {
+            //reset all buttons not the current one in the placement list of buttons
             foreach (Button button in placementButtonList)
             {
                 if (button.bName != ((Button)sender).bName)
                 {
                     button.ButtonReset();
                 }
+            }
+            //if its not in allowed list, dont let the button be pressable
+            if (!allowedTanks.Contains(((Button)sender).bName))
+            {
+                ((Button)sender).ButtonReset();
             }
         }
         private void AddMinePressed(object sender, EventArgs e)
         {
+            //reset all buttons not the current one in the placement list of buttons
             foreach (Button button in placementButtonList)
             {
                 if (button.bName != ((Button)sender).bName)
@@ -407,7 +447,7 @@ namespace TankGame
                 }
             }
         }
-        
+
         #endregion
 
         protected void ReadyPressed(object sender, EventArgs e)

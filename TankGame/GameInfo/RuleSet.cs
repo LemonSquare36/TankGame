@@ -11,7 +11,9 @@ namespace TankGame.GameInfo
     {
         public int tankPoints, numOfMines, startingSweeps, numOfPlayers;
         public List<string> allowedItems = new();
+        public List<string> notAllowedItems = new();
         public List<string> allowedTanks = new();
+        public List<string> notAllowedTanks = new();
 
         /// <summary>
         /// This constructor is for testing purposes
@@ -26,9 +28,10 @@ namespace TankGame.GameInfo
 
             allowedItems.Add("sweeper");
             //allowedItems.Add("sweeper");
-            //allowedTanks.Add("Regular");
+            allowedTanks.Add("Regular");
             allowedTanks.Add("Sniper");
             allowedTanks.Add("Scout");
+            //notAllowedTanks.Add("Regular");
         }
         /// <summary>
         /// Create custom rule sets to start the game with. Maps and Rule Sets are seperate.

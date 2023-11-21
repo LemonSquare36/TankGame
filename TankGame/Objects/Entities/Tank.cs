@@ -20,7 +20,7 @@ namespace TankGame.Objects.Entities
         public int buildCost;
         public float movementCost, fireCost;
 
-        private static SoundEffectInstance fire, death;
+        private static SoundEffectInstance fire, death, select;
 
         public Tank(RectangleF CurrentSquare, Point GridLocation, string Type) : base(CurrentSquare, GridLocation)
         {
@@ -348,10 +348,11 @@ namespace TankGame.Objects.Entities
             return CircleTiles;
         }
 
-        public static void setTankNoises(string fireFileLocation, string deathFileLocation)
+        public static void setTankNoises(string fireFileLocation, string deathFileLocation, string selectFileLocation)
         {
             fire = SoundManager.CreateSound(fireFileLocation);
             death = SoundManager.CreateSound(deathFileLocation);
+            select = SoundManager.CreateSound(selectFileLocation);
         }
         /// <summary>handles playing the tank firing noise </summary>
         public static void playFireSoundEffect()
@@ -363,6 +364,11 @@ namespace TankGame.Objects.Entities
         {
             death.Stop();
             death.Play();
+        }
+        public static void playSelectSoundEffect()
+        {
+            select.Stop();
+            select.Play();
         }
         private static void KillTank()
         {

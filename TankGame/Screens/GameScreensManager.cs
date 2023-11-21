@@ -33,7 +33,7 @@ namespace TankGame
         protected bool drawTankInfo = false;
 
         //rule set lists
-        protected List<string> allowedItems = new(), allowedTanks = new();
+        protected List<string> allowedItems = new(), allowedTanks = new(), notAllowedTanks = new(), notAllowedItems = new();
 
         //pathfinding information
         private Cell[,] cellMap;
@@ -85,7 +85,9 @@ namespace TankGame
 
                     //get rules
                     allowedItems = rules.allowedItems;
+                    notAllowedItems = rules.notAllowedItems;
                     allowedTanks = rules.allowedTanks;
+                    notAllowedTanks = rules.notAllowedTanks;
                     sweeps = rules.startingSweeps;
                     //get player amount and make players with spawn regions for each one
                     int numOfPlayers = rules.numOfPlayers;
@@ -114,7 +116,7 @@ namespace TankGame
                     pathfinder = new Pathfinder(cellMap);
 
                     //set noises
-                    Tank.setTankNoises("Sounds/tankshot", "Sounds/tankdeath");
+                    Tank.setTankNoises("Sounds/tankshot", "Sounds/tankdeath", "Sounds/click");
                 }
                 catch { }
             }
@@ -279,9 +281,6 @@ namespace TankGame
             }
         }
 
-
-
-
         #endregion
         /// <summary>sets the current selected tank as active and gets the circleTiles(line of sight applied). Sets draw circle to true</summary>
         protected void checkSelectedTank()
@@ -308,6 +307,7 @@ namespace TankGame
                         //get the circle around the selected tank                   
                         getLOS();
                         drawTankInfo = true;
+                        Tank.playSelectSoundEffect();
                     }
                 }
 
