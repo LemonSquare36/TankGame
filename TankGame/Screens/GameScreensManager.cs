@@ -32,6 +32,9 @@ namespace TankGame
         protected RectangleF[,] CircleTiles;
         protected bool drawTankInfo = false;
 
+        //rule set lists
+        protected List<string> allowedItems = new(), allowedTanks = new();
+
         //pathfinding information
         private Cell[,] cellMap;
         protected Pathfinder pathfinder;
@@ -79,8 +82,11 @@ namespace TankGame
                     levelManager.LoadLevel(file, 0.2468F, 0.05F);
                     //grab the informatin from the levelManager
                     boardState = new BoardState(levelManager.getEntities(), levelManager.getWalls(), levelManager.getItemBoxes());
-                    sweeps = rules.startingSweeps;
 
+                    //get rules
+                    allowedItems = rules.allowedItems;
+                    allowedTanks = rules.allowedTanks;
+                    sweeps = rules.startingSweeps;
                     //get player amount and make players with spawn regions for each one
                     int numOfPlayers = rules.numOfPlayers;
                     for (int i = 0; i < numOfPlayers; i++)

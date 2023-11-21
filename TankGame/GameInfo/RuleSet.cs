@@ -26,7 +26,7 @@ namespace TankGame.GameInfo
 
             allowedItems.Add("sweeper");
             //allowedItems.Add("sweeper");
-            allowedTanks.Add("Regular");
+            //allowedTanks.Add("Regular");
             allowedTanks.Add("Sniper");
             allowedTanks.Add("Scout");
         }
