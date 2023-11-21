@@ -42,11 +42,10 @@ namespace TankGame
         protected SpriteBatch spriteBatch;
         protected string relativePath;
         protected LevelManager levelManager;
-
+        protected RuleSet rules;
 
         #region game information 
         protected Board curBoard;
-        protected Point TanksAndMines;
         //the rows and columns
         protected int RowsCol, sweeps;
         //board info declares
@@ -64,6 +63,7 @@ namespace TankGame
             levelManager = new LevelManager();
             //curBoardState.entities.Clear();
             relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            rules = new RuleSet(2);
         }
         //Holds LoadContent and the font if called
         public virtual void LoadContent(SpriteBatch spriteBatchmain)

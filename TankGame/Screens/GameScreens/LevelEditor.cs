@@ -18,7 +18,7 @@ namespace TankGame
         SpriteFont font;
         //generic buttons
         Button Load, Save, New, Delete, Back, ArrowRight, ArrowLeft;
-        Button SetRowCol, SetTankCount, SetMineCount, SetSweepCount;
+        Button SetRowCol;
         //add object buttons
         Button addWall, addItem, erase, addSpawn;
         List<Button> PageOneButtons = new List<Button>();
@@ -29,7 +29,7 @@ namespace TankGame
         //objects selected logic
         bool wallSelected = false, itemSelected = false, eraseSelected = false, spawnSelected = false;
         //input box
-        InputBox nameField, sizeField, tankField, mineField, sweepField;
+        InputBox nameField, sizeField;
         List<InputBox> PageOneFields = new List<InputBox>();
         //List Box
         ListBox levelSelection;
@@ -59,9 +59,6 @@ namespace TankGame
             #region initializing textboxes
             nameField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1420, 500), new Vector2(300, 50));
             sizeField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1090, 100), new Vector2(80, 70), 2);
-            tankField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1290, 100), new Vector2(80, 70), 2);
-            mineField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1490, 100), new Vector2(80, 70), 2);
-            sweepField = new InputBox(new Color(235, 235, 235), Color.Black, new Vector2(1690, 100), new Vector2(80, 70), 2);
 
 
             levelSelection = new ListBox(new Vector2(1100, 570), new Vector2(740, 450), 11, Color.White, Color.Black, Color.DarkGray, 4);
@@ -97,9 +94,6 @@ namespace TankGame
 
 
             SetRowCol = new Button(new Vector2(1180, 110), 70, 50, "Buttons/Editor/Set", "setrowcol");
-            SetTankCount = new Button(new Vector2(1380, 110), 70, 50, "Buttons/Editor/Set", "settankcount");
-            SetMineCount = new Button(new Vector2(1580, 110), 70, 50, "Buttons/Editor/Set", "setminecount");
-            SetSweepCount = new Button(new Vector2(1780, 110), 70, 50, "Buttons/Editor/Set", "setsweepcount");
 
             addWall = new Button(new Vector2(1290, 300), 50, 50, "Buttons/Editor/Wall", "addWall", "toggle");
             addItem = new Button(new Vector2(1440, 300), 50, 50, "Buttons/Editor/ItemBox", "addItem", "toggle");
@@ -121,9 +115,6 @@ namespace TankGame
             ArrowRight.ButtonClicked += ArrowRightPressed;
 
             SetRowCol.ButtonClicked += SetRowColPressed;
-            SetTankCount.ButtonClicked += SetTanksPressed;
-            SetMineCount.ButtonClicked += SetMinesPressed;
-            SetSweepCount.ButtonClicked += SetSweepsPressed;
 
             addWall.ButtonClicked += SelectWall;
             addItem.ButtonClicked += SelectItem;
@@ -147,9 +138,6 @@ namespace TankGame
             PageOneButtons.Add(addItem);
             PageOneButtons.Add(erase);
             PageOneButtons.Add(SetRowCol);
-            PageOneButtons.Add(SetTankCount);
-            PageOneButtons.Add(SetMineCount);
-            PageOneButtons.Add(SetSweepCount);
             PageOneButtons.Add(ArrowRight);
 
             //clear the list on load so the buttons to stack up
@@ -164,9 +152,6 @@ namespace TankGame
             PageOneFields.Clear();
             PageOneFields.Add(nameField);
             PageOneFields.Add(sizeField);
-            PageOneFields.Add(tankField);
-            PageOneFields.Add(mineField);
-            PageOneFields.Add(sweepField);
             #endregion
 
             #region selector list
@@ -222,22 +207,7 @@ namespace TankGame
                     {
                         rowColColor = Color.Red;
                     }
-                    else { rowColColor = Color.Black; }
-                    if (Convert.ToInt16(tankField.Text) != TanksAndMines.X)
-                    {
-                        tankColor = Color.Red;
-                    }
-                    else { tankColor = Color.Black; }
-                    if (Convert.ToInt16(mineField.Text) != TanksAndMines.Y)
-                    {
-                        MineColor = Color.Red;
-                    }
-                    else { MineColor = Color.Black; }
-                    if (Convert.ToInt16(sweepField.Text) != sweeps)
-                    {
-                        sweepColor = Color.Red;
-                    }
-                    else { MineColor = Color.Black; }
+                    else { rowColColor = Color.Black; }                    
                 }
                 catch { }
                 #endregion
@@ -554,8 +524,7 @@ namespace TankGame
                     boardState = new BoardState(levelManager.getEntities(), levelManager.getWalls(), levelManager.getItemBoxes());
 
                     curBoard = levelManager.getGameBoard();
-                    TanksAndMines = levelManager.getTanksAndMines();
-                    sweeps = levelManager.getSweeps();
+                    sweeps = rules.startingSweeps;
                     //finish loading the board
                     curBoard.LoadContent();
                     boardState.LoadEntities();
@@ -566,9 +535,6 @@ namespace TankGame
                     levelLoaded = true;
                     RowsCol = curBoard.Rows;
                     sizeField.Text = Convert.ToString(RowsCol);
-                    tankField.Text = Convert.ToString(TanksAndMines.X);
-                    mineField.Text = Convert.ToString(TanksAndMines.Y);
-                    sweepField.Text = Convert.ToString(sweeps);
                     playerCount.Value = levelManager.getPlayerCount();
                     selectedPlayer.Value = 1;
 
@@ -595,7 +561,7 @@ namespace TankGame
 
                 for (int i = 0; i < playerSpawns.Count; i++)
                 {
-                    if (playerSpawns[i].Count < TanksAndMines.X)
+                    if (playerSpawns[i].Count < rules.tankPoints/5)
                     {
                         canSave = false;
                         spawnWarning = true;
@@ -605,7 +571,7 @@ namespace TankGame
                 {
                     string fileName = nameField.Text.Replace(" ", "");
                     file = relativePath + "\\TankGame\\LevelFiles\\" + fileName + ".lvl";
-                    levelManager.SaveLevel(file, fileName, curBoard, boardState.entities, playerSpawns, TanksAndMines, sweeps, playerCount.Value);
+                    levelManager.SaveLevel(file, fileName, curBoard, boardState.entities, playerSpawns, playerCount.Value);
                 }
             }
             //load the listBox for level selection
@@ -625,11 +591,7 @@ namespace TankGame
             nameField.Text = "New";
             levelLoaded = true;
             sizeField.Text = "20";
-            tankField.Text = "3";
-            mineField.Text = "3";
-            sweepField.Text = "3";
             RowsCol = 20;
-            TanksAndMines = new Point(3, 3);
             sweeps = 3;
             playerCount.Value = 2;
             selectedPlayer.Value = 1;
@@ -654,11 +616,7 @@ namespace TankGame
             nameField.Text = "New";
             levelLoaded = true;
             sizeField.Text = "20";
-            tankField.Text = "3";
-            mineField.Text = "3";
-            sweepField.Text = "3";
             RowsCol = 20;
-            TanksAndMines = new Point(3, 3);
             sweeps = 3;
             playerCount.Value = 2;
             selectedPlayer.Value = 1;
@@ -818,7 +776,7 @@ namespace TankGame
                     RowsCol = 40;
                     sizeField.Text = "40";
                 }
-                if (RowsCol < 40)
+                if (RowsCol < 10)
                 {
                     //set actaul value, then displayed value
                     RowsCol = 10;
@@ -851,69 +809,6 @@ namespace TankGame
             //if not a number make it a numbe but dont scale anything
             catch { sizeField.Text = Convert.ToString(RowsCol); }
             rowColColor = Color.Black;
-        }
-        private void SetTanksPressed(object sender, EventArgs e)
-        {
-            try
-            {
-                TanksAndMines.X = Convert.ToInt16(tankField.Text);
-                //limit of 8 on the tanks
-                if (TanksAndMines.X > 8)
-                {
-                    //set actaul value, then displayed value
-                    TanksAndMines.X = 8;
-                    tankField.Text = "8";
-                }
-                if (TanksAndMines.X < 1)
-                {
-                    //set actaul value, then displayed value
-                    TanksAndMines.X = 1;
-                    tankField.Text = "1";
-                }
-                tankColor = Color.Black;
-            }
-            catch { }
-        }
-        private void SetMinesPressed(object sender, EventArgs e)
-        {
-            try
-            {
-                TanksAndMines.Y = Convert.ToInt16(mineField.Text);
-                //limit of 12 on the mines
-                if (TanksAndMines.Y > 12)
-                {
-                    //set actaul value, then displayed value
-                    TanksAndMines.Y = 12;
-                    mineField.Text = "12";
-                }
-                if (TanksAndMines.Y < 0)
-                {
-                    //set actaul value, then displayed value
-                    TanksAndMines.Y = 0;
-                    mineField.Text = "0";
-                }
-                MineColor = Color.Black;
-            }
-            catch { }
-        }
-        private void SetSweepsPressed(object sender, EventArgs e)
-        {
-            try
-            {
-                sweeps = Convert.ToInt16(sweepField.Text);
-                sweepColor = Color.Black;
-                if (sweeps > 10)
-                {
-                    sweepField.Text = "10";
-                    sweeps = 10;
-                }
-                if (sweeps < 0)
-                {
-                    sweepField.Text = "0";
-                    sweeps = 0;
-                }
-            }
-            catch { }
         }
         private void SelectorListSizeChange(object sender, EventArgs e)
         {                

@@ -12,6 +12,7 @@ using System.Diagnostics;
 using TankGame.Objects.Entities.Items;
 using TankGame.GameInfo;
 using Microsoft.Xna.Framework.Audio;
+using System.Linq;
 
 namespace TankGame
 {
@@ -78,10 +79,10 @@ namespace TankGame
                     levelManager.LoadLevel(file, 0.2468F, 0.05F);
                     //grab the informatin from the levelManager
                     boardState = new BoardState(levelManager.getEntities(), levelManager.getWalls(), levelManager.getItemBoxes());
-                    sweeps = levelManager.getSweeps();
+                    sweeps = rules.startingSweeps;
 
                     //get player amount and make players with spawn regions for each one
-                    int numOfPlayers = levelManager.getPlayerCount();
+                    int numOfPlayers = rules.numOfPlayers;
                     for (int i = 0; i < numOfPlayers; i++)
                     {
                         boardState.playerList.Add(new Player(AP, sweeps));
@@ -95,7 +96,6 @@ namespace TankGame
                     }
 
                     curBoard = levelManager.getGameBoard();
-                    TanksAndMines = levelManager.getTanksAndMines();
 
                     //finish loading the board
                     curBoard.LoadContent();
@@ -134,6 +134,146 @@ namespace TankGame
                 getLOS(); //redo vision check
             }
         }
+        protected void AddEntity(string type, InputBox tanksCount, InputBox minesCount, ref int minesUsed, ref int tanksUsed)
+        {
+            Entity entity;
+            Mine tempMine;
+            Tank tempTank;
+            //find out if the mouse is inside the board
+            if (mouseInBoard)
+            {
+                //if the mouse is left clicked once inside the board (add code)
+                if (mouse.LeftButton == ButtonState.Pressed && oldLeftClick != curLeftClick)
+                {
+                    //get the current rectangle the mouse is within
+                    RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);
+
+                    //this is to create local objects to prevent it from getting angy for there not being declared objects in use
+                    entity = new Entity(curGrid, curGridLocation);
+                    tempMine = new Mine(curGrid, curGridLocation);
+                    tempTank = new Tank(curGrid, curGridLocation, "Regular");
+
+                    switch (type)
+                    {
+                        case "regTank":
+                            entity = tempTank;
+                            break;
+                        case "sniperTank":
+                            tempTank = new Tank(curGrid, curGridLocation, "Sniper");
+                            entity = tempTank;
+                            break;
+                        case "scoutTank":
+                            tempTank = new Tank(curGrid, curGridLocation, "Scout");
+                            entity = tempTank;
+                            break;
+                        case "mine":
+                            entity = tempMine;
+                            break;
+                        default:
+                            break;
+                    }
+                    //if there is not an object currently in that tile
+                    if (!boardState.gridLocations.Contains(curGridLocation))
+                    {
+                        //if can afford another mine
+                        if (type == "mine" && Convert.ToInt16(minesCount.Text) > 0)
+                        {
+                            //cant be placed in a spawn tile
+                            if (!levelManager.getAllSpawnTiles().Any(x => x.gridLocation == curGridLocation))
+                            {
+                                //load and add the entity
+                                entity.LoadContent();
+                                boardState.entities.Add(entity);
+                                boardState.gridLocations.Add(entity.gridLocation);
+
+                                //load and add mine
+                                minesUsed++;
+                                tempMine.LoadContent();
+                                boardState.playerList[boardState.curPlayerNum].mines.Add(tempMine);
+                            }
+                        }
+                        //must be a tank //must be able to afford
+                        else if (Convert.ToInt16(tanksCount.Text) >= tempTank.buildCost)
+                        {
+                            //must be inside a spawn tile for the correct player
+                            if (boardState.playerList[boardState.curPlayerNum].SpawnTiles.Any(x => x.gridLocation == curGridLocation))
+                            {
+                                //load and add the entity
+                                entity.LoadContent();
+                                boardState.entities.Add(entity);
+                                boardState.gridLocations.Add(entity.gridLocation);
+
+                                //load and add tank
+                                tanksUsed += tempTank.buildCost;
+                                tempTank.LoadContent();
+                                boardState.playerList[boardState.curPlayerNum].tanks.Add(tempTank);
+                            }
+                        }
+                        else
+                        {
+                            //couldnt place object so put failure code here
+                        }
+                    }
+                }
+            }
+        }
+        protected void RemoveEntity(ref int tanksUsed, ref int minesUsed)
+        {
+            if (mouseInBoard)
+            {
+                //if mouse is right clicked once in the board (remove code)
+                if (mouse.RightButton == ButtonState.Pressed && oldRightClick != curRightClick)
+                {
+                    //of the gridlocations tracker has an object there
+                    if (boardState.gridLocations.Contains(curGridLocation))
+                    {
+                        //check which entity is there 
+                        for (int i = 0; i < boardState.entities.Count; i++)
+                        {
+                            if (boardState.entities[i].gridLocation == curGridLocation)
+                            {
+                                //if its a tank
+                                if (boardState.entities[i].Type == "tank")
+                                {
+                                    for (int j = 0; j < boardState.playerList[boardState.curPlayerNum].tanks.Count; j++)
+                                    {
+                                        //find which tank is the current one based on gridlocation to remove it
+                                        if (boardState.playerList[boardState.curPlayerNum].tanks[j].gridLocation == curGridLocation)
+                                        {
+                                            //give back build cost before removing tank
+                                            tanksUsed -= boardState.playerList[boardState.curPlayerNum].tanks[j].buildCost;
+                                            boardState.playerList[boardState.curPlayerNum].tanks.Remove(boardState.playerList[boardState.curPlayerNum].tanks[j]);
+                                            //remove its records
+                                            boardState.entities.Remove(boardState.entities[i]);
+                                            boardState.gridLocations.Remove(curGridLocation);
+                                        }
+                                    }
+                                }
+                                //if its a mine
+                                else if (boardState.entities[i].Type == "mine")
+                                {
+
+                                    for (int j = 0; j < boardState.playerList[boardState.curPlayerNum].mines.Count; j++)
+                                    {
+                                        //find which mine based on gridlocation and remove it
+                                        if (boardState.playerList[boardState.curPlayerNum].mines[j].gridLocation == curGridLocation)
+                                        {
+                                            boardState.playerList[boardState.curPlayerNum].mines.Remove(boardState.playerList[boardState.curPlayerNum].mines[j]);
+                                            //remove its records
+                                            boardState.entities.Remove(boardState.entities[i]);
+                                            boardState.gridLocations.Remove(curGridLocation);
+                                            minesUsed--;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
 
 
         #endregion
@@ -255,7 +395,7 @@ namespace TankGame
             }
         }
 
-        #endregion   
+        #endregion
 
         #region BUTTON EVENTS
         protected void EndTurnPressed(object sender, EventArgs e)

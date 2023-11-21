@@ -66,26 +66,27 @@ namespace TankGame.Objects.Entities
         private void getTankStats(string Type)
         {
             //change these on a per tank basis later
-            texFile = "GameSprites/BattleSprites/TankUH";
-            texFileDead = "GameSprites/BattleSprites/TankDead";
+            texFileDead = "GameSprites/BattleSprites/Tanks/TankDead";
 
             if (Type == "Regular")
             {
+                texFile = "GameSprites/BattleSprites/Tanks/TankUH";
                 HP = 4;
-                range = 8;
-                damage = 3;
-                wallDamage = 3;
+                range = 4;
+                damage = 2;
+                wallDamage = 2;
                 curHP = HP;
-                movementCost = 0.5F;
-                fireCost = 1;
+                movementCost = 1;
+                fireCost = 2;
                 buildCost = 5;
             }
             else if (Type == "Sniper")
             {
+                texFile = "GameSprites/BattleSprites/Tanks/SniperTankUH";
                 HP = 4;
                 range = 8;
                 damage = 1;
-                wallDamage = 3;
+                wallDamage = 1;
                 curHP = HP;
                 movementCost = 1;
                 fireCost = 2;
@@ -93,6 +94,7 @@ namespace TankGame.Objects.Entities
             }
             else if (Type == "Scout")
             {
+                texFile = "GameSprites/BattleSprites/Tanks/ScoutTankUH";
                 HP = 2;
                 range = 4;
                 damage = 1;

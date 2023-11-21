@@ -101,7 +101,6 @@ namespace TankGame
                     //grab the informatin from the levelManager
                     boardState = new BoardState(levelManager.getEntities(), levelManager.getWalls(), levelManager.getItemBoxes());
                     curBoard = levelManager.getGameBoard();
-                    TanksAndMines = levelManager.getTanksAndMines();
                     //finish loading the board
                     curBoard.LoadContent();
                     boardState.LoadEntities();

@@ -584,7 +584,7 @@
 /processorParam:TextureFormat=Color
 /build:GameSprites/BattleSprites/MineUH.png
 
-#begin GameSprites/BattleSprites/TankDead.png
+#begin GameSprites/BattleSprites/Tanks/ScoutTankH.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -594,9 +594,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:GameSprites/BattleSprites/TankDead.png
+/build:GameSprites/BattleSprites/Tanks/ScoutTankH.png
 
-#begin GameSprites/BattleSprites/TankH.png
+#begin GameSprites/BattleSprites/Tanks/ScoutTankUH.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -606,9 +606,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:GameSprites/BattleSprites/TankH.png
+/build:GameSprites/BattleSprites/Tanks/ScoutTankUH.png
 
-#begin GameSprites/BattleSprites/TankUH.png
+#begin GameSprites/BattleSprites/Tanks/SniperTankH.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -618,7 +618,55 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:GameSprites/BattleSprites/TankUH.png
+/build:GameSprites/BattleSprites/Tanks/SniperTankH.png
+
+#begin GameSprites/BattleSprites/Tanks/SniperTankUH.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/SniperTankUH.png
+
+#begin GameSprites/BattleSprites/Tanks/TankDead.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/TankDead.png
+
+#begin GameSprites/BattleSprites/Tanks/TankH.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/TankH.png
+
+#begin GameSprites/BattleSprites/Tanks/TankUH.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/TankUH.png
 
 #begin GameSprites/Blackdot.jpg
 /importer:TextureImporter

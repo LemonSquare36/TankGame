@@ -16,10 +16,9 @@ namespace TankGame.Tools
         List<Wall> walls = new List<Wall>();
         List<ItemBox> itemBoxes = new List<ItemBox>();
         Cell[,] cellMap;
-        Point tanksMines;
         List<List<SpawnTile>> PlayerSpawns = new List<List<SpawnTile>>();
         List<SpawnTile> AllSpawns = new List<SpawnTile>();
-        int sweeps, playerCount;
+        int maxPlayerCount;
 
         /// <summary>
         /// Loads the level information from the file selected when initializing the manager
@@ -67,15 +66,8 @@ namespace TankGame.Tools
             board = new Board(pos, new Point(Convert.ToInt16(size), Convert.ToInt16(size)), RowCol, RowCol, borderThickness);
             board.setColor(color1, color2, borderColor);
 
-            //get tanks
-            tanksMines.X = Convert.ToInt16(parentElement.Element("Tanks").Value);
-            //get mines
-            tanksMines.Y = Convert.ToInt16(parentElement.Element("Mines").Value);
-            //get sweeps
-            sweeps = Convert.ToInt16(parentElement.Element("Sweeps").Value);
             //get the player count
-            playerCount = Convert.ToInt16(parentElement.Element("PlayerCount").Value);
-
+            maxPlayerCount = Convert.ToInt16(parentElement.Element("MaxPlayerCount").Value);
 
             //get the walls
             //get the elements label wall
@@ -118,7 +110,7 @@ namespace TankGame.Tools
             }
 
             //get the spawnregions for each player
-            for (int i = 0; i < playerCount; i++)
+            for (int i = 0; i < maxPlayerCount; i++)
             {
                 //create a new list to store player spawn tiles in 
                 PlayerSpawns.Add(new());
@@ -160,7 +152,7 @@ namespace TankGame.Tools
         /// <param name="TanksAndMines">a vector2 with X as tanks and Y as mines</param>
         /// <param name="Sweeps">sweeps count</param>
         /// <param name="playerCount">player count</param>
-        public void SaveLevel(string FileLocation, string FileName, Board board, List<Entity> E, List<List<SpawnTile>> SpawnTiles, Point TanksAndMines, int Sweeps, int playerCount)
+        public void SaveLevel(string FileLocation, string FileName, Board board, List<Entity> E, List<List<SpawnTile>> SpawnTiles, int playerCount)
         {
             //the path to the appdata folder of the machine
             string relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\TankGame\\LevelFiles";
@@ -169,14 +161,6 @@ namespace TankGame.Tools
             {
                 System.IO.Directory.CreateDirectory(relativePath);
             }
-            //delete the file if it exists
-            //if (File.Exists(FileLocation))
-            //{ File.Delete(FileLocation); }
-
-
-            //createfile and then write to it
-            //File.Create(FileLocation).Close();
-
 
             XDocument document = new XDocument(
                 new XDeclaration("1.0", "utf-8", "yes"),
@@ -184,15 +168,12 @@ namespace TankGame.Tools
                 new XElement("LevelFile",
 
                     new XElement("Gameboard",
-                        new XElement("Tanks", Convert.ToString(TanksAndMines.X)),
-                        new XElement("Mines", Convert.ToString(TanksAndMines.Y)),
-                        new XElement("Sweeps", Convert.ToString(Sweeps)),
                         new XElement("Size", Convert.ToString(board.Rows)),
                         new XElement("Color1", Convert.ToString(board.Color1.R) + "," + Convert.ToString(board.Color1.G) + "," + Convert.ToString(board.Color1.B)),
                         new XElement("Color2", Convert.ToString(board.Color2.R) + "," + Convert.ToString(board.Color2.G) + "," + Convert.ToString(board.Color2.B)),
                         new XElement("BorderColor", Convert.ToString(board.Color3.R) + "," + Convert.ToString(board.Color3.G) + "," + Convert.ToString(board.Color3.B)),
                         new XElement("BorderThickness", board.BorderThickness),
-                        new XElement("PlayerCount", playerCount)),
+                        new XElement("MaxPlayerCount", playerCount)),
 
                     new XElement("Walls",
                         from Entity in E
@@ -220,14 +201,6 @@ namespace TankGame.Tools
         public List<Entity> getEntities()
         {
             return entities;
-        }
-        public Point getTanksAndMines()
-        {
-            return tanksMines;
-        }
-        public int getSweeps()
-        {
-            return sweeps;
         }
         public Cell[,] getCellMap()
         {
@@ -269,7 +242,7 @@ namespace TankGame.Tools
         }
         public int getPlayerCount()
         {
-            return playerCount;
+            return maxPlayerCount;
         }
         #endregion
     }
