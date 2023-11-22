@@ -13,11 +13,14 @@ using Microsoft.Xna.Framework.Audio;
 using System.Diagnostics;
 using System.IO;
 using System.Collections;
+using TankGame.Tools;
 
 namespace TankGame.Objects.Entities
 {
     internal class Mine : Entity
     {
+        private static SoundEffectInstance explosion;
+
         public Mine(RectangleF CurrentSquare, Point GridLocation) : base(CurrentSquare, GridLocation)
         {
             curSquare = CurrentSquare;
@@ -50,6 +53,15 @@ namespace TankGame.Objects.Entities
             @new.type = ItemToClone.type;
 
             return @new;
+        }
+        public static void SetMineSoundEffects(string explosionFileLocation)
+        {
+            explosion = SoundManager.CreateSound(explosionFileLocation);
+        }
+        public static void PlayMineExplosion()
+        {
+            explosion.Stop();
+            explosion.Play();
         }
     }
 }

@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using TankGame.Objects.Entities.Items;
 using TankGame.GameInfo;
-using Microsoft.Xna.Framework.Audio;
 using System.Linq;
 
 namespace TankGame
@@ -24,6 +23,9 @@ namespace TankGame
         int AP = 4;
         //turn tracker
         int activeTankNum = -1;
+
+        Texture2D trail, end;
+
 
         //info storage for circles in the grid
         protected List<Point> objectLocations = new List<Point>();
@@ -50,6 +52,9 @@ namespace TankGame
         public override void LoadContent(SpriteBatch spriteBatchmain)
         {
             base.LoadContent(spriteBatchmain);
+            //sprites used to drawing the pathfinder path
+            trail = Main.GameContent.Load<Texture2D>("GameSprites/BattleSprites/pathTrail");
+            end = Main.GameContent.Load<Texture2D>("GameSprites/BattleSprites/pathEnd");
         }
         public override void Update()
         {
@@ -83,8 +88,7 @@ namespace TankGame
                     //load ruleSet
 
                     //get player amount and make players with spawn regions for each one
-                    int numOfPlayers = rules.numOfPlayers;
-                    for (int i = 0; i < numOfPlayers; i++)
+                    for (int i = 0; i < rules.numOfPlayers; i++)
                     {
                         boardState.playerList.Add(new Player(AP, rules.startingSweeps));
                         boardState.playerList[i].SpawnTiles = levelManager.getPlayerSpawns()[i];
@@ -110,6 +114,7 @@ namespace TankGame
 
                     //set noises
                     Tank.setTankNoises("Sounds/tankshot", "Sounds/tankdeath", "Sounds/click");
+                    Mine.SetMineSoundEffects("Sounds/tankdeath");
                 }
                 catch { }
             }
@@ -372,9 +377,16 @@ namespace TankGame
                             //if there is a path
                             if (path != null)
                             {
-                                boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankMove(curBoard, ref boardState, ref previousBoardState, path, out drawTankInfo);
+                                bool itemGotten;
+                                boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankMove(curBoard, ref boardState, ref previousBoardState, path, out drawTankInfo, out itemGotten);
                                 //redo the Line of Set check for the new position
                                 getLOS();
+                                if (itemGotten)
+                                {
+                                    GivePlayerItem();
+                                    //getting an item is permanant descision
+                                    previousBoardState = BoardState.SavePreviousBoardState(boardState);
+                                }
                             }
                         }
                         //-----------------------------------------------------------------------
@@ -382,8 +394,10 @@ namespace TankGame
                         //-----------------------------------------------------------------------
                         else if (curRightClick == ButtonState.Pressed && oldRightClick != ButtonState.Pressed)
                         {
+                            //this goes into the function and returns with a value that could mean something
                             int wallToRemove = -1;
-                            boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankShoot(boardState, CircleTiles, blockersInCircle, worldPosition, out wallToRemove);
+
+                            boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankShoot(curBoard, boardState, CircleTiles, blockersInCircle, worldPosition, pathfinder ,out wallToRemove);
                             if (wallToRemove != -1)
                             {
                                 removeWallDuringGame(wallToRemove);
@@ -393,14 +407,25 @@ namespace TankGame
                 }
             }
         }
-
+        /// <summary>
+        /// Gives the player a random item from allowed items
+        /// </summary>
+        private void GivePlayerItem()
+        {
+            //get a random number
+            Random rand = new Random();
+            int i = rand.Next(0, rules.allowedItems.Count-1);
+            //use the random number to get an item from allowed items list, then set that item to +1 its current value
+            boardState.playerList[boardState.curPlayerNum].inventory.setSelectedItemsCount(rules.allowedItems[i],
+                boardState.playerList[boardState.curPlayerNum].inventory.getSelectedItemsCount(rules.allowedItems[i]) + 1);
+        }
         #endregion
 
         #region BUTTON EVENTS
         protected void EndTurnPressed(object sender, EventArgs e)
         {
             //make number of players 0 based. If the current player isnt the last player move to next
-            if (boardState.curPlayerNum < levelManager.getPlayerCount() - 1)
+            if (boardState.curPlayerNum < rules.numOfPlayers - 1)
             {
                 boardState.curPlayerNum++;
             }
@@ -493,6 +518,101 @@ namespace TankGame
                 drawTankInfo = false;
                 boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active = false;
                 activeTankNum = -1;
+            }
+        }
+        public void DrawPath(SpriteBatch spriteBatch, SpriteFont font)
+        {
+            RectangleF cellRect = new RectangleF();
+            for (int i = 0; i < path.Count; i++)
+            {
+                if (path.Count > 9)
+                {
+
+                }
+                //dont do the final path cuase no parent (its where the tank is)
+                if (path[i].Parent != null)
+                {
+                    //the cellRectangle of the previous cell in the list
+                    RectangleF oldCellRect = cellRect;
+                    cellRect = curBoard.getGridSquare(path[i].X, path[i].Y);
+                    Vector2 rectScale = cellRect.Size / new Vector2(48, 48);
+                    //finds the count in the non reverse way (for drawing text to screen)
+                    int reverseListCounter = path.Count - 1 - i;
+
+                    if (i == 0)//this means its the cell the mouse is on
+                    {                                
+                        //we devide by 50 here since that is the size of the sprite (make sure it scales with the size of the board rectangles)
+                        spriteBatch.Draw(end, cellRect.Location, null, Color.White, 0, Vector2.Zero, rectScale, SpriteEffects.None, 0);
+                        //48 is the internal tile size at the standard map size of 20. The calculations are based on the internal size for a "standard" tile\
+                        //just change the float it multiplies with to create scale since at the standard (48) * 1 the font would fill the whole rectangle. Dont make larger than 1
+                        spriteBatch.DrawString(font, Convert.ToString(reverseListCounter), cellRect.Location + new Vector2(cellRect.Size.X/2.5F, cellRect.Size.Y/5), Color.Black, 0, Vector2.Zero, .6f * cellRect.Width / 48, SpriteEffects.None, 0);
+                    }
+                    else if (i == 1)
+                    {
+                        
+                        spriteBatch.Draw(trail, cellRect.Location, null, Color.Black, 0, cellRect.Center, rectScale, SpriteEffects.None, 0);
+                    }
+                    else
+                    {
+                        Vector2 curLocation = cellRect.Center;
+
+                        //gets the distance, but does not unsquare it
+                        double Distance = 50;
+                        float scale = cellRect.Size.Y / 48; //scale to draw the texture too later
+                        float DistancePer = 13 * scale;//size of the sprite distance
+                        float DistanceTraveled = 0;//how far weve gone to the next point
+                        Vector2 rotationVector = oldCellRect.Center - cellRect.Center;
+                        float Rotation = (float)(Math.Atan2(rotationVector.Y, rotationVector.X)) + (float)Math.PI / 2;
+
+                        while (DistanceTraveled <= Distance*scale)
+                        {
+                            spriteBatch.Draw(trail, curLocation, null, Color.Black, Rotation, new Vector2(4,4), rectScale, SpriteEffects.None, 0);
+
+                            //path of travel is to the up and left
+                            if (cellRect.Center.X > oldCellRect.Center.X && cellRect.Center.Y > oldCellRect.Center.Y)
+                            {
+                                curLocation += new Vector2(-DistancePer, -DistancePer);
+                            }
+                            //path of travel is to the down and right
+                            else if (cellRect.Center.X < oldCellRect.Center.X && cellRect.Center.Y < oldCellRect.Center.Y)
+                            {
+                                curLocation += new Vector2(DistancePer, DistancePer);
+                            }
+                            //path of travel is to the down and left
+                            else if (cellRect.Center.X > oldCellRect.Center.X && cellRect.Center.Y < oldCellRect.Center.Y)
+                            {
+                                curLocation += new Vector2(-DistancePer, DistancePer);
+                            }
+                            //path of travel is to the up and right
+                            else if (cellRect.Center.X < oldCellRect.Center.X && cellRect.Center.Y > oldCellRect.Center.Y)
+                            {
+                                curLocation += new Vector2(DistancePer, -DistancePer);
+                            }
+                            //path of travel is to the up
+                            else if (cellRect.Center.X == oldCellRect.Center.X && cellRect.Center.Y > oldCellRect.Center.Y)
+                            {
+                                curLocation += new Vector2(0, -DistancePer);
+                            }
+                            //path of travel is to the down
+                            else if (cellRect.Center.X == oldCellRect.Center.X && cellRect.Center.Y < oldCellRect.Center.Y)
+                            {
+                                curLocation += new Vector2(0, DistancePer);
+                            }
+                            //path of travel is to the left
+                            else if (cellRect.Center.X > oldCellRect.Center.X && cellRect.Center.Y == oldCellRect.Center.Y)
+                            {
+                                curLocation += new Vector2(-DistancePer, 0);
+                            }
+                            //path of travel is to the right
+                            else if (cellRect.Center.X < oldCellRect.Center.X && cellRect.Center.Y == oldCellRect.Center.Y)
+                            {
+                                curLocation += new Vector2(DistancePer, 0);
+                            }
+                            DistanceTraveled += DistancePer;
+                        }
+
+                    }
+                }
             }
         }
         #endregion

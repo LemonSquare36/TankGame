@@ -12,6 +12,7 @@ namespace TankGame.Objects.Entities
             texFile = "GameSprites/ItemBox";
             type = "itembox";
             size = curSquare.Size / spriteSize;
+            alive = true;
         }
         public override void Initialize(RectangleF newRectangle)
         {            
@@ -24,6 +25,7 @@ namespace TankGame.Objects.Entities
         }
         public override void Draw(SpriteBatch spriteBatch)
         {
+            if (alive)
             spriteBatch.Draw(tex, curSquare.Location, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
         public static ItemBox Clone(ItemBox ItemToClone)

@@ -18,6 +18,8 @@ namespace TankGame.Tools
         public Cell[,] cellMap;
         private Cell[,] originalCellMap;
 
+        Texture2D trail, end;
+
         public Pathfinder(Cell[,] CellMap)
         {
             cellMap = new Cell[CellMap.GetLength(0), CellMap.GetLength(1)];
@@ -33,7 +35,6 @@ namespace TankGame.Tools
                     }
                 }
             }
-
         }
 
         public List<Cell> getPath(Cell start, Cell end, List<Point> tankLocations)
@@ -283,5 +284,6 @@ namespace TankGame.Tools
         {
             originalCellMap[cellLocation.X, cellLocation.Y].Identifier = newIdentifier;
         }
+
     }
 }

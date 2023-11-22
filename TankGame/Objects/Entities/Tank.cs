@@ -5,6 +5,7 @@ using TankGame.Tools;
 using TankGame.GameInfo;
 using Microsoft.Xna.Framework.Audio;
 using System.IO;
+using System;
 
 namespace TankGame.Objects.Entities
 {
@@ -106,10 +107,10 @@ namespace TankGame.Objects.Entities
             }
         }
 
-        public void TankMove(Board curBoard, ref BoardState boardState, ref BoardState previousBoardState, List<Cell> path, out bool drawTankInfo)
+        public void TankMove(Board curBoard, ref BoardState boardState, ref BoardState previousBoardState, List<Cell> path, out bool drawTankInfo, out bool itemGotten)
         {
             drawTankInfo = true;
-            bool itemGotten = false;
+            itemGotten = false;
             //get the AP and then move that distance, starting from the back of the list (the list is in reverse move order)
             if (path.Count > 1)
             {
@@ -123,8 +124,11 @@ namespace TankGame.Objects.Entities
                     {
                         if (boardState.itemBoxes[i].gridLocation == path[path.Count - 1 - checkedTiles].location)
                         {
-                            itemGotten = true;
-                            
+                            if (boardState.itemBoxes[i].alive)
+                            {
+                                itemGotten = true;
+                                boardState.itemBoxes[i].alive = false;
+                            }
                         }
                     }
 
@@ -138,8 +142,8 @@ namespace TankGame.Objects.Entities
                                 if (boardState.playerList[i].mines[j].gridLocation == path[path.Count - 1 - checkedTiles].location)
                                 {
                                     //if there was a mine in one of the tiles traveled through
-                                    alterHP(-8);//kill the tank
-                                                //move the tank where the mine was/current tile checked
+                                    alterHP(-HP);//kill the tank
+                                                 //move the tank where the mine was/current tile checked
                                     gridLocation = path[path.Count - 1 - checkedTiles].location;
                                     curSquare = curBoard.getGrid()[path[path.Count - 1 - checkedTiles].location.X, path[path.Count - 1 - checkedTiles].location.Y];
 
@@ -148,6 +152,7 @@ namespace TankGame.Objects.Entities
                                     //remove the mine from the game
                                     boardState.playerList[i].mines.Remove(boardState.playerList[i].mines[j]);
                                     drawTankInfo = false;
+                                    Active = false;
                                     //make sure you CANNOT UNDO a death by mine by updating the previous turn state
                                     previousBoardState = BoardState.SavePreviousBoardState(boardState);
                                     break;
@@ -163,82 +168,121 @@ namespace TankGame.Objects.Entities
                     boardState.playerList[boardState.curPlayerNum].AP -= checkedTiles * movementCost;
                     gridLocation = path[path.Count - 1 - checkedTiles].location;
                     curSquare = curBoard.getGrid()[path[path.Count - 1 - checkedTiles].location.X, path[path.Count - 1 - checkedTiles].location.Y];
-                    if (itemGotten)
-                    {
-                        //getting an item is permanant descision
-                        previousBoardState = BoardState.SavePreviousBoardState(boardState);
-                    }
                 }
             }
         }
-        public void TankShoot(BoardState boardState, RectangleF[,] CircleTiles, List<Vector2> blockersInCircle, Vector2 worldPosition, out int possibleWallRemove)
+        public void TankShoot(Board curBoard, BoardState boardState, RectangleF[,] CircleTiles, List<Vector2> blockersInCircle, Vector2 worldPosition, Pathfinder pathfinder, out int possibleWallRemove)
         {
+            Point curGridLocation;
             possibleWallRemove = -1;
             bool fired = false; //track if something was fired at to prevent unnessacary checks
-            foreach (RectangleF tile in CircleTiles)//if its in range
-            {
-                if (!tile.Null)//and not blocked
-                {
-                    foreach (Vector2 @object in blockersInCircle)//check which object is targeted
-                    {
-                        RectangleF targetRectangle;
-                        if (CircleTiles[(int)@object.X, (int)@object.Y].Contains(worldPosition))//get the rectangle the mouse is in
-                        {
-                            targetRectangle = CircleTiles[(int)@object.X, (int)@object.Y];//set the target rectangle 
+            //get the current grid location of the mouse at time of click
+            curBoard.getGridSquare(worldPosition, out curGridLocation);
+            //we need the unchanged value later
+            Point oldGridLocation = curGridLocation;
 
-                            if (tile.identifier == 1 && !fired)//is targetable
+            //offset curGridLocation by the circle tiles
+            //get the center tile of circle tiles (which is the tank that is shooting)
+            Point Center = new Point(CircleTiles.GetUpperBound(0) / 2, CircleTiles.GetUpperBound(1) / 2);
+            //find the difference btween curgridclicked and the tanks location
+            curGridLocation -= gridLocation;
+            //then add center and it together to find the tile clicked relevent to circle tiles
+            curGridLocation += Center;
+
+            //does the player have the action points to fire
+            if (boardState.playerList[boardState.curPlayerNum].AP >= fireCost)
+            {
+                //get the rectangle to see if its null 
+                RectangleF targetRectangle = CircleTiles[curGridLocation.X, curGridLocation.Y];//set the target rectangle 
+                if (!targetRectangle.Null)
+                {
+                    //if that location is a blocker (possible target)
+                    if (blockersInCircle.Contains(new Vector2(curGridLocation.X, curGridLocation.Y)))
+                    {
+                        //identifier of 1 means its a shootable object
+                        if (targetRectangle.identifier == 1 && !fired)
+                        {
+                            //check for a tank
+                            for (int i = 0; i < boardState.playerList.Count; i++)
                             {
-                                if (boardState.playerList[boardState.curPlayerNum].AP >= fireCost)//if player has ap to fire
+                                if (i != boardState.curPlayerNum)
                                 {
-                                    //if (item logic)
-                                    //damge being delt 
-                                    //check to see if it is a tank being fired at 
-                                    for (int i = 0; i < boardState.playerList.Count; i++)
+                                    foreach (Tank eTank in boardState.playerList[i].tanks)//for each enemy tank
                                     {
-                                        if (i != boardState.curPlayerNum)
+                                        if (eTank.alive)
                                         {
-                                            foreach (Tank eTank in boardState.playerList[i].tanks)//for each enemy tank
+                                            if (eTank.curSquare.Location == targetRectangle.Location)//and the tank is in the target rectangle
                                             {
-                                                if (eTank.alive)
-                                                {
-                                                    if (eTank.curSquare.Location == targetRectangle.Location)//and the tank is in the target rectangle
-                                                    {
-                                                        eTank.alterHP(-damage);//tank takes damage
-                                                        fired = true;
-                                                        playFireSoundEffect();
-                                                        boardState.playerList[boardState.curPlayerNum].AP -= fireCost;
-                                                    }
-                                                }
+                                                eTank.alterHP(-damage);//tank takes damage
+                                                fired = true;
+                                                playFireSoundEffect();
+                                                boardState.playerList[boardState.curPlayerNum].AP -= fireCost;
                                             }
                                         }
                                     }
-                                    //if it wasnt a tank, then check which wall it must be then
-                                    if (!fired)
+                                }
+                            }
+                            //if it wasnt a tank, then check which wall it must be then
+                            if (!fired)
+                            {
+                                for (int i = 0; i < boardState.walls.Count; i++)
+                                {
+                                    if (boardState.walls[i].Type == "wall")
                                     {
-                                        for (int i = 0; i < boardState.walls.Count; i++)
+                                        if (boardState.walls[i].curSquare.Location == targetRectangle.Location)
                                         {
-                                            if (boardState.walls[i].Type == "wall")
+                                            boardState.playerList[boardState.curPlayerNum].AP -= fireCost;
+                                            boardState.walls[i].alterHP(-wallDamage);
+                                            boardState.walls[i].showHealth = true;
+                                            playFireSoundEffect();
+                                            if (!boardState.walls[i].alive)
                                             {
-                                                if (boardState.walls[i].curSquare.Location == targetRectangle.Location)
-                                                {
-                                                    boardState.playerList[boardState.curPlayerNum].AP -= fireCost;
-                                                    boardState.walls[i].alterHP(-wallDamage);
-                                                    boardState.walls[i].showHealth = true;
-                                                    playFireSoundEffect();
-                                                    fired = true;
-                                                    if (!boardState.walls[i].alive)
-                                                    {
-                                                        possibleWallRemove = i;
-                                                    }
-                                                }
+                                                possibleWallRemove = i;
                                             }
                                         }
                                     }
                                 }
                             }
                         }
+
+                    }
+                    else //if it wasnt a fireable object but still non null rectangle then see if they were aiming for a mine
+                    {
+                        bool mineFound = false;
+                        //check friendly mines for one that matches and remove it if it does
+                        for (int i = 0; i < boardState.playerList[boardState.curPlayerNum].mines.Count; i++)
+                        {
+                            if (boardState.playerList[boardState.curPlayerNum].mines[i].gridLocation == oldGridLocation)
+                            {
+                                //cost for the tank to shoot
+                                boardState.playerList[boardState.curPlayerNum].AP -= fireCost;
+                                //update the pathfinder to say there is not a wall there
+                                pathfinder.AlterCell(boardState.playerList[boardState.curPlayerNum].mines[i].gridLocation, 0);
+                                //remove the mine from the cur players mine list
+                                boardState.playerList[boardState.curPlayerNum].mines.Remove(boardState.playerList[boardState.curPlayerNum].mines[i]);
+                                //play sound
+                                Mine.PlayMineExplosion();   
+                                //tells the game to look at the enemies mine lists
+                                mineFound = true;
+                            }
+                        }
+                        //if a friendly mine was removed, then also remove it from the list of any enemy that has it
+                        if (mineFound)
+                        {
+                            foreach (Player player in boardState.playerList)
+                            {
+                                for (int i = 0; i < player.mines.Count; i++)
+                                {
+                                    if (player.mines[i].gridLocation == oldGridLocation)
+                                    {
+                                        player.mines.Remove(player.mines[i]);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
+                
             }
         }
 
@@ -339,12 +383,20 @@ namespace TankGame.Objects.Entities
                     //get the subgrids location relative to the board to see if a tank is there
                     Point subgridLocation = new Point(selectedTank.gridLocation.X - selectedTank.range, selectedTank.gridLocation.Y - selectedTank.range);
                     //check if the object is a friendly tank and make the rectangle null/untargetable (remove it from eligble targets)
-                    foreach (Tank tank in boardState.playerList[boardState.curPlayerNum].tanks)
+                    //or if the object is a dead enemy tank
+                    for (int i = 0; i < boardState.playerList.Count; i++)
                     {
-                        Point tankLocation = tank.gridLocation - subgridLocation;
-                        if (tankLocation == new Point((int)@object.X, (int)@object.Y))
+                        foreach (Tank tank in boardState.playerList[i].tanks)
                         {
-                            CircleTiles[(int)@object.X, (int)@object.Y] = new RectangleF();
+                            //means its an ally tank or dead tank
+                            if (i == boardState.curPlayerNum || !tank.alive)
+                            {
+                                Point tankLocation = tank.gridLocation - subgridLocation;
+                                if (tankLocation == new Point((int)@object.X, (int)@object.Y))
+                                {
+                                    CircleTiles[(int)@object.X, (int)@object.Y] = new RectangleF();
+                                }
+                            }
                         }
                     }
                     //make the selected tanks rectangle null

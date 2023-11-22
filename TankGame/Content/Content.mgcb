@@ -584,6 +584,30 @@
 /processorParam:TextureFormat=Color
 /build:GameSprites/BattleSprites/MineUH.png
 
+#begin GameSprites/BattleSprites/pathEnd.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/pathEnd.png
+
+#begin GameSprites/BattleSprites/pathTrail.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/pathTrail.png
+
 #begin GameSprites/BattleSprites/Tanks/ScoutTankH.png
 /importer:TextureImporter
 /processor:TextureProcessor
