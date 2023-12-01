@@ -33,6 +33,19 @@ namespace TankGame
         protected List<Vector2> wallsInGrid = new List<Vector2>();
         protected RectangleF[,] CircleTiles;
         protected bool drawTankInfo = false;
+        protected bool DrawTankInfo
+        {
+            get { return drawTankInfo; }
+            set
+            {
+                drawTankInfo = value; if (!value) //if its set to false
+                {
+                    resetLOSObjects();                   
+                }
+            }
+        }
+
+
 
         //pathfinding information
         private Cell[,] cellMap;
@@ -60,14 +73,14 @@ namespace TankGame
         {
             base.Update();
             //if a tank is selected then an object is active
-            if (drawTankInfo)
+            if (DrawTankInfo)
             {
                 anyObjectActive = true;
             }
             //if escape was pressed with an active object turn off the selected tank
             if (escapePressed && anyObjectActive)
             {
-                drawTankInfo = false;
+                DrawTankInfo = false;
                 boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active = false;
                 activeTankNum = -1;
             }
@@ -83,8 +96,8 @@ namespace TankGame
                 {
                     levelManager.LoadLevel(file, 0.2468F, 0.05F);
                     //grab the informatin from the levelManager
-                    boardState = new BoardState(levelManager.getEntities(), levelManager.getWalls(), levelManager.getItemBoxes());
-                    
+                    boardState = new BoardState(levelManager.getWalls(), levelManager.getItemBoxes(), levelManager.getHoles());
+
                     //load ruleSet
 
                     //get player amount and make players with spawn regions for each one
@@ -92,12 +105,6 @@ namespace TankGame
                     {
                         boardState.playerList.Add(new Player(AP, rules.startingSweeps));
                         boardState.playerList[i].SpawnTiles = levelManager.getPlayerSpawns()[i];
-                        //remove them from the entities list. They dont need to be there. Only there for the level editors purposes
-                        foreach (SpawnTile tile in boardState.playerList[i].SpawnTiles)
-                        {
-                            var e = boardState.entities.Find(x => x.gridLocation == tile.gridLocation);
-                            boardState.entities.Remove(e);
-                        }
                     }
 
                     curBoard = levelManager.getGameBoard();
@@ -125,7 +132,18 @@ namespace TankGame
         /// <param name="i">the list position of the wall you want to remove</param>
         private void removeWallDuringGame(int i)
         {
-            pathfinder.AlterCell(boardState.walls[i].gridLocation, 0); //remove its cellmap marker
+            if (!boardState.walls[i].multiWall)
+            {
+                pathfinder.AlterCell(boardState.walls[i].gridLocation, 0); //remove its cellmap marker
+            }
+            else
+            {
+                //remove all map markers
+                foreach (Point gridLocation in boardState.walls[i].gridLocations)
+                {
+                    pathfinder.AlterCell(gridLocation, 0); //remove its cellmap marker
+                }
+            }            
             boardState.RemoveWall(i);
             getObjectLocationsForVision(); //redo the circle tiles object list
             getLOS(); //redo vision check
@@ -135,14 +153,13 @@ namespace TankGame
             if (!boardState.wallLocations.Contains(gridPosition))
             {
                 pathfinder.AlterCell(gridPosition, 1); //add its cellmap marker
-                boardState.AddWall(gridPosition, curBoard);
+                boardState.AddWall(gridPosition, curBoard, true);
                 getObjectLocationsForVision(); //redo the circle tiles object list
                 getLOS(); //redo vision check
             }
         }
         protected void AddEntity(string type, InputBox tanksCount, InputBox minesCount, ref int minesUsed, ref int tanksUsed)
         {
-            Entity entity;
             Mine tempMine;
             Tank tempTank;
             //find out if the mouse is inside the board
@@ -155,25 +172,24 @@ namespace TankGame
                     RectangleF curGrid = curBoard.getGridSquare(worldPosition, out curGridLocation);
 
                     //this is to create local objects to prevent it from getting angy for there not being declared objects in use
-                    entity = new Entity(curGrid, curGridLocation);
                     tempMine = new Mine(curGrid, curGridLocation);
                     tempTank = new Tank(curGrid, curGridLocation, "Regular");
 
                     switch (type)
                     {
                         case "regTank":
-                            entity = tempTank;
+
                             break;
                         case "sniperTank":
                             tempTank = new Tank(curGrid, curGridLocation, "Sniper");
-                            entity = tempTank;
+
                             break;
                         case "scoutTank":
                             tempTank = new Tank(curGrid, curGridLocation, "Scout");
-                            entity = tempTank;
+
                             break;
                         case "mine":
-                            entity = tempMine;
+
                             break;
                         default:
                             break;
@@ -187,15 +203,11 @@ namespace TankGame
                             //cant be placed in a spawn tile
                             if (!levelManager.getAllSpawnTiles().Any(x => x.gridLocation == curGridLocation))
                             {
-                                //load and add the entity
-                                entity.LoadContent();
-                                boardState.entities.Add(entity);
-                                boardState.gridLocations.Add(entity.gridLocation);
-
                                 //load and add mine
                                 minesUsed++;
                                 tempMine.LoadContent();
                                 boardState.playerList[boardState.curPlayerNum].mines.Add(tempMine);
+                                boardState.gridLocations.Add(tempMine.gridLocation);
                             }
                         }
                         //must be a tank //must be able to afford
@@ -204,15 +216,11 @@ namespace TankGame
                             //must be inside a spawn tile for the correct player
                             if (boardState.playerList[boardState.curPlayerNum].SpawnTiles.Any(x => x.gridLocation == curGridLocation))
                             {
-                                //load and add the entity
-                                entity.LoadContent();
-                                boardState.entities.Add(entity);
-                                boardState.gridLocations.Add(entity.gridLocation);
-
                                 //load and add tank
                                 tanksUsed += tempTank.buildCost;
                                 tempTank.LoadContent();
                                 boardState.playerList[boardState.curPlayerNum].tanks.Add(tempTank);
+                                boardState.gridLocations.Add(tempTank.gridLocation);
                             }
                         }
                         else
@@ -223,56 +231,40 @@ namespace TankGame
                 }
             }
         }
-        protected void RemoveEntity(ref int tanksUsed, ref int minesUsed)
+        protected void RemoveTankOrMine(ref int tanksUsed, ref int minesUsed)
         {
             if (mouseInBoard)
             {
                 //if mouse is right clicked once in the board (remove code)
                 if (mouse.RightButton == ButtonState.Pressed && oldRightClick != curRightClick)
                 {
-                    //of the gridlocations tracker has an object there
+                    //if the gridlocations tracker has an object there
                     if (boardState.gridLocations.Contains(curGridLocation))
                     {
-                        //check which entity is there 
-                        for (int i = 0; i < boardState.entities.Count; i++)
+                        //if tank list has any tanks with that current grid location
+                        if (boardState.playerList[boardState.curPlayerNum].tanks.Any(x => x.gridLocation == curGridLocation))
                         {
-                            if (boardState.entities[i].gridLocation == curGridLocation)
-                            {
-                                //if its a tank
-                                if (boardState.entities[i].Type == "tank")
-                                {
-                                    for (int j = 0; j < boardState.playerList[boardState.curPlayerNum].tanks.Count; j++)
-                                    {
-                                        //find which tank is the current one based on gridlocation to remove it
-                                        if (boardState.playerList[boardState.curPlayerNum].tanks[j].gridLocation == curGridLocation)
-                                        {
-                                            //give back build cost before removing tank
-                                            tanksUsed -= boardState.playerList[boardState.curPlayerNum].tanks[j].buildCost;
-                                            boardState.playerList[boardState.curPlayerNum].tanks.Remove(boardState.playerList[boardState.curPlayerNum].tanks[j]);
-                                            //remove its records
-                                            boardState.entities.Remove(boardState.entities[i]);
-                                            boardState.gridLocations.Remove(curGridLocation);
-                                        }
-                                    }
-                                }
-                                //if its a mine
-                                else if (boardState.entities[i].Type == "mine")
-                                {
+                            //find which tank index is the current one based on gridlocation to remove it
+                            int i = boardState.playerList[boardState.curPlayerNum].tanks.FindIndex(x => x.gridLocation == curGridLocation);
 
-                                    for (int j = 0; j < boardState.playerList[boardState.curPlayerNum].mines.Count; j++)
-                                    {
-                                        //find which mine based on gridlocation and remove it
-                                        if (boardState.playerList[boardState.curPlayerNum].mines[j].gridLocation == curGridLocation)
-                                        {
-                                            boardState.playerList[boardState.curPlayerNum].mines.Remove(boardState.playerList[boardState.curPlayerNum].mines[j]);
-                                            //remove its records
-                                            boardState.entities.Remove(boardState.entities[i]);
-                                            boardState.gridLocations.Remove(curGridLocation);
-                                            minesUsed--;
-                                        }
-                                    }
-                                }
-                            }
+                            //give back build cost before removing tank
+                            tanksUsed -= boardState.playerList[boardState.curPlayerNum].tanks[i].buildCost;
+                            //remove its records
+                            boardState.playerList[boardState.curPlayerNum].tanks.Remove(boardState.playerList[boardState.curPlayerNum].tanks[i]);
+                            boardState.gridLocations.Remove(curGridLocation);
+                        }
+
+                        //if mines list has any mines with that current grid location
+                        else if (boardState.playerList[boardState.curPlayerNum].mines.Any(x => x.gridLocation == curGridLocation))
+                        {
+                            //find which tank index is the current one based on gridlocation to remove it
+                            int i = boardState.playerList[boardState.curPlayerNum].mines.FindIndex(x => x.gridLocation == curGridLocation);
+
+                            //give back build cost before removing mine
+                            minesUsed--;
+                            //remove its records
+                            boardState.playerList[boardState.curPlayerNum].mines.Remove(boardState.playerList[boardState.curPlayerNum].mines[i]);
+                            boardState.gridLocations.Remove(curGridLocation);
                         }
                     }
                 }
@@ -304,19 +296,19 @@ namespace TankGame
                         getObjectLocationsForVision();
                         //get the circle around the selected tank                   
                         getLOS();
-                        drawTankInfo = true;
+                        DrawTankInfo = true;
                         Tank.playSelectSoundEffect();
                     }
                 }
 
-                if (drawTankInfo)
+                if (DrawTankInfo)
                 {
                     pathFind(boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].gridLocation);
                 }
             }
         }
-        #region LOS Methods
 
+        #region LOS Methods
         private void getObjectLocationsForVision()
         {
 
@@ -330,10 +322,34 @@ namespace TankGame
         }
         private void getLOS()
         {
+            resetLOSObjects();
             CircleTiles = curBoard.getRectanglesInRadius(
             new Vector2(boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].gridLocation.X, boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].gridLocation.Y),
             boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].range, objectLocations, out blockersInCircle);
             Tank.findTilesInLOS(boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum], CircleTiles, blockersInCircle, boardState);
+        }
+        private void resetLOSObjects()
+        {
+            boardState.objectsInLOS.Clear();
+            //all walls set to true, now set to false
+            foreach (Wall wall in boardState.walls)
+            {
+                if (wall.getInLOS())
+                {
+                    wall.setInLOS(false);
+                }
+            }
+            //all tanks set to true, now set to false
+            foreach (Player player in boardState.playerList)
+            {
+                foreach(Tank tank in player.tanks)
+                {
+                    if (tank.getInLOS())
+                    {
+                        tank.setInLOS(false);
+                    }
+                }
+            }
         }
         #endregion
         protected void pathFind(Point start)
@@ -341,7 +357,7 @@ namespace TankGame
             Point end = new Point();
             curBoard.getGridSquare(worldPosition, out end);
 
-            if (drawTankInfo)
+            if (DrawTankInfo)
             {
                 path = pathfinder.getPath(cellMap[start.X, start.Y], cellMap[end.X, end.Y], boardState.tankGridLocations);
             }
@@ -355,9 +371,9 @@ namespace TankGame
         /// This will act as an undo effect. Setting the turn back to the beginning </summary>
         public void SetTurnState()
         {
-            boardState.SetToPreviousState(previousBoardState);
+            boardState.SetToPreviousState(previousBoardState, curBoard);
             activeTankNum = -1;
-            drawTankInfo = false;
+            DrawTankInfo = false;
             path = new List<Cell>();
 
         }
@@ -378,14 +394,18 @@ namespace TankGame
                             if (path != null)
                             {
                                 bool itemGotten;
-                                boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankMove(curBoard, ref boardState, ref previousBoardState, path, out drawTankInfo, out itemGotten);
+                                bool tankDied;
+                                boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankMove(curBoard, ref boardState, ref previousBoardState, path, out tankDied, out itemGotten);
+                                if (tankDied)
+                                    DrawTankInfo = false;
                                 //redo the Line of Set check for the new position
-                                getLOS();
+                                if (!tankDied)
+                                    getLOS();
                                 if (itemGotten)
                                 {
                                     GivePlayerItem();
                                     //getting an item is permanant descision
-                                    previousBoardState = BoardState.SavePreviousBoardState(boardState);
+                                    previousBoardState = BoardState.SavePreviousBoardState(boardState, curBoard);
                                 }
                             }
                         }
@@ -395,9 +415,9 @@ namespace TankGame
                         else if (curRightClick == ButtonState.Pressed && oldRightClick != ButtonState.Pressed)
                         {
                             //this goes into the function and returns with a value that could mean something
-                            int wallToRemove = -1;
+                            int wallToRemove;
 
-                            boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankShoot(curBoard, boardState, CircleTiles, blockersInCircle, worldPosition, pathfinder ,out wallToRemove);
+                            boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankShoot(curBoard, boardState, CircleTiles,worldPosition, pathfinder, out wallToRemove);
                             if (wallToRemove != -1)
                             {
                                 removeWallDuringGame(wallToRemove);
@@ -414,7 +434,7 @@ namespace TankGame
         {
             //get a random number
             Random rand = new Random();
-            int i = rand.Next(0, rules.allowedItems.Count-1);
+            int i = rand.Next(0, rules.allowedItems.Count - 1);
             //use the random number to get an item from allowed items list, then set that item to +1 its current value
             boardState.playerList[boardState.curPlayerNum].inventory.setSelectedItemsCount(rules.allowedItems[i],
                 boardState.playerList[boardState.curPlayerNum].inventory.getSelectedItemsCount(rules.allowedItems[i]) + 1);
@@ -445,11 +465,11 @@ namespace TankGame
             //clear the path for the pathfinder
             path = new List<Cell>();
             //dont draw tank info immediatly
-            drawTankInfo = false;
+            DrawTankInfo = false;
             //update the pathfiner with mine locations
             UpdatePathFinderWithMines(boardState, pathfinder);
             //set the previous board state to be the start of the next turn
-            previousBoardState = BoardState.SavePreviousBoardState(boardState);
+            previousBoardState = BoardState.SavePreviousBoardState(boardState, curBoard);
         }
         #endregion
 
@@ -490,7 +510,7 @@ namespace TankGame
                 }
                 //use the update code if the mouse is in the board
                 if (mouseInBoard)
-                    boardState.playerList[boardState.curPlayerNum].inventory.UseItem(Item, boardState, curBoard, pathfinder, curGridLocation, drawTankInfo, activeTankNum, curLeftClick, oldLeftClick);
+                    boardState.playerList[boardState.curPlayerNum].inventory.UseItem(Item, boardState, curBoard, pathfinder, curGridLocation, DrawTankInfo, activeTankNum, curLeftClick, oldLeftClick);
             }
         }
         /// <summary>
@@ -513,9 +533,9 @@ namespace TankGame
         private void DeselectTank()
         {
             //deselect tanks when selecting sweeper
-            if (drawTankInfo)
+            if (DrawTankInfo)
             {
-                drawTankInfo = false;
+                DrawTankInfo = false;
                 boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active = false;
                 activeTankNum = -1;
             }
@@ -538,19 +558,47 @@ namespace TankGame
                     Vector2 rectScale = cellRect.Size / new Vector2(48, 48);
                     //finds the count in the non reverse way (for drawing text to screen)
                     int reverseListCounter = path.Count - 1 - i;
-
-                    if (i == 0)//this means its the cell the mouse is on
-                    {                                
+                    //if it is the first item in the list and out of range, draw in red
+                    if (i == 0 && reverseListCounter > boardState.playerList[boardState.curPlayerNum].AP / boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].movementCost)
+                    {
+                        //we devide by 50 here since that is the size of the sprite (make sure it scales with the size of the board rectangles)
+                        spriteBatch.Draw(end, cellRect.Location, null, Color.DarkRed, 0, Vector2.Zero, rectScale, SpriteEffects.None, 0);
+                        //48 is the internal tile size at the standard map size of 20. The calculations are based on the internal size for a "standard" tile\
+                        //just change the float it multiplies with to create scale since at the standard (48) * 1 the font would fill the whole rectangle. Dont make larger than 1
+                        spriteBatch.DrawString(font, Convert.ToString(reverseListCounter), cellRect.Center + new Vector2(-10 * rectScale.X, -10 * rectScale.Y), Color.Black, 0, Vector2.Zero, .6f * cellRect.Width / 48, SpriteEffects.None, 0);
+                    }//if its the first one but not out of range
+                    else if (i == 0)
+                    {
                         //we devide by 50 here since that is the size of the sprite (make sure it scales with the size of the board rectangles)
                         spriteBatch.Draw(end, cellRect.Location, null, Color.White, 0, Vector2.Zero, rectScale, SpriteEffects.None, 0);
                         //48 is the internal tile size at the standard map size of 20. The calculations are based on the internal size for a "standard" tile\
                         //just change the float it multiplies with to create scale since at the standard (48) * 1 the font would fill the whole rectangle. Dont make larger than 1
-                        spriteBatch.DrawString(font, Convert.ToString(reverseListCounter), cellRect.Location + new Vector2(cellRect.Size.X/2.5F, cellRect.Size.Y/5), Color.Black, 0, Vector2.Zero, .6f * cellRect.Width / 48, SpriteEffects.None, 0);
+                        spriteBatch.DrawString(font, Convert.ToString(reverseListCounter), cellRect.Center + new Vector2(-10 * rectScale.X, -10 * rectScale.Y), Color.Black, 0, Vector2.Zero, .6f * cellRect.Width / 48, SpriteEffects.None, 0);
+
                     }
-                    else if (i == 1)
+                    //if the reverse counter is less than equals the amount the tank can move, then draw that differently, so the player knows where they will stop
+                    else if (reverseListCounter == boardState.playerList[boardState.curPlayerNum].AP / boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].movementCost)
                     {
-                        
-                        spriteBatch.Draw(trail, cellRect.Location, null, Color.Black, 0, cellRect.Center, rectScale, SpriteEffects.None, 0);
+                        //we devide by 50 here since that is the size of the sprite (make sure it scales with the size of the board rectangles)
+                        spriteBatch.Draw(end, cellRect.Location, null, Color.White, 0, Vector2.Zero, rectScale, SpriteEffects.None, 0);
+                        //48 is the internal tile size at the standard map size of 20. The calculations are based on the internal size for a "standard" tile\
+                        //just change the float it multiplies with to create scale since at the standard (48) * 1 the font would fill the whole rectangle. Dont make larger than 1
+                        spriteBatch.DrawString(font, Convert.ToString(reverseListCounter), cellRect.Center + new Vector2(-10 * rectScale.X, -10 * rectScale.Y), Color.Black, 0, Vector2.Zero, .6f * cellRect.Width / 48, SpriteEffects.None, 0);
+                    }
+                    //its not a special spot but it is over the amount they can move (draw red)
+                    else if (i != 0 && reverseListCounter > boardState.playerList[boardState.curPlayerNum].AP / boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].movementCost)
+                    {
+                        spriteBatch.Draw(trail, cellRect.Center + (new Vector2(-8, -8) * rectScale), null, Color.DarkRed, 0, Vector2.Zero, rectScale, SpriteEffects.None, 0);
+                    }
+                    else //otherwise draw trail in white
+                    {
+                        spriteBatch.Draw(trail, cellRect.Center + (new Vector2(-8, -8) * rectScale), null, Color.White, 0, Vector2.Zero, rectScale, SpriteEffects.None, 0);
+                    }
+                    #region old code with angle finding
+                    /*else if (i == 1)
+                    {
+
+                        spriteBatch.Draw(trail, cellRect.Center + new Vector2(-7,-7), null, Color.Black, 0, Vector2.Zero, rectScale, SpriteEffects.None, 0);
                     }
                     else
                     {
@@ -611,7 +659,8 @@ namespace TankGame
                             DistanceTraveled += DistancePer;
                         }
 
-                    }
+                    }*/
+                    #endregion
                 }
             }
         }

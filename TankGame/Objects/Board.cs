@@ -300,6 +300,37 @@ namespace TankGame.Objects
         }
         /// <summary>
         /// returns a subgrid inside the major grid
+        /// </summary>       
+        public RectangleF[,] getSubGrid(int lowX, int highX, int lowY, int highY, List<Point> wallsInGrid)
+        {
+            RectangleF[,] subGrid = new RectangleF[(highX-lowX) + 1, (highY-lowY) + 1];
+            //rows
+            for (int i = 0; i < (highX - lowX) + 1; i++)
+            {
+                //columns
+                for (int j = 0; j < (highY - lowY) + 1; j++)
+                {
+                    int locX = (int)lowX + i;
+                    int locY = (int)lowY + j;
+                    if (locX >= 0 && locX < gridarray.GetLength(0) && locY >= 0 && locY < gridarray.GetLength(1))
+                    {
+                        subGrid[i, j] = gridarray[locX, locY];
+                        if (wallsInGrid.Contains(new Point(locX,locY)))
+                        {
+                            subGrid[i, j].identifier = 1;
+                        }
+                    }
+                    else
+                    {
+                        subGrid[i, j] = new RectangleF();
+                    }
+
+                }
+            }
+            return subGrid;
+        }
+        /// <summary>
+        /// returns a subgrid inside the major grid
         /// </summary>
         /// <param name="location">top left cordinate of the sub grid</param>
         /// <param name="size">Size.X for columns, Size.Y for rows</param>

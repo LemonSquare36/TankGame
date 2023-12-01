@@ -67,10 +67,27 @@ namespace TankGame
                 curBoard.drawCheckers(spriteBatch);
                 curBoard.DrawOutline(spriteBatch);
 
-                foreach (Entity e in boardState.entities)
+                //draw walls
+                DrawWalls();
+
+                //draw itemboxes
+                foreach (ItemBox i in boardState.itemBoxes)
                 {
-                    e.Draw(spriteBatch);
-                }               
+                    i.Draw(spriteBatch);
+                }
+                //draw holes
+                foreach (Hole i in boardState.holes)
+                {
+                    i.Draw(spriteBatch);
+                }
+                //draw spawntiles
+                for (int i = 0; i < levelManager.getPlayerSpawns().Count; i++)
+                {
+                    foreach (SpawnTile tile in levelManager.getPlayerSpawns()[i])
+                    {
+                        tile.Draw(spriteBatch);
+                    }
+                }
             }
         }
 
@@ -95,19 +112,28 @@ namespace TankGame
             file = relativePath + "\\TankGame\\LevelFiles\\" + levelSelection.curSelection + ".lvl";
             if (file != relativePath + "\\TankGame\\LevelFiles\\" + "" + ".lvl")
             {
-                try
-                {
+                //try
+                //{
                     levelManager.LoadLevel(file, 0.028F, 0.05F);
                     //grab the informatin from the levelManager
-                    boardState = new BoardState(levelManager.getEntities(), levelManager.getWalls(), levelManager.getItemBoxes());
+                    boardState = new BoardState(levelManager.getWalls(), levelManager.getItemBoxes(), levelManager.getHoles());
                     curBoard = levelManager.getGameBoard();
                     //finish loading the board
                     curBoard.LoadContent();
                     boardState.LoadEntities();
+
+                    for (int i = 0; i < levelManager.getPlayerSpawns().Count; i++)
+                    {
+                        foreach (SpawnTile tile in levelManager.getPlayerSpawns()[i])
+                        {
+                            tile.LoadContent();
+                        }
+                    }
+
                     //level can be drawn and updated now
                     levelLoaded = true;
-                }
-                catch {  }
+                //}
+                //catch {  }
             }
         }
     }

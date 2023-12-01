@@ -17,7 +17,7 @@ namespace TankGame
 
         SpriteBatch spriteBatch;
         GraphicsDeviceManager graphicsManager;
-        
+
 
         //private FrameCounter framC = new FrameCounter();
         //SpriteFont spritefont;
@@ -56,6 +56,7 @@ namespace TankGame
             get { return gametime; }
             set { gametime = value; }
         }
+
         //constructor
         public Main()
         {
@@ -84,6 +85,9 @@ namespace TankGame
             //initialize my Graphics Device and SpriteBatch 
             graphics = GraphicsDevice;
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            
+
             //get the defualt Matrix for the resolution. No special viewports
             defualtView = Main.graphicsDevice.Viewport;
             Camera.setBound(defualtView);
@@ -107,10 +111,12 @@ namespace TankGame
         protected override void Update(GameTime gameTime)
         {
             //runs the current game action - state of game
-            gameState.Update();
+            if (this.IsActive)
+            {
+                gameState.Update();
+            }
             gametime = gameTime;
             base.Update(gameTime);
-
         }
 
         protected override void Draw(GameTime gameTime)

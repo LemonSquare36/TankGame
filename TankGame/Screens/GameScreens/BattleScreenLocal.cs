@@ -258,12 +258,31 @@ namespace TankGame
             //board draw 
             curBoard.drawCheckers(spriteBatch);
             curBoard.DrawOutline(spriteBatch);
-            foreach (Entity e in boardState.entities)
+
+            //draw walls
+            DrawWalls();
+
+            //draw itemboxes
+            foreach (ItemBox itembox in boardState.itemBoxes)
             {
-                if (placementStage)
+                itembox.Draw(spriteBatch);
+            }
+            //draw holes
+            foreach (Hole hole in boardState.holes)
+            {
+                hole.Draw(spriteBatch);
+            }
+            //draw friendly mines
+            foreach (Mine mine in boardState.playerList[boardState.curPlayerNum].mines)
+            {
+                mine.Draw(spriteBatch);
+            }
+            //draw tanks
+            foreach (Player player in boardState.playerList)
+            {
+                foreach (Tank tank in player.tanks)
                 {
-                    if (e.Type.ToString() != "mine")
-                        e.Draw(spriteBatch);
+                    tank.Draw(spriteBatch);
                 }
             }
             //draw code for the placement stage. Placing tanks and mines
@@ -275,11 +294,6 @@ namespace TankGame
                 foreach (Button b in placementButtonList)
                 {
                     b.Draw(spriteBatch);
-                }
-
-                foreach (Mine mine in boardState.playerList[boardState.curPlayerNum].mines)
-                {
-                    mine.Draw(spriteBatch);
                 }
 
                 //give a warning the player pressed ready when they had tanks and mines left
@@ -316,42 +330,16 @@ namespace TankGame
                 {
                     b.Draw(spriteBatch);
                 }
-                //draw walls
-                foreach (Wall wall in boardState.walls)
-                {
-                    wall.Draw(spriteBatch);
-                }
-                //draw itemboxes
-                foreach (ItemBox itembox in boardState.itemBoxes)
-                {
-                    itembox.Draw(spriteBatch);
-                }
-                //draw friendly mines
-                foreach (Mine mine in boardState.playerList[boardState.curPlayerNum].mines)
-                {
-                    mine.Draw(spriteBatch);
-                }
-                //draw tanks
-                foreach (Player player in boardState.playerList)
-                {
-                    foreach (Tank tank in player.tanks)
-                    {
-                        tank.Draw(spriteBatch);
-                    }
-                }
-                if (drawTankInfo)
+                if (DrawTankInfo)
                 {
                     foreach (RectangleF rF in CircleTiles)
                     {
                         if (!rF.Null)
                         {
-                            if (rF.identifier == 1)
-                            {//draw red for enemy tanks and walls
-                                spriteBatch.Draw(spawnTex, rF.Location, null, Color.DarkRed, 0, Vector2.Zero, rF.Size, SpriteEffects.None, 0);
-                            }
-                            else
-                            {//draw green to show range
-                                spriteBatch.Draw(spawnTex, rF.Location, null, Color.Green, 0, Vector2.Zero, rF.Size, SpriteEffects.None, 0);
+                            if (rF.identifier != 1) //not marked as a tank or wall (those are done differently)
+                            {
+                                //draw green to show range
+                                spriteBatch.Draw(spawnTex, rF.Location, null, Color.LightGreen, 0, Vector2.Zero, rF.Size, SpriteEffects.None, 0);
                             }
                         }
                     }
@@ -404,7 +392,7 @@ namespace TankGame
             {
                 AddEntity("mine", tanksCount, minesCount, ref minesUsed, ref tanksUsed);
             }
-            RemoveEntity(ref tanksUsed, ref minesUsed);
+            RemoveTankOrMine(ref tanksUsed, ref minesUsed);
         }
 
         #region Add objects code
@@ -486,7 +474,7 @@ namespace TankGame
                     placementStage = false; //this starts the next stage
                     battleStarted = true; //this starts the next stage
                     placementWarning = false; //remove warning 
-                    previousBoardState = BoardState.SavePreviousBoardState(boardState);
+                    previousBoardState = BoardState.SavePreviousBoardState(boardState, curBoard);
                 }
 
                 UpdatePathFinderWithMines(boardState, pathfinder);

@@ -193,5 +193,18 @@ namespace TankGame.GameInfo
                     break;
             }
         }
+        public static Inventory Clone(Inventory inventory)
+        {
+            Inventory @new = new Inventory(inventory.sweeps);
+            @new.missile = inventory.missile;
+            @new.shotgun = inventory.shotgun;
+            @new.builder = inventory.builder;
+            @new.wallDestroyer = inventory.wallDestroyer;
+            @new.teleport = inventory.teleport;
+            @new.superSweeper = inventory.superSweeper;
+            @new.activeAnimations = inventory.activeAnimations;
+            @new.InitializeItems();
+            return inventory;
+        }
     }
 }

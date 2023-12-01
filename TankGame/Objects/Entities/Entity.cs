@@ -34,7 +34,11 @@ namespace TankGame.Objects.Entities
         public bool alive = true;
         public bool showHealth;
 
+        protected bool inLOS = false;
+        protected Color drawColor = Color.White;
+
         protected string type;
+
         public string Type
         {
             get { return type; }
@@ -71,11 +75,27 @@ namespace TankGame.Objects.Entities
                 drawHPBar(spriteBatch);
             }
         }
+        public bool getInLOS()
+        {
+            return inLOS;
+        }
+        public virtual void setInLOS(bool InLOS)
+        {
+            inLOS = InLOS; 
+        }
 
         protected void SetHPBarPos()
         {
-            hpBarLocStart = new Vector2(curSquare.Location.X - (30 * size.X), curSquare.Location.Y + (60 * size.Y));
-            hpBarLoc = new Vector2(hpBarLocStart.X + (20 * size.X), hpBarLocStart.Y);
+            if (type == "wall" && ((Wall)this).multiWall)
+            {
+                hpBarLocStart = ((Wall)this).RealHPStart;
+                hpBarLoc = new Vector2(hpBarLocStart.X + (20 * size.X), hpBarLocStart.Y);
+            }
+            else
+            {
+                hpBarLocStart = new Vector2(curSquare.Location.X - (30 * size.X), curSquare.Location.Y + (60 * size.Y));
+                hpBarLoc = new Vector2(hpBarLocStart.X + (20 * size.X), hpBarLocStart.Y);
+            }
         }
         protected void drawHPBar(SpriteBatch spriteBatch)
         {

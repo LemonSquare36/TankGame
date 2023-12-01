@@ -37,6 +37,12 @@ namespace TankGame.Tools
         RasterizerState r = new RasterizerState();
         float scale;
         int charLimit = -1;
+        private event EventHandler activated;
+        public event EventHandler Activated
+        {
+            add { activated += value; }
+            remove { activated -= value; }
+        }
 
 
         KeyStrokeHandler KeyHandler = new KeyStrokeHandler();
@@ -115,6 +121,7 @@ namespace TankGame.Tools
                 if (curClick == ButtonState.Pressed && oldClick == ButtonState.Released)
                 {
                     active = true;
+                    activated?.Invoke(this, EventArgs.Empty);
                 }
             }
             //if the mouse isnt in the box

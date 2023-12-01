@@ -6,15 +6,16 @@ using TankGame.Objects.Entities;
 using TankGame.Objects;
 using System.Linq;
 using System.Xml.Linq;
+using System.Security.Cryptography;
 
 namespace TankGame.Tools
 {
     internal class LevelManager
     {
         Board board;
-        List<Entity> entities = new List<Entity>();
         List<Wall> walls = new List<Wall>();
         List<ItemBox> itemBoxes = new List<ItemBox>();
+        List<Hole> holes = new List<Hole>();
         Cell[,] cellMap;
         List<List<SpawnTile>> PlayerSpawns = new List<List<SpawnTile>>();
         List<SpawnTile> AllSpawns = new List<SpawnTile>();
@@ -33,7 +34,6 @@ namespace TankGame.Tools
             XElement parentElement;
 
             //reset the lists
-            entities.Clear();
             walls.Clear();
             itemBoxes.Clear();
             PlayerSpawns.Clear();
@@ -80,17 +80,58 @@ namespace TankGame.Tools
                 //use the strings to declare the locations in int form
                 int X = Convert.ToInt16(cord[0]);
                 int Y = Convert.ToInt16(cord[1]);
+                bool destroyable = true;
+                if (cord[2] == "False")
+                {
+                    destroyable = false;
+                }
                 //create the wall with the cordinates extracted
-                Wall tempWall = new Wall(board.getGridSquare(X, Y), new Point(X, Y));
+                Wall tempWall = new Wall(board.getGridSquare(X, Y), new Point(X, Y), destroyable);
 
-                //add the wall to entities for the level editor to use
-                entities.Add(tempWall);
                 //add it to the walls list
                 walls.Add(tempWall);
             }
+            //get the multiwalls
+            parentElement = document.Element("LevelFile").Element("MultiWalls");
+            List<Point> mulitWallPoints = new List<Point>();
+            Elements = parentElement.Descendants("mWall");
+            foreach (var element in Elements)
+            {
+                bool destroyable = true;
+                if (element.Element("destroyable").Value == "False")
+                {
+                    destroyable = false;
+                }
+                IEnumerable<XElement> segments = element.Elements("segment");
+                foreach (var segment in segments)
+                {
+                    string[] cord = segment.Value.Split(",");
+                    mulitWallPoints.Add(new Point(Convert.ToInt16(cord[0]), Convert.ToInt16(cord[1])));
+                }
+                Wall multiWall = new Wall(mulitWallPoints, board, destroyable);
+                walls.Add(multiWall);
+                mulitWallPoints.Clear();
+            }
+            //get the holes
+            //get the elements label hole
+            Elements = document.Descendants("hole");
+            //foreach element returned
+            foreach (var element in Elements)
+            {
+                //grab the value and split it, storing it in a string array
+                string[] cord = element.Value.Split(",");
+                //use the strings to declare the locations in int form
+                int X = Convert.ToInt16(cord[0]);
+                int Y = Convert.ToInt16(cord[1]);
+                //create the wall with the cordinates extracted
+                Hole tempHole = new Hole(board.getGridSquare(X, Y), new Point(X, Y));
+
+                //add it to the walls list
+                holes.Add(tempHole);
+            }
 
             //get the itemboxes
-            //get the elements label wall
+            //get the elements label itembox
             Elements = document.Descendants("itembox");
             //foreach element returned
             foreach (var element in Elements)
@@ -103,8 +144,6 @@ namespace TankGame.Tools
                 //create the wall with the cordinates extracted
                 ItemBox tempItemBox = new ItemBox(board.getGridSquare(X, Y), new Point(X, Y));
 
-                //add the wall to entities for the level editor to use
-                entities.Add(tempItemBox);
                 //add it to the walls list
                 itemBoxes.Add(tempItemBox);
             }
@@ -117,7 +156,7 @@ namespace TankGame.Tools
                 //get the spawn tiles only under one player at a time
                 parentElement = document.Descendants("Player")
                     .Where(x => (int)x.Attribute("Id") == i)
-                    .FirstOrDefault();                    
+                    .FirstOrDefault();
 
                 //get all the xelements with the spawn information into a list
                 Elements = parentElement.Descendants("spawn");
@@ -134,8 +173,6 @@ namespace TankGame.Tools
                     //add the spawn tile to the appropriate players list
                     PlayerSpawns[i].Add(tempSpawnTile);
                     AllSpawns.Add(tempSpawnTile);
-                    //add to entities list for level editor
-                    entities.Add(tempSpawnTile);
                 }
             }
             populateCellMap();
@@ -152,7 +189,7 @@ namespace TankGame.Tools
         /// <param name="TanksAndMines">a vector2 with X as tanks and Y as mines</param>
         /// <param name="Sweeps">sweeps count</param>
         /// <param name="playerCount">player count</param>
-        public void SaveLevel(string FileLocation, string FileName, Board board, List<Entity> E, List<List<SpawnTile>> SpawnTiles, int playerCount)
+        public void SaveLevel(string FileLocation, string FileName, Board board, List<Wall> walls, List<ItemBox> itemBoxes, List<Hole> holes, List<List<SpawnTile>> SpawnTiles, int playerCount)
         {
             //the path to the appdata folder of the machine
             string relativePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\TankGame\\LevelFiles";
@@ -176,19 +213,28 @@ namespace TankGame.Tools
                         new XElement("MaxPlayerCount", playerCount)),
 
                     new XElement("Walls",
-                        from Entity in E
-                        where Entity.Type == "wall"
-                        select new XElement("wall", Entity.gridLocation.X + "," + Entity.gridLocation.Y)),
+                        from wall in walls
+                        where wall.multiWall == false
+                        select new XElement("wall", wall.gridLocation.X + "," + wall.gridLocation.Y + "," + wall.destroyable.ToString())),
+                    new XElement("MultiWalls",
+                        from multiWall in walls
+                        where multiWall.multiWall == true
+                        select new XElement("mWall",
+                            new XElement("destroyable", multiWall.destroyable.ToString()),
+                            from segment in multiWall.gridLocations
+                            select new XElement("segment", segment.X + "," + segment.Y))),
+                    new XElement("Holes",
+                        from hole in holes
+                        select new XElement("hole", hole.gridLocation.X + "," + hole.gridLocation.Y)),
                     new XElement("ItemBoxes",
-                        from Entity in E
-                        where Entity.Type == "itembox"
-                        select new XElement("itembox", Entity.gridLocation.X + "," + Entity.gridLocation.Y)),
+                        from itemBox in itemBoxes
+                        select new XElement("itembox", itemBox.gridLocation.X + "," + itemBox.gridLocation.Y)),
                     new XElement("SpawnTiles",
                         from list in SpawnTiles
                         select new XElement("Player", new XAttribute("Id", SpawnTiles.FindIndex(a => a == list)),
                         from spawnTiles in list
                         select new XElement("spawn", spawnTiles.gridLocation.X + "," + spawnTiles.gridLocation.Y))
-                    )));
+                    ))); ;
 
             document.Save(FileLocation);
         }
@@ -197,10 +243,6 @@ namespace TankGame.Tools
         public Board getGameBoard()
         {
             return board;
-        }
-        public List<Entity> getEntities()
-        {
-            return entities;
         }
         public Cell[,] getCellMap()
         {
@@ -214,12 +256,49 @@ namespace TankGame.Tools
             {
                 for (int j = 0; j < board.Columns; j++)
                 {
+                    bool found = false;
                     cellMap[i, j] = new Cell(i, j, 1); //create a cell per tile on the board with a cost of moment being 1
                     //if walls list contains a wall on the current cell (i j location)
-                    if (walls.Contains(walls.FirstOrDefault(a => a.gridLocation.X == i && a.gridLocation.Y == j)))
+                    foreach (Wall wall in walls)
                     {
-                        //set that cell in the map to have a identifier of 1 to indicate a wall existing
-                        cellMap[i, j].Identifier = 1; //1 for wall (2 for tank)
+                        if (!wall.multiWall)
+                        {
+                            if (wall.gridLocation.X == i && wall.gridLocation.Y == j)
+                            {
+                                //set that cell in the map to have a identifier of 1 to indicate a wall existing
+                                cellMap[i, j].Identifier = 1; //1 for wall 
+                                found = true;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            foreach (Point gridLocation in wall.gridLocations)
+                            {
+                                if (gridLocation.X == i && gridLocation.Y == j)
+                                {
+                                    //set that cell in the map to have a identifier of 1 to indicate a wall existing
+                                    cellMap[i, j].Identifier = 1; //1 for wall 
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (found)
+                            { break; }
+
+                        }
+                    }
+                    if (!found)
+                    {
+                        foreach (Hole hole in holes)
+                        {
+                            if (hole.gridLocation.X == i && hole.gridLocation.Y == j)
+                            {
+                                //set that cell in the map to have a identifier of 1 to indicate a wall existing
+                                cellMap[i, j].Identifier = 1; //1 for wall 
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -227,6 +306,10 @@ namespace TankGame.Tools
         public List<Wall> getWalls()
         {
             return walls;
+        }
+        public List<Hole> getHoles()
+        {
+            return holes;
         }
         public List<ItemBox> getItemBoxes()
         {

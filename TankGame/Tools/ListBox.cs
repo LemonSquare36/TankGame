@@ -315,6 +315,13 @@ namespace TankGame.Tools
                 }
             }
         }
+        public void UnselectButtons()
+        {
+            foreach (Button button in ButtonsList)
+            {
+                button.OneTexPressed = false;
+            }
+        }
         private void buttonUpdate(MouseState Mouse, Vector2 WorldPos)
         {
             //only updates the buttons currently showing

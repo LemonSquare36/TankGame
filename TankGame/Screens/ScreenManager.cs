@@ -101,6 +101,22 @@ namespace TankGame
         {
 
         }
+        protected void DrawWalls()
+        {
+            foreach (Wall wall in boardState.walls)
+            {
+                wall.Draw(spriteBatch);
+            }
+            //this prevents overlapping opaque textures when drawing the shadows
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Main.DefualtMatrix());
+            foreach (Wall wall in boardState.walls)
+            {
+                wall.DrawShadows(spriteBatch);
+            }
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, Main.DefualtMatrix());
+        }
 
         //Holds the Function
         public virtual void ButtonReset()

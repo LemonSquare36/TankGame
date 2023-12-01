@@ -25,26 +25,29 @@ namespace TankGame.GameInfo
         #region board Information
         public List<ItemBox> itemBoxes = new List<ItemBox>();
         public List<Wall> walls = new List<Wall>();
-        public List<Entity> entities = new List<Entity>();
+        public List<Hole> holes = new List<Hole>();
 
         public List<Point> gridLocations = new List<Point>();
         public List<Point> wallLocations = new List<Point>();
         public List<Point> tankGridLocations = new List<Point>();
+
+        public List<Entity> objectsInLOS = new List<Entity>();
         #endregion
 
         public List<Player> playerList = new List<Player>();
         public int curPlayerNum;
 
-        public BoardState(List<Entity> Entities, List<Wall> Walls, List<ItemBox> ItemBoxes)
+        public BoardState(List<Wall> Walls, List<ItemBox> ItemBoxes, List<Hole> Holes)
         {
             curPlayerNum = 0;
-            entities = Entities;
             walls = Walls;
             itemBoxes = ItemBoxes;
+            holes = Holes;
 
             getWallLocations();
+
         }
-        public static BoardState SavePreviousBoardState(BoardState curBoardState)
+        public static BoardState SavePreviousBoardState(BoardState curBoardState, Board curBoard)
         {
             //create new boardstate to become the previous state and take the values from the current boardstate
             BoardState @newBoardState = new BoardState(new(), new(), new());
@@ -60,18 +63,13 @@ namespace TankGame.GameInfo
                 {
                     @newBoardState.playerList[i].mines.Add(Mine.Clone(mine));
                 }
-                foreach (Items item in curBoardState.playerList[i].Items)
-                {
-                    //@newBoardState.playerList[i].Items.Add(item.Clone(item));
-                }
+                //inventory clone for players
+                @newBoardState.playerList[i].inventory = Inventory.Clone(curBoardState.playerList[i].inventory);
             }
             //clone the other lists boardState needs
-            //entities list
-            foreach (Entity entity in curBoardState.entities)
-                @newBoardState.entities.Add(Entity.Clone(entity));
             //walls list
             foreach (Wall wall in curBoardState.walls)
-                @newBoardState.walls.Add(Wall.Clone(wall));
+                @newBoardState.walls.Add(Wall.Clone(wall, curBoard));
             //itemBox list
             foreach (ItemBox itemBox in curBoardState.itemBoxes)
                 @newBoardState.itemBoxes.Add(ItemBox.Clone(itemBox));
@@ -81,7 +79,7 @@ namespace TankGame.GameInfo
             return newBoardState;
         }
 
-        public void SetToPreviousState(BoardState previousState)
+        public void SetToPreviousState(BoardState previousState, Board curBoard)
         {
             //clear the current lists of values in the current state
             gridLocations.Clear();
@@ -89,16 +87,20 @@ namespace TankGame.GameInfo
             walls.Clear();
 
             //clear player lists
-            foreach (Player player in playerList)
+            for  (int i = 0; i < playerList.Count; i++)
             {
-                player.tanks.Clear();
+                playerList[i].tanks.Clear();
+                //remember the sweeps they had before going back
+                int tempSweeps = playerList[i].inventory.sweeps;
+                int tempSuperSweeps = playerList[i].inventory.superSweeper;
+
+                playerList[i].inventory = previousState.playerList[i].inventory;
+                //that way we can reassign those values to prevent sweepers from getting undone
+                playerList[i].inventory.superSweeper = tempSuperSweeps;
+                playerList[i].inventory.sweeps = tempSweeps;
             }
             //clone to values from the previous state into the current state
-            //create clones instead of references for the items and tanks to prevent unwanted list updates
-            foreach (Items item in previousState.playerList[curPlayerNum].Items)
-            {
-                //playerList[curPlayer].items.Add(new Items(item))
-            }
+            //create clones instead of references for the mines and tanks to prevent unwanted list updates
             //ally tanks from previous state get set to current
             foreach (Tank tank in previousState.playerList[curPlayerNum].tanks)
             {
@@ -118,7 +120,7 @@ namespace TankGame.GameInfo
             //get walls
             foreach (Wall wall in previousState.walls)
             {
-                walls.Add(Wall.Clone(wall));
+                walls.Add(Wall.Clone(wall, curBoard));
             }
             getWallLocations();
             //get itemboxes
@@ -127,8 +129,6 @@ namespace TankGame.GameInfo
                 itemBoxes.Add(ItemBox.Clone(itembox));
             }
 
-            //redo all entities list
-            getAllEntities();
             //redo the gridlocations list
             getGridLocations();
 
@@ -140,57 +140,20 @@ namespace TankGame.GameInfo
             wallLocations.Clear();
             foreach (Wall w in walls)
             {
+                if (!w.multiWall)
                 wallLocations.Add(w.gridLocation);
+                else
+                {
+                    foreach (Point point in w.gridLocations)
+                    {
+                        wallLocations.Add(point);
+                    }
+                }
             }
             return wallLocations;
         }
         /// <summary>updates the entities list based on the other active lists (walls, player.mines, player.tank, itemboxes)</summary>
-        protected List<Entity> getAllEntities()
-        {
-            entities.Clear();
 
-            foreach (Wall w in walls)
-            {
-                entities.Add(w);
-            }
-            //add ally tanks
-            foreach (Tank tank in playerList[curPlayerNum].tanks)
-            {
-                entities.Add(tank);
-            }
-            //add enemy tanks
-            for (int i = 0; i < playerList.Count; i++)
-            {
-                if (i != curPlayerNum)//means its enemy player
-                {
-                    foreach (Tank tank in playerList[i].tanks)
-                    {
-                        entities.Add(tank);
-                    }
-                }
-            }
-            //add ally mines
-            foreach (Mine mine in playerList[curPlayerNum].mines)
-            {
-                entities.Add(mine);
-            }
-            //add enemy mines
-            for (int i = 0; i < playerList.Count; i++)
-            {
-                if (i != curPlayerNum)//means its enemy player
-                {
-                    foreach (Mine mine in playerList[i].mines)
-                    {
-                        entities.Add(mine);
-                    }
-                }
-            }
-            foreach (ItemBox item in itemBoxes)
-            {
-                entities.Add(item);
-            }
-            return entities;
-        }
         public List<Point> getTankLocations()
         {
             tankGridLocations.Clear();
@@ -206,17 +169,108 @@ namespace TankGame.GameInfo
         }
         public void getGridLocations()
         {
-            for (int i = 0; i < entities.Count; i++)
+            gridLocations.Clear();
+
+            getWallLocations();
+            foreach (Point w in wallLocations)
             {
-                gridLocations.Add(entities[i].gridLocation);
+                gridLocations.Add(w);
             }
+            foreach (Hole hole in holes)
+            {
+                gridLocations.Add(hole.gridLocation);
+            }
+            foreach (ItemBox item in itemBoxes)
+            {
+                gridLocations.Add(item.gridLocation);
+            }
+            try
+            {
+                //add ally tanks
+                foreach (Tank tank in playerList[curPlayerNum].tanks)
+                {
+                    gridLocations.Add(tank.gridLocation);
+                }
+                //add enemy tanks
+                for (int i = 0; i < playerList.Count; i++)
+                {
+                    if (i != curPlayerNum)//means its enemy player
+                    {
+                        foreach (Tank tank in playerList[i].tanks)
+                        {
+                            gridLocations.Add(tank.gridLocation);
+                        }
+                    }
+                }
+                //add ally mines
+                foreach (Mine mine in playerList[curPlayerNum].mines)
+                {
+                    gridLocations.Add(mine.gridLocation);
+                }
+                //add enemy mines
+                for (int i = 0; i < playerList.Count; i++)
+                {
+                    if (i != curPlayerNum)//means its enemy player
+                    {
+                        foreach (Mine mine in playerList[i].mines)
+                        {
+                            gridLocations.Add(mine.gridLocation);
+                        }
+                    }
+                }
+            }
+            catch { }
         }
         public void LoadEntities()
         {
-            foreach (Entity entity in entities)
+            foreach (Wall w in walls)
             {
-                entity.LoadContent();
+               w.LoadContent();
             }
+            foreach (Hole h in holes)
+            {
+                h.LoadContent();
+            }
+            foreach (ItemBox item in itemBoxes)
+            {
+                item.LoadContent();
+            }
+            try
+            {
+                //add ally tanks
+                foreach (Tank tank in playerList[curPlayerNum].tanks)
+                {
+                    tank.LoadContent();
+                }
+                //add enemy tanks
+                for (int i = 0; i < playerList.Count; i++)
+                {
+                    if (i != curPlayerNum)//means its enemy player
+                    {
+                        foreach (Tank tank in playerList[i].tanks)
+                        {
+                            tank.LoadContent();
+                        }
+                    }
+                }
+                //add ally mines
+                foreach (Mine mine in playerList[curPlayerNum].mines)
+                {
+                    mine.LoadContent();
+                }
+                //add enemy mines
+                for (int i = 0; i < playerList.Count; i++)
+                {
+                    if (i != curPlayerNum)//means its enemy player
+                    {
+                        foreach (Mine mine in playerList[i].mines)
+                        {
+                            mine.LoadContent();
+                        }
+                    }
+                }
+            }
+            catch { }
         }
         #endregion
 
@@ -228,9 +282,9 @@ namespace TankGame.GameInfo
             walls.Remove(walls[i]); //remove from wall object list
             wallLocations.Remove(wallLocations[i]); //remove from wall locations (vector2) list
         }
-        public void AddWall(Point gridPosition, Board curBoard)
+        public void AddWall(Point gridPosition, Board curBoard, bool destroyable)
         {
-            walls.Add(new Wall(curBoard.getGridSquare(gridPosition.X, gridPosition.Y), gridPosition)); //remove from wall object list
+            walls.Add(new Wall(curBoard.getGridSquare(gridPosition.X, gridPosition.Y), gridPosition, destroyable)); //remove from wall object list
             wallLocations.Add(gridPosition); //remove from wall locations (vector2) list
         }
         #endregion
