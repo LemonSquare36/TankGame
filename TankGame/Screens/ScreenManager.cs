@@ -1,23 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Audio;
-using System.Diagnostics;
-using System.IO;
-using System.Collections;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
 using TankGame.Objects;
 using TankGame.GameInfo;
-using System.Runtime.CompilerServices;
 
 namespace TankGame
 {
@@ -27,9 +15,10 @@ namespace TankGame
         //Random rand = new Random();
 
         //gets sent to GameState to inform the manager which screen to load
-        public string nextScreen, selectedFile;   
+        public string nextScreen, selectedFile;
         //puases the game when true
-        protected bool pause = false, anyObjectActive = false, escapePressed = false;
+        protected bool anyObjectActive = false, escapePressed = false;
+        public static bool popupActive = false;
         //mouse that every screen uses
         protected MouseState mouse;
         protected ButtonState curLeftClick, oldLeftClick, curRightClick, oldRightClick;
@@ -78,14 +67,20 @@ namespace TankGame
         //Holds Update
         public virtual void Update()
         {
-            getKeyState(out keyHeldState);
-            worldPosition = MousePos();
-            //find out the left and right mouse clicks
-            oldLeftClick = curLeftClick;
-            curLeftClick = mouse.LeftButton;
-            oldRightClick = curRightClick;
-            curRightClick = mouse.RightButton;
+            if (!popupActive)
+            {
+                getKeyState(out keyHeldState);
+                worldPosition = MousePos();
+                //find out the left and right mouse clicks
+                oldLeftClick = curLeftClick;
+                curLeftClick = mouse.LeftButton;
+                oldRightClick = curRightClick;
+                curRightClick = mouse.RightButton;
+            }
+            else
+            {
 
+            }
 
             //current rectange the mouse is in
             if (curBoard != null)
@@ -95,6 +90,10 @@ namespace TankGame
             }
             //this handles what happens when escape gets pressed
             EscapeKeyManager();
+
+            //popupActive is used for other popups including the puasescreen in gamestate
+            if (GameState.Paused)
+                popupActive = true;
         }
         //Holds Draw
         public virtual void Draw()
@@ -191,7 +190,7 @@ namespace TankGame
             //escape isnt currently "pressed" for anything that needs that info
             escapePressed = false;
             //if escape is pressed then
-            if (keyState.IsKeyDown(Keys.Escape))
+            if (keyState.IsKeyDown(Keys.Escape) && !keyHeldState.IsKeyDown(Keys.Escape) && !popupActive)
             {
                 //if it "wasnt" but is
                 if (!escapePressed)
@@ -204,16 +203,16 @@ namespace TankGame
                         escapePressed = true;
                     }
                     //if no active buttons, and the game is paused, then we will unpuase the game
-                    else if (pause)
+                    else if (GameState.Paused)
                     {
-                        //unpuase code
+                        
                     }
                     //if escape gets pressed without any active buttons, then pause the game
                     else
                     {
                         //puase code
                         escapePressed = true;
-                        pause = true;
+                        GameState.Paused = true;
                     }
                 }
             }

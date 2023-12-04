@@ -14,6 +14,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 using TankGame.Tools;
+using TankGame.Screens.Menus;
+using TankGame.Screens;
 
 namespace TankGame
 {
@@ -39,23 +41,42 @@ namespace TankGame
 
         //holds the state of the game, loading or not loading content
         bool loading;
+        private static bool paused, justPaused;
+        public static bool Paused
+        {
+            get { return paused; }
+            set
+            {
+                //when the game pauses this tells the game that it just happened. This way we can load the pause screen information
+                paused = value;
+                if (paused)
+                    justPaused = true;
+            }
+        }
 
         #region Declare the Screens
         private ScreenManager CurrentScreen;
+        private PauseManager pauseScreen;
+        //menus
         private MainMenu mainMenu;
         private LevelSelect levelSelector;
+        //pause menus
+        private PauseMenu mainPauseMenu;
+
+        //gamescreens
         private LevelEditor editor;
         private BattleScreenLocal localBattleScreen;
         #endregion
 
         //Constructor
         public GameState()
-        {           
+        {
             #region Initialize the Screens
             mainMenu = new MainMenu();
             levelSelector = new LevelSelect();
             editor = new LevelEditor();
             localBattleScreen = new BattleScreenLocal();
+            mainPauseMenu = new PauseMenu();
             #endregion
         }
         //Initialize things upon class creation
@@ -72,13 +93,21 @@ namespace TankGame
                 CurrentScreen = mainMenu;
             }
             CurrentScreen.Initialize();
+            if (pauseScreen == null)
+            {
+                pauseScreen = mainPauseMenu;
+            }
 
             loading = false;
+            Paused = false;
+
             #region screen change events
             mainMenu.ChangeScreen += HandleScreenChanged;
             editor.ChangeScreen += HandleScreenChanged;
             levelSelector.ChangeScreen += HandleScreenChanged;
             localBattleScreen.ChangeScreen += HandleScreenChanged;
+
+            mainPauseMenu.ChangeScreen += HandlePauseScreenChanged;
             #endregion
         }
         //Loads the Content for The gamestate
@@ -91,41 +120,52 @@ namespace TankGame
 
             loading = true;
 
-            spriteBatch = spriteBatchMain;           
+            spriteBatch = spriteBatchMain;
             graphicsManager = graphicsManagerMain;
 
             bgTex = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
-            
+
             CurrentScreen.LoadContent(spriteBatch);
 
             loading = false;
         }
+        private void LoadPuaseContent()
+        {
+            pauseScreen.LoadContent(spriteBatch);
+        }
         //The update function for gamestates and for using functions of the current screens
         public void Update()
         {
+            if (justPaused)
+            {
+                LoadPuaseContent();
+                justPaused = false;
+            }
             if (!loading)
             {
-                key = Keyboard.GetState();
-                if (key.IsKeyDown(Keys.F1))
-                {
-                    //camera.ChangeScreenSize(graphicsManager);
-                }
-
                 CurrentScreen.Update();
+            }
+            if (Paused)
+            {
+                pauseScreen.Update();
             }
         }
         //Draws the images and textures we use
         public void Draw()
         {
             Main.graphicsDevice.Clear(color);
-            
+
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, Main.DefualtMatrix());
             if (!loading)
             {
-                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, null, null, null, Main.DefualtMatrix());
-                spriteBatch.Draw(bgTex, new Rectangle(0,0,Convert.ToInt16(Camera.resolution.X), Convert.ToInt16(Camera.resolution.Y)), bgColor);
+                spriteBatch.Draw(bgTex, new Rectangle(0, 0, Convert.ToInt16(Camera.resolution.X), Convert.ToInt16(Camera.resolution.Y)), bgColor);
                 CurrentScreen.Draw();
-                spriteBatch.End();
             }
+            if (Paused && !justPaused)
+            {
+                pauseScreen.Draw();
+            }
+            spriteBatch.End();
         }
         //The Event that Changes the Screens
         public void HandleScreenChanged(object sender, EventArgs eventArgs)
@@ -153,10 +193,13 @@ namespace TankGame
                     }
                     else { Load = false; }
                     break;
+                case "pause":
+                    Paused = true;
+                    break;
                 default:
                     Load = false;
                     break;
-            }           
+            }
 
             //Loads if a new screen is activated
             if (Load)
@@ -167,6 +210,29 @@ namespace TankGame
             }
             //Resets the button on the screen
             CurrentScreen.ButtonReset();
+        }
+
+        public void HandlePauseScreenChanged(object sender, EventArgs eventArgs)
+        {
+            bool Load = true;
+            switch (pauseScreen.nextScreen)
+            {
+
+                case "pause":
+                    Paused = false;
+                    break;
+                default:
+                    Load = false;
+                    break;
+            }
+            if (Load)
+            {
+                Initialize();
+                LoadContent(spriteBatch, graphicsManager);
+                pauseScreen.nextScreen = "";
+            }
+            //Resets the button on the screen
+            pauseScreen.ButtonReset();
         }
     }
 }

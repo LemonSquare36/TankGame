@@ -9,14 +9,30 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections;
+using static System.Net.WebRequestMethods;
+using Microsoft.Xna.Framework.Input;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TankGame.Objects.Entities
 {
     internal class Tank : Entity
     {
 
-        private string texFileDead;
+        private string texFileDead, gunTexFile, muzzleFlashFile;
         private Texture2D texDead;
+        private Texture2D gunTex, muzzleFlash;
+        float flashTimer = 0;
+
+        double gunAngle = 0;
+        bool gunAimed = false, playSmokePuff = false;
+        public bool targetAquired = false;
+
+        Vector2 gunOrigin = new Vector2();
+        //what the tank is shooting at
+        bool wallFound = false;
+        bool tankFound = false;
+        bool mineFound = false;
+        Entity objectAimedAt;
 
         private string tankType;
         public int range;
@@ -25,6 +41,7 @@ namespace TankGame.Objects.Entities
         public float movementCost, fireCost;
 
         private static SoundEffectInstance fire, death, select;
+        private static Animation smokepuff;
 
         public Tank(RectangleF CurrentSquare, Point GridLocation, string Type) : base(CurrentSquare, GridLocation)
         {
@@ -40,12 +57,37 @@ namespace TankGame.Objects.Entities
         {
             base.LoadContent();
             texDead = Main.GameContent.Load<Texture2D>(texFileDead);
+            gunTex = Main.GameContent.Load<Texture2D>(gunTexFile);
+            muzzleFlash = Main.GameContent.Load<Texture2D>(muzzleFlashFile);
+            smokepuff = new Animation("GameSprites/SpriteSheets/BattleSprites/smoke", 3, 3, 7, 1, new Rectangle(0, 0, 75, 75), 200);
         }
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (alive)
             {
                 spriteBatch.Draw(tex, curSquare.Location, null, drawColor, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                if (flashTimer == 0)
+                {
+                    spriteBatch.Draw(gunTex, curSquare.Location - new Vector2(0,15) + gunOrigin, null, drawColor, (float)gunAngle, gunOrigin, size, SpriteEffects.None, 0);
+                }
+                else
+                {
+                    spriteBatch.Draw(muzzleFlash, curSquare.Location - new Vector2(0, 15) + gunOrigin, null, drawColor, (float)gunAngle, gunOrigin, size, SpriteEffects.None, 0);
+                    flashTimer -= (float)Main.gameTime.ElapsedGameTime.TotalMilliseconds;
+                    if (flashTimer < 0)
+                    {
+                        flashTimer = 0;
+                    }
+                }
+                if (playSmokePuff && objectAimedAt != null)
+                {
+                    smokepuff.PlayAnimation(spriteBatch, size.X);
+                    if (smokepuff.stopped)
+                    {
+                        playSmokePuff = false;
+                        smokepuff.ResetAnimation();
+                    }
+                }
             }
             if (!alive)
             {
@@ -86,7 +128,10 @@ namespace TankGame.Objects.Entities
 
             if (Type == "Regular")
             {
-                texFile = "GameSprites/BattleSprites/Tanks/TankUH";
+                texFile = "GameSprites/BattleSprites/Tanks/RegularTankBody";
+                gunTexFile = "GameSprites/BattleSprites/Tanks/RegularTankGun";
+                muzzleFlashFile = "GameSprites/BattleSprites/Tanks/RegularTankGunFlash";
+                gunOrigin = new Vector2(25, 42);
                 HP = 4;
                 range = 4;
                 damage = 2;
@@ -98,7 +143,10 @@ namespace TankGame.Objects.Entities
             }
             else if (Type == "Sniper")
             {
-                texFile = "GameSprites/BattleSprites/Tanks/SniperTankUH";
+                texFile = "GameSprites/BattleSprites/Tanks/SniperTankBody";
+                gunTexFile = "GameSprites/BattleSprites/Tanks/SniperTankGun";
+                muzzleFlashFile = "GameSprites/BattleSprites/Tanks/SniperTankGunFlash";
+                gunOrigin = new Vector2(25F, 46);
                 HP = 4;
                 range = 8;
                 damage = 1;
@@ -110,7 +158,10 @@ namespace TankGame.Objects.Entities
             }
             else if (Type == "Scout")
             {
-                texFile = "GameSprites/BattleSprites/Tanks/ScoutTankUH";
+                texFile = "GameSprites/BattleSprites/Tanks/ScoutTankBody";
+                gunTexFile = "GameSprites/BattleSprites/Tanks/ScoutTankGun";
+                muzzleFlashFile = "GameSprites/BattleSprites/Tanks/ScoutTankGunFlash";
+                gunOrigin = new Vector2(25, 36);
                 HP = 2;
                 range = 4;
                 damage = 1;
@@ -186,138 +237,99 @@ namespace TankGame.Objects.Entities
                 }
             }
         }
-        public void TankShoot(Board curBoard, BoardState boardState, RectangleF[,] CircleTiles,Vector2 worldPosition, Pathfinder pathfinder, out int possibleWallRemove)
+        public void TankShoot(Board curBoard, BoardState boardState, RectangleF[,] CircleTiles, Vector2 worldPosition, Pathfinder pathfinder, out int possibleWallRemove, ButtonState curRightClick, ButtonState oldRightClick)
         {
             Point curGridLocation;
             possibleWallRemove = -1;
-            bool fired = false; //track if something was fired at to prevent unnessacary checks
-            //get the current grid location of the mouse at time of click
+            bool fired = false;            
             curBoard.getGridSquare(worldPosition, out curGridLocation);
-
-            //does the player have the action points to fire
-            if (boardState.playerList[boardState.curPlayerNum].AP >= fireCost)
+            if (!targetAquired)
             {
-                //get the rectangle to see if its null 
-                RectangleF targetRectangle = curBoard.getGridSquare(curGridLocation.X, curGridLocation.Y);//set the target rectangle 
-                bool loopBreak = false;                                                                                       //if that location is a blocker (possible target)
-                foreach (Entity e in boardState.objectsInLOS)
+                if (curRightClick == ButtonState.Pressed && oldRightClick != ButtonState.Pressed)
                 {
-                    if (e.Type == "tank")
+                    //does the player have the action points to fire
+                    if (boardState.playerList[boardState.curPlayerNum].AP >= fireCost)
                     {
-                        if (e.alive)
+                        //get the rectangle to see if its null 
+                        RectangleF targetRectangle = curBoard.getGridSquare(curGridLocation.X, curGridLocation.Y);//set the target rectangle 
+                        bool loopBreak = false;                                                                                       //if that location is a blocker (possible target)
+                        foreach (Entity e in boardState.objectsInLOS)
                         {
-                            if (e.curSquare.Location == targetRectangle.Location)//and the tank is in the target rectangle
+                            if (e.Type == "tank")
                             {
-                                e.alterHP(-damage);//tank takes damage
-                                fired = true;
-                                playFireSoundEffect();
-                                boardState.playerList[boardState.curPlayerNum].AP -= fireCost;
-                                break;
-                            }
-                        }
-                    }
-                    else if (e.Type == "wall")
-                    {
-                        if (!((Wall)e).multiWall)
-                        {
-                            if (e.curSquare.Location == targetRectangle.Location)
-                            {
-                                boardState.playerList[boardState.curPlayerNum].AP -= fireCost;
-                                fired = true;
-                                playFireSoundEffect();
-                                if (((Wall)e).destroyable)
-                                {                                    
-                                    e.alterHP(-wallDamage);                                                                     
-                                    if (!e.alive)
+                                if (e.alive)
+                                {
+                                    if (e.curSquare.Location == targetRectangle.Location)//and the tank is in the target rectangle
                                     {
-                                        possibleWallRemove = boardState.walls.FindIndex(x => x == ((Wall)e));
+                                        targetAquired = true;
+                                        tankFound = true;
+                                        objectAimedAt = e;
+                                        break;
                                     }
-                                    break;
+                                }
+                            }
+                            else if (e.Type == "wall")
+                            {
+                                if (!((Wall)e).multiWall)
+                                {
+                                    if (e.curSquare.Location == targetRectangle.Location)
+                                    {                                        
+                                        if (((Wall)e).destroyable)
+                                        {
+                                            targetAquired = true;
+                                            wallFound = true;
+                                            objectAimedAt = ((Wall)e);
+                                            break;
+                                        }
+                                    }
                                 }
                                 else
                                 {
-                                    //code for shooting walls that are nondestroyable
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            for (int j = 0; j < ((Wall)e).gridSquares.Count; j++)
-                            {
-                                if (((Wall)e).gridSquares[j].Location == targetRectangle.Location)
-                                {
-                                    boardState.playerList[boardState.curPlayerNum].AP -= fireCost;
-                                    fired = true;
-                                    playFireSoundEffect();
                                     if (((Wall)e).destroyable)
                                     {
-                                        e.alterHP(-wallDamage);
-                                        if (!e.alive)
+                                        for (int j = 0; j < ((Wall)e).gridSquares.Count; j++)
                                         {
-                                            possibleWallRemove = boardState.walls.FindIndex(x => x == ((Wall)e));
-                                        }                                        
+                                            if (((Wall)e).gridSquares[j].Location == targetRectangle.Location)
+                                            {
+                                                targetAquired = true;
+                                                wallFound = true;
+                                                objectAimedAt = ((Wall)e);
+                                                loopBreak = true;
+                                                break;
+                                            }
+                                        }
                                     }
-                                    else
-                                    {
-                                        //code for shooting walls that are nondestroyable                                        
-                                    }
-                                    loopBreak = true;
-                                    break;
                                 }
+                            }
+                            if (loopBreak)
+                            {
+                                break;
                             }
                         }
-                    }
-                    if (loopBreak)
-                    {
-                        break;
-                    }
-                }
-                if (!fired) //if it wasnt a fireable object but still non null rectangle then see if they were aiming for a mine
-                {
-                    bool mineFound = false;
-                    //check friendly mines for one that matches and remove it if it does
-                    //alter curgridlocation to fit into circle tiles
-                    //get the center tile of circle tiles (which is the tank that is shooting)
-                    Point Center = new Point(CircleTiles.GetUpperBound(0) / 2, CircleTiles.GetUpperBound(1) / 2);
-                    //find the difference btween curgridclicked and the tanks location
-                    Point circleTilesGridLocation = curGridLocation;
-                    circleTilesGridLocation -= gridLocation;
-                    //then add center and it together to find the tile clicked relevent to circle tiles
-                    circleTilesGridLocation += Center;
-                    //if the cords are inside the array
-                    if (circleTilesGridLocation.X >= 0 && circleTilesGridLocation.Y >= 0 && circleTilesGridLocation.X < CircleTiles.GetLength(0) && circleTilesGridLocation.Y < CircleTiles.GetLength(1))
-                    {
-                        //if the tile in the array isnt null (in LOS)
-                        if (!CircleTiles[circleTilesGridLocation.X, circleTilesGridLocation.Y].Null)
+                        if (!fired) //if it wasnt a fireable object but still non null rectangle then see if they were aiming for a mine
                         {
-                            for (int i = 0; i < boardState.playerList[boardState.curPlayerNum].mines.Count; i++)
+                            //check friendly mines for one that matches and remove it if it does
+                            //alter curgridlocation to fit into circle tiles
+                            //get the center tile of circle tiles (which is the tank that is shooting)
+                            Point Center = new Point(CircleTiles.GetUpperBound(0) / 2, CircleTiles.GetUpperBound(1) / 2);
+                            //find the difference btween curgridclicked and the tanks location
+                            Point circleTilesGridLocation = curGridLocation;
+                            circleTilesGridLocation -= gridLocation;
+                            //then add center and it together to find the tile clicked relevent to circle tiles
+                            circleTilesGridLocation += Center;
+                            //if the cords are inside the array
+                            if (circleTilesGridLocation.X >= 0 && circleTilesGridLocation.Y >= 0 && circleTilesGridLocation.X < CircleTiles.GetLength(0) && circleTilesGridLocation.Y < CircleTiles.GetLength(1))
                             {
-                                if (boardState.playerList[boardState.curPlayerNum].mines[i].gridLocation == curGridLocation)
+                                //if the tile in the array isnt null (in LOS)
+                                if (!CircleTiles[circleTilesGridLocation.X, circleTilesGridLocation.Y].Null)
                                 {
-                                    //cost for the tank to shoot
-                                    boardState.playerList[boardState.curPlayerNum].AP -= fireCost;
-                                    //update the pathfinder to say there is not a wall there
-                                    pathfinder.AlterCell(boardState.playerList[boardState.curPlayerNum].mines[i].gridLocation, 0);
-                                    //remove the mine from the cur players mine list
-                                    boardState.playerList[boardState.curPlayerNum].mines.Remove(boardState.playerList[boardState.curPlayerNum].mines[i]);
-                                    //play sound
-                                    playFireSoundEffect();
-                                    Mine.PlayMineExplosion();
-                                    //tells the game to look at the enemies mine lists
-                                    mineFound = true;
-                                }
-                            }
-                            //if a friendly mine was removed, then also remove it from the list of any enemy that has it
-                            if (mineFound)
-                            {
-                                foreach (Player player in boardState.playerList)
-                                {
-                                    for (int i = 0; i < player.mines.Count; i++)
+                                    for (int i = 0; i < boardState.playerList[boardState.curPlayerNum].mines.Count; i++)
                                     {
-                                        if (player.mines[i].gridLocation == curGridLocation)
+                                        if (boardState.playerList[boardState.curPlayerNum].mines[i].gridLocation == curGridLocation)
                                         {
-                                            player.mines.Remove(player.mines[i]);
+                                            targetAquired = true;
+                                            mineFound = true;
+                                            objectAimedAt = boardState.playerList[boardState.curPlayerNum].mines[i];
                                         }
                                     }
                                 }
@@ -326,9 +338,115 @@ namespace TankGame.Objects.Entities
                     }
                 }
             }
+            else if (!gunAimed && targetAquired)
+            {
+                if (objectAimedAt.Type == "wall")
+                {
+                    if (((Wall)objectAimedAt).multiWall)
+                    {
+                        RectangleF centerTile = ((Wall)objectAimedAt).multiWallArray[Convert.ToInt16(((Wall)objectAimedAt).multiWallArray.GetLength(0) / 2), Convert.ToInt16(((Wall)objectAimedAt).multiWallArray.GetLength(1) / 2)];
+                        gunAimed = rotateGun(curSquare.Center, centerTile.Center);
+                    }
+                    else
+                        gunAimed = rotateGun(curSquare.Center, objectAimedAt.curSquare.Center);
+                }
+                else
+                    gunAimed = rotateGun(curSquare.Center, objectAimedAt.curSquare.Center);                
+            }
+            //the gun is done rotating towards its target
+            else if (gunAimed && targetAquired)
+            {
+                if (tankFound)
+                {
+                    FireGun(boardState, ref fired);
+                    objectAimedAt.alterHP(-damage);
+                }
+                else if (wallFound)
+                {
+                    FireGun(boardState, ref fired);
+                    objectAimedAt.alterHP(-wallDamage);
+                    if (!objectAimedAt.alive)
+                    {
+                        possibleWallRemove = boardState.walls.FindIndex(x => x == ((Wall)objectAimedAt));
+                    }
+                }
+                else if (mineFound)
+                {
+                    FireGun(boardState, ref fired);
+                    //update the pathfinder to say there is not a wall there
+                    pathfinder.AlterCell(objectAimedAt.gridLocation, 0);
+                    //remove the mine from the cur players mine list
+                    boardState.playerList[boardState.curPlayerNum].mines.Remove(boardState.playerList[boardState.curPlayerNum].mines[boardState.playerList[boardState.curPlayerNum].mines.FindIndex(x => x.gridLocation == objectAimedAt.gridLocation)]);
+                    //play sound
+                    Mine.PlayMineExplosion();
+                    //remove from all lists that have it
+                    foreach (Player player in boardState.playerList)
+                    {
+                        for (int i = 0; i < player.mines.Count; i++)
+                        {
+                            if (player.mines[i].gridLocation == objectAimedAt.gridLocation)
+                            {
+                                player.mines.Remove(player.mines[i]);
+                            }
+                        }
+                    }
+                }
+                //give the smoke cloud animation to the location of what is being shot
+                smokepuff.AnimationLocation = objectAimedAt.curSquare.Center + new Vector2(-35*size.X,-35*size.Y);
+                //reset the bools required
+                tankFound = false; mineFound = false; wallFound = false;
+                targetAquired = false; gunAimed = false;
+                //muzzleflash timer start
+                flashTimer = 100;
+            }
         }
 
+        private bool rotateGun(Vector2 tankLocation, Vector2 objectLocation)
+        {
+            bool gunLinedUp = false;
+            //get the rotation angle
+            Vector2 rotationVector = objectLocation - tankLocation;
+            double desiredAngle = (float)(Math.Atan2(rotationVector.Y, rotationVector.X)) + (float)Math.PI / 2;
+            //desiredAngle += 6.3; //this gets it to the next loop in rotation, removing negative numbers
+            desiredAngle = Math.Round(desiredAngle, 1); //round it to prevent float issues
+            //find the fastest route to the correct angle
+            double modulus = 5.2; //should be 4.8(max rotation number) but idk why this works better. Would not allow for going min to max
+            double toRight = (desiredAngle + modulus + 1 - gunAngle) % (modulus + 1);
 
+            //excute the course till the gun is lined up
+            if (toRight > (modulus+1)/2)
+            {
+                gunAngle -= 0.05F;                
+            }
+            else 
+            {
+                gunAngle += 0.05F;
+            }
+            //loop the numbers (max and min angles connect)
+            if (gunAngle < -1.5)
+            {
+                gunAngle = 4.8;
+            }
+            if (gunAngle > 4.8)
+            {
+                gunAngle = -1.5;
+            }
+            gunAngle = Math.Round(gunAngle, 2);
+            if (desiredAngle == gunAngle)
+            {
+                gunLinedUp = true;
+            }
+            return gunLinedUp;
+        }
+        private bool FireGun(BoardState boardState, ref bool fired)
+        {
+            //spend AP, tell the outside function the gun when off, and play the tank fire sound
+            boardState.playerList[boardState.curPlayerNum].AP -= fireCost;
+            fired = true;
+            playFireSoundEffect();
+            playSmokePuff = true;
+            return true;
+        }
         #region static functions of tanks
         /// <summary>Find out which tiles are in the line of sight of the tank (not blocked by walls)</summary>
         public static RectangleF[,] findTilesInLOS(Tank selectedTank, RectangleF[,] CircleTiles, List<Vector2> blockersInCircle, BoardState boardState)
@@ -462,23 +580,26 @@ namespace TankGame.Objects.Entities
                         //wall checks
                         for (int i = 0; i < boardState.walls.Count; i++)
                         {
-                            if (!boardState.walls[i].multiWall)
+                            if (boardState.walls[i].destroyable)
                             {
-                                Point wallLocation = boardState.walls[i].gridLocation - subgridLocation;
-                                if (new Point((int)@object.X, (int)@object.Y) == wallLocation)
+                                if (!boardState.walls[i].multiWall)
                                 {
-                                    boardState.walls[i].setInLOS(true);
-                                    boardState.objectsInLOS.Add(boardState.walls[i]);
-                                }
-                            }
-                            else
-                            {
-                                foreach (Point point in boardState.walls[i].gridLocations)
-                                {
-                                    if (new Point((int)@object.X, (int)@object.Y) == point - subgridLocation)
+                                    Point wallLocation = boardState.walls[i].gridLocation - subgridLocation;
+                                    if (new Point((int)@object.X, (int)@object.Y) == wallLocation)
                                     {
                                         boardState.walls[i].setInLOS(true);
                                         boardState.objectsInLOS.Add(boardState.walls[i]);
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (Point point in boardState.walls[i].gridLocations)
+                                    {
+                                        if (new Point((int)@object.X, (int)@object.Y) == point - subgridLocation)
+                                        {
+                                            boardState.walls[i].setInLOS(true);
+                                            boardState.objectsInLOS.Add(boardState.walls[i]);
+                                        }
                                     }
                                 }
                             }
@@ -491,7 +612,6 @@ namespace TankGame.Objects.Entities
             }
             return CircleTiles;
         }
-
         public static void setTankNoises(string fireFileLocation, string deathFileLocation, string selectFileLocation)
         {
             fire = SoundManager.CreateSound(fireFileLocation);
@@ -533,7 +653,10 @@ namespace TankGame.Objects.Entities
             @new.tex = ItemToClone.tex;
             @new.texFile = ItemToClone.texFile;
             @new.texDead = ItemToClone.texDead;
+            @new.gunTex = ItemToClone.gunTex;
             @new.type = ItemToClone.type;
+            @new.gunAngle = ItemToClone.gunAngle;
+            @new.muzzleFlash = ItemToClone.muzzleFlash;
 
             return @new;
         }

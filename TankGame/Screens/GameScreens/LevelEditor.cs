@@ -1207,8 +1207,7 @@ namespace TankGame
                             bool init = false;
                             //walls
                             foreach (Wall wall in boardState.walls)
-                            {
-                                
+                            {                                
                                 if (wall.multiWall)
                                 {
                                     foreach (Point point in wall.gridLocations)
@@ -1239,6 +1238,12 @@ namespace TankGame
                             {
                                 if (item.gridLocation == boardState.gridLocations[i])
                                 item.Initialize(curBoard.getGridSquare(boardState.gridLocations[i].X, boardState.gridLocations[i].Y));
+                            }
+                            //holes
+                            foreach (Hole hole in boardState.holes)
+                            {
+                                if (hole.gridLocation == boardState.gridLocations[i])
+                                    hole.Initialize(curBoard.getGridSquare(boardState.gridLocations[i].X, boardState.gridLocations[i].Y));
                             }
                             //spawntiles
                             for (int j = 0; j < playerSpawns.Count; j++)
@@ -1281,6 +1286,11 @@ namespace TankGame
                             if (boardState.itemBoxes.Any(x => x.gridLocation == boardState.gridLocations[i]))
                             {
                                 boardState.itemBoxes.Remove(boardState.itemBoxes.First(x => x.gridLocation == boardState.gridLocations[i]));
+                            }
+                            //check holes
+                            if (boardState.holes.Any(x => x.gridLocation == boardState.gridLocations[i]))
+                            {
+                                boardState.holes.Remove(boardState.holes.First(x => x.gridLocation == boardState.gridLocations[i]));
                             }
                             //check spawntiles
                             else

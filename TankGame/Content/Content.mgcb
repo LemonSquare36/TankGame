@@ -644,6 +644,90 @@
 /processorParam:TextureFormat=Color
 /build:GameSprites/BattleSprites/pathTrail.png
 
+#begin GameSprites/BattleSprites/Tanks/MuzzleFlash.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/MuzzleFlash.png
+
+#begin GameSprites/BattleSprites/Tanks/RegularTankBody.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/RegularTankBody.png
+
+#begin GameSprites/BattleSprites/Tanks/RegularTankGun.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/RegularTankGun.png
+
+#begin GameSprites/BattleSprites/Tanks/RegularTankGunFlash.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/RegularTankGunFlash.png
+
+#begin GameSprites/BattleSprites/Tanks/ScoutTankBody.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/ScoutTankBody.png
+
+#begin GameSprites/BattleSprites/Tanks/ScoutTankGun.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/ScoutTankGun.png
+
+#begin GameSprites/BattleSprites/Tanks/ScoutTankGunFlash.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/ScoutTankGunFlash.png
+
 #begin GameSprites/BattleSprites/Tanks/ScoutTankH.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -667,6 +751,42 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:GameSprites/BattleSprites/Tanks/ScoutTankUH.png
+
+#begin GameSprites/BattleSprites/Tanks/SniperTankBody.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/SniperTankBody.png
+
+#begin GameSprites/BattleSprites/Tanks/SniperTankGun.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/SniperTankGun.png
+
+#begin GameSprites/BattleSprites/Tanks/SniperTankGunFlash.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/SniperTankGunFlash.png
 
 #begin GameSprites/BattleSprites/Tanks/SniperTankH.png
 /importer:TextureImporter
@@ -2239,6 +2359,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:GameSprites/SpriteSheets/BattleSprites/radar.png
+
+#begin GameSprites/SpriteSheets/BattleSprites/smoke.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/SpriteSheets/BattleSprites/smoke.png
 
 #begin GameSprites/WhiteDot.jpg
 /importer:TextureImporter

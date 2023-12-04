@@ -9,7 +9,7 @@ namespace TankGame.GameInfo
 {
     internal class RuleSet
     {
-        public int tankPoints, numOfMines, startingSweeps, numOfPlayers;
+        public int tankPoints, numOfMines, startingSweeps, numOfPlayers, itemPickUpAmount;
         public List<string> allowedItems = new();
         public List<string> notAllowedItems = new();
         public List<string> allowedTanks = new();
@@ -25,6 +25,7 @@ namespace TankGame.GameInfo
             tankPoints = 30;
             numOfMines = 3;
             startingSweeps = 3;
+            itemPickUpAmount = 1;
 
             allowedItems.Add("sweeper");
             //allowedItems.Add("sweeper");
@@ -41,7 +42,7 @@ namespace TankGame.GameInfo
         /// <param name="StartingSweeps">Number of Sweepers players have</param>
         /// <param name="AllowedItems">Current list of items to random from when a box is picked up</param>
         /// <param name="NumOfPlayers">Can only be as high as the map supports</param>
-        public RuleSet(int TankPoints, int NumOfMines, int StartingSweeps, List<string> AllowedItems, List<string> AllowedTanks, List<string> NotAllowedItems, List<string> NotAllowedTanks, int NumOfPlayers)
+        public RuleSet(int TankPoints, int NumOfMines, int StartingSweeps, int ItemPickUpAmount, List<string> AllowedItems, List<string> AllowedTanks, List<string> NotAllowedItems, List<string> NotAllowedTanks, int NumOfPlayers)
         {
             tankPoints = TankPoints;
             numOfMines = NumOfMines;
@@ -51,6 +52,7 @@ namespace TankGame.GameInfo
             notAllowedItems = NotAllowedItems;
             notAllowedTanks = NotAllowedTanks;
             numOfPlayers = NumOfPlayers;
+            itemPickUpAmount = ItemPickUpAmount;
         }
         //save the rule set to be loaded later
         public void SaveRuleSet()

@@ -3,13 +3,9 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System.IO;
 using TankGame.Objects;
 using TankGame.Tools;
 using TankGame.Objects.Entities;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using TankGame.Objects.Entities.Items;
 using TankGame.GameInfo;
 using System.Linq;
 
@@ -81,8 +77,6 @@ namespace TankGame
             if (escapePressed && anyObjectActive)
             {
                 DrawTankInfo = false;
-                boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active = false;
-                activeTankNum = -1;
             }
         }
         #endregion
@@ -146,7 +140,8 @@ namespace TankGame
             }            
             boardState.RemoveWall(i);
             getObjectLocationsForVision(); //redo the circle tiles object list
-            getLOS(); //redo vision check
+            if (drawTankInfo)
+                getLOS(); //redo vision check
         }
         private void addWallDuringGame(Point gridPosition)
         {
@@ -282,7 +277,7 @@ namespace TankGame
                 if (tank.curSquare.Contains(worldPosition))
                 {
                     //if the mouse is clicked on the tank and the tanks isnt already active
-                    if (curLeftClick == ButtonState.Pressed && !tank.Active && tank.alive)
+                    if (curLeftClick == ButtonState.Pressed && tank.alive)
                     {
                         //set all tanks to inactive
                         foreach (Tank tank2 in boardState.playerList[boardState.curPlayerNum].tanks)
@@ -311,7 +306,6 @@ namespace TankGame
         #region LOS Methods
         private void getObjectLocationsForVision()
         {
-
             objectLocations = new List<Point>(boardState.getWallLocations());
             foreach (Point t in boardState.tankGridLocations)
             {
@@ -385,10 +379,10 @@ namespace TankGame
                 if (boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active && boardState.playerList[boardState.curPlayerNum].AP > 0)
                 {
                     //if the mouse is within the board
-                    if (mouseInBoard)
+                    if (mouseInBoard || boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].targetAquired)
                     {
                         //if the mouse gets clicked while there is a mouse
-                        if (curLeftClick == ButtonState.Pressed && oldLeftClick != ButtonState.Pressed)
+                        if (curLeftClick == ButtonState.Pressed && oldLeftClick != ButtonState.Pressed && !boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].targetAquired)
                         {
                             //if there is a path
                             if (path != null)
@@ -399,7 +393,7 @@ namespace TankGame
                                 if (tankDied)
                                     DrawTankInfo = false;
                                 //redo the Line of Set check for the new position
-                                if (!tankDied)
+                                if (!tankDied && drawTankInfo)
                                     getLOS();
                                 if (itemGotten)
                                 {
@@ -412,12 +406,11 @@ namespace TankGame
                         //-----------------------------------------------------------------------
                         //FIRE CODE
                         //-----------------------------------------------------------------------
-                        else if (curRightClick == ButtonState.Pressed && oldRightClick != ButtonState.Pressed)
+                        else
                         {
                             //this goes into the function and returns with a value that could mean something
                             int wallToRemove;
-
-                            boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankShoot(curBoard, boardState, CircleTiles,worldPosition, pathfinder, out wallToRemove);
+                            boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].TankShoot(curBoard, boardState, CircleTiles,worldPosition, pathfinder, out wallToRemove, curRightClick, oldRightClick);
                             if (wallToRemove != -1)
                             {
                                 removeWallDuringGame(wallToRemove);
@@ -436,8 +429,11 @@ namespace TankGame
             Random rand = new Random();
             int i = rand.Next(0, rules.allowedItems.Count - 1);
             //use the random number to get an item from allowed items list, then set that item to +1 its current value
-            boardState.playerList[boardState.curPlayerNum].inventory.setSelectedItemsCount(rules.allowedItems[i],
-                boardState.playerList[boardState.curPlayerNum].inventory.getSelectedItemsCount(rules.allowedItems[i]) + 1);
+            for (int j = 0; j < rules.itemPickUpAmount; j++)
+            {
+                boardState.playerList[boardState.curPlayerNum].inventory.setSelectedItemsCount(rules.allowedItems[i],
+                    boardState.playerList[boardState.curPlayerNum].inventory.getSelectedItemsCount(rules.allowedItems[i]) + 1);
+            }
         }
         #endregion
 

@@ -79,15 +79,15 @@ namespace TankGame
                 {
                     case "Regular":
                         regTank = new Button(new Vector2(1520, 550), 50, 50, "GameSprites/BattleSprites/Tanks/Tank", "Regular", "toggle");
-                        regTank.ChangeButtonColor(Color.Black);
+                        regTank.ChangeButtonColor(Color.Gray);
                         break;
                     case "Sniper":
                         sniperTank = new Button(new Vector2(1620, 550), 50, 50, "GameSprites/BattleSprites/Tanks/SniperTank", "Sniper", "toggle");
-                        sniperTank.ChangeButtonColor(Color.Black);
+                        sniperTank.ChangeButtonColor(Color.Gray);
                         break;
                     case "Scout":
                         scoutTank = new Button(new Vector2(1720, 550), 50, 50, "GameSprites/BattleSprites/Tanks/ScoutTank", "Scout", "toggle");
-                        scoutTank.ChangeButtonColor(Color.Black);
+                        scoutTank.ChangeButtonColor(Color.Gray);
                         break;
                 }
             }
@@ -98,15 +98,15 @@ namespace TankGame
                 {
                     case "Regular":
                         regTank = new Button(new Vector2(1520, 550), 50, 50, "GameSprites/BattleSprites/Tanks/TankDead", "Regular", "toggleOneTex");
-                        regTank.ChangeButtonColor(Color.Black);
+                        regTank.ChangeButtonColor(Color.Gray);
                         break;
                     case "Sniper":
                         sniperTank = new Button(new Vector2(1620, 550), 50, 50, "GameSprites/BattleSprites/Tanks/TankDead", "Sniper", "toggleOneTex");
-                        sniperTank.ChangeButtonColor(Color.Black);
+                        sniperTank.ChangeButtonColor(Color.Gray);
                         break;
                     case "Scout":
                         scoutTank = new Button(new Vector2(1720, 550), 50, 50, "GameSprites/BattleSprites/Tanks/TankDead", "Scout", "toggleOneTex");
-                        scoutTank.ChangeButtonColor(Color.Black);
+                        scoutTank.ChangeButtonColor(Color.Gray);
                         break;
                 }
             }
@@ -221,12 +221,12 @@ namespace TankGame
                 if (mouseInBoard)
                 {
                     checkSelectedTank();
-                    MoveOrShoot();
                 }
                 else if (!mouseInBoard)
                 {
                     path.Clear();
                 }
+                MoveOrShoot();
                 //item use code
                 UseItem(selectedItem);
                 //if the selected item is empty then reset the button responsible and make itemActive false
@@ -368,6 +368,10 @@ namespace TankGame
                 b.ButtonReset();
             }
             foreach (Button b in battleButtonList)
+            {
+                b.ButtonReset();
+            }
+            foreach (Button b in inventoryButtonList)
             {
                 b.ButtonReset();
             }

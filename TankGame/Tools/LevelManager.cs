@@ -37,6 +37,7 @@ namespace TankGame.Tools
             walls.Clear();
             itemBoxes.Clear();
             PlayerSpawns.Clear();
+            holes.Clear();
 
             //get the board information
 

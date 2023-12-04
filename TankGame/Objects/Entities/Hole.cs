@@ -17,6 +17,11 @@ namespace TankGame.Objects.Entities
             type = "hole";
             size = curSquare.Size / spriteSize;
         }
+        public override void Initialize(RectangleF newRectangle)
+        {
+            curSquare = newRectangle;
+            size = curSquare.Size / spriteSize;
+        }
         public override void LoadContent()
         {
             tex = Main.GameContent.Load<Texture2D>(texFile);

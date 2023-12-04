@@ -16,7 +16,7 @@ namespace TankGame.Tools
         private Rectangle imageBox;
         private Rectangle[] animation;
         public bool cycleComplete = false, stopped = false;
-        private Vector2 AnimationLocation = Vector2.Zero;
+        public Vector2 AnimationLocation = Vector2.Zero;
 
         /// <summary>
         /// Create a new Animation Class to handle spritesheet animations

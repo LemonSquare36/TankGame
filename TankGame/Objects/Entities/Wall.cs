@@ -13,7 +13,7 @@ namespace TankGame.Objects.Entities
     {
         public List<Point> gridLocations = new();
         public List<RectangleF> gridSquares = new();
-        RectangleF[,] multiWallArray;
+        public RectangleF[,] multiWallArray;
         public bool multiWall = false;
         public bool destroyable;
 
@@ -675,6 +675,9 @@ namespace TankGame.Objects.Entities
             @new.hpBar = ItemToClone.hpBar;
             @new.hpBarSize = ItemToClone.hpBarSize;
             @new.tex = ItemToClone.tex;
+            @new.crack1 = ItemToClone.crack1;
+            @new.crack2 = ItemToClone.crack2;
+            @new.crack3 = ItemToClone.crack3;
             @new.texFile = ItemToClone.texFile;
             @new.type = ItemToClone.type;
 
