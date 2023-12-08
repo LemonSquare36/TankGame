@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using TankGame.Objects;
+using System.Text.Json.Serialization;
 
 namespace TankGame.Tools
 {
@@ -18,7 +19,7 @@ namespace TankGame.Tools
         public Vector3 OffSetColor
         {
             get { return offSetColor; }
-            set { offSetColor = value;  ChangeOffSet(); }
+            set { offSetColor = value; ChangeOffSet(); }
 
         }
 
@@ -90,7 +91,7 @@ namespace TankGame.Tools
         }
         public void Initialize()
         {
-            
+
         }
         public void LoadContent(string[] Selections)
         {
@@ -109,7 +110,7 @@ namespace TankGame.Tools
 
             ButtonsList.Clear();
             selections = Selections;
-            buttonSize = new Vector2(size.X ,size.Y / numSelections);            
+            buttonSize = new Vector2(size.X, size.Y / numSelections);
             buttonPos = pos;
             //load the font
             font = Main.GameContent.Load<SpriteFont>("Fonts/DefualtFont");
@@ -128,7 +129,7 @@ namespace TankGame.Tools
             scale = buttonSize.Y / 50;
             try { r.ScissorTestEnable = true; }
             catch { }
-           
+
 
             tex = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
             CreateBorder();
@@ -149,9 +150,75 @@ namespace TankGame.Tools
                 }
             }
         }
-        public void Update(MouseState Mouse, Vector2 WorldPos)
+        public void Update(MouseState Mouse, Vector2 WorldPos, KeyboardState curKeyState, KeyboardState oldKeyState)
         {
             buttonUpdate(Mouse, WorldPos);
+            bool scrolldown = false;
+            bool scrollup = false;
+            if (ButtonsList[topButton].ButtonActive)
+            {
+                scrollup = true;
+            }
+            else if (ButtonsList[topButton + numSelections-1].ButtonActive)
+            {
+                scrolldown = true;
+            }
+
+            if (curKeyState.IsKeyDown(Keys.Up) && !oldKeyState.IsKeyDown(Keys.Up))
+            {
+                int j = ButtonsList.FindIndex(X => X.ButtonActive == true);
+                if (j > 0)
+                {
+                    ButtonsList[j].ButtonReset();
+                    j--;
+                    ButtonsList[j].OneTexPressed = true;
+                    curSelection = selections[j];
+                    //only scroll if the box is overfull
+                    if (selections.Length > numSelections && scrollup)
+                    {
+
+                        //make sure the top button isnt at the top. If it is dont scroll more
+                        if (Convert.ToInt16(ButtonsList[0].rectangle.Location.Y) != Convert.ToInt16((rectangle.Y)))
+                        {
+                            //top button tracks which button in the list should currently be the top one
+                            //used in draw and update logic for buttons
+                            topButton--;
+                            for (int i = 0; i < ButtonsList.Count; i++)
+                            {
+                                ButtonsList[i].rectangle.Y += ButtonsList[i].rectangle.Height;
+                            }
+                        }
+
+                    }
+                }
+            }
+            else if (curKeyState.IsKeyDown(Keys.Down) && !oldKeyState.IsKeyDown(Keys.Down))
+            {
+                int j = ButtonsList.FindIndex(X => X.ButtonActive == true);
+                if (j < ButtonsList.Count - 1)
+                {
+                    ButtonsList[j].ButtonReset();
+                    j++;
+                    ButtonsList[j].OneTexPressed = true;
+                    curSelection = selections[j];
+                    //only scroll if the box is overfull
+                    if (selections.Length > numSelections && scrolldown)
+                    {
+                        //make sure the last button isnt at the bottom. If it is dont scroll more
+                        if (Convert.ToInt16(ButtonsList[ButtonsList.Count - 1].rectangle.Location.Y) != Convert.ToInt16((rectangle.Y + rectangle.Height) - buttonSize.Y))
+                        {
+                            //top button tracks which button in the list should currently be the top one
+                            //used in draw and update logic for buttons
+                            topButton++;
+                            for (int i = 0; i < ButtonsList.Count; i++)
+                            {
+                                ButtonsList[i].rectangle.Y -= ButtonsList[i].rectangle.Height;
+                            }
+                        }
+
+                    }
+                }
+            }
             //check for the mouse inside the box - before checking scroll values
             if (rectangle.Contains(WorldPos))
             {
@@ -186,7 +253,7 @@ namespace TankGame.Tools
                             topButton--;
                             for (int i = 0; i < ButtonsList.Count; i++)
                             {
-                                ButtonsList[i].rectangle.Y += ButtonsList[i].rectangle.Height;                               
+                                ButtonsList[i].rectangle.Y += ButtonsList[i].rectangle.Height;
                             }
                         }
                     }
@@ -216,7 +283,7 @@ namespace TankGame.Tools
             float borderOffSet = 0;
             for (int i = 0; i < numSelections; i++)
             {
-                
+
                 if (i == 0)
                 {
                     spriteBatch.Draw(tex, Borders[0].Location - new Vector2(borderThickness, borderThickness), null, borderColor, 0, Vector2.Zero, Borders[0].Size, SpriteEffects.None, 0);
@@ -228,7 +295,7 @@ namespace TankGame.Tools
                 {
                     borderOffSet += buttonSize.Y;
                 }
-                spriteBatch.Draw(tex, new Vector2(Borders[0].Location.X- borderThickness, Borders[0].Location.Y + borderOffSet), null, borderColor, 0, Vector2.Zero, new Vector2(Borders[0].Size.X, Borders[0].Size.Y/2), SpriteEffects.None, 0);              
+                spriteBatch.Draw(tex, new Vector2(Borders[0].Location.X - borderThickness, Borders[0].Location.Y + borderOffSet), null, borderColor, 0, Vector2.Zero, new Vector2(Borders[0].Size.X, Borders[0].Size.Y / 2), SpriteEffects.None, 0);
             }
             //reset how it draws back to normal
             spriteBatch.End();
@@ -240,7 +307,7 @@ namespace TankGame.Tools
         {
             Borders = new RectangleF[4];
             //get the top border
-            Borders[0] = new RectangleF(pos.X, pos.Y, buttonSize.X + borderThickness*2, borderThickness);
+            Borders[0] = new RectangleF(pos.X, pos.Y, buttonSize.X + borderThickness * 2, borderThickness);
             //get the left border
             Borders[1] = new RectangleF(pos.X, pos.Y, borderThickness, size.Y);
             //get the right border             
@@ -252,7 +319,7 @@ namespace TankGame.Tools
         {
             //gets the current string selected (from the button)
             //as well as unselects all other buttons
-            for (int i = 0; i < ButtonsList.Count;i++)
+            for (int i = 0; i < ButtonsList.Count; i++)
             {
                 if (ButtonsList[i] == sender as Button)
                 {
@@ -268,7 +335,7 @@ namespace TankGame.Tools
                     if (ButtonsList[i].OneTexPressed)
                     {
                         ButtonsList[i].toggleTexture();
-                    }                    
+                    }
                 }
             }
             if (GetEvent != null)
@@ -288,7 +355,7 @@ namespace TankGame.Tools
         }
         private void recalcRasterizer(object sender, EventArgs e)
         {
-            cutOff = new Rectangle(Convert.ToInt16((rectangle.X - borderThickness) * Camera.ResolutionScale.X) + Convert.ToInt16(Main.graphicsDevice.Viewport.X), 
+            cutOff = new Rectangle(Convert.ToInt16((rectangle.X - borderThickness) * Camera.ResolutionScale.X) + Convert.ToInt16(Main.graphicsDevice.Viewport.X),
                 Convert.ToInt16((rectangle.Y - borderThickness) * Camera.ResolutionScale.Y) + Convert.ToInt16(Main.graphicsDevice.Viewport.Y),
                 Convert.ToInt16((rectangle.Width + borderThickness * 2) * Camera.ResolutionScale.X), Convert.ToInt16((rectangle.Height + borderThickness * 2) * Camera.ResolutionScale.Y));
         }
@@ -329,7 +396,7 @@ namespace TankGame.Tools
             {
                 //int difference = (ButtonsList.Count - numSelections);
                 //top button tracks which button in the list should currently be the top one
-                for (int i = topButton; i < numSelections+topButton; i++)
+                for (int i = topButton; i < numSelections + topButton; i++)
                 {
                     try
                     {

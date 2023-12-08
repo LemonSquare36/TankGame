@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using System.IO;
 using TankGame.Objects.Entities;
 using TankGame.Objects;
 using System.Linq;
 using System.Xml.Linq;
-using System.Security.Cryptography;
 
 namespace TankGame.Tools
 {
@@ -235,7 +233,7 @@ namespace TankGame.Tools
                         select new XElement("Player", new XAttribute("Id", SpawnTiles.FindIndex(a => a == list)),
                         from spawnTiles in list
                         select new XElement("spawn", spawnTiles.gridLocation.X + "," + spawnTiles.gridLocation.Y))
-                    ))); ;
+                    )));
 
             document.Save(FileLocation);
         }

@@ -1,21 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Audio;
-using System.Diagnostics;
-using System.IO;
-using System.Collections;
 using TankGame.Tools;
 using TankGame.Screens.Menus;
 using TankGame.Screens;
+using TankGame.GameInfo;
+using TankGame.Screens.Menus.Settings;
 
 namespace TankGame
 {
@@ -38,6 +29,10 @@ namespace TankGame
         KeyboardState key;
         SpriteBatch spriteBatch;
         GraphicsDeviceManager graphicsManager;
+
+        int windowHeight, windoWidth;
+        Point windowPos;
+        public bool exitingBorderless = false;
 
         //holds the state of the game, loading or not loading content
         bool loading;
@@ -62,11 +57,14 @@ namespace TankGame
         private LevelSelect levelSelector;
         //pause menus
         private PauseMenu mainPauseMenu;
+        private PauseSettings pauseSettings;
 
         //gamescreens
         private LevelEditor editor;
         private BattleScreenLocal localBattleScreen;
-        #endregion
+        #endregion 
+        Settings gameSettings;
+
 
         //Constructor
         public GameState()
@@ -77,14 +75,16 @@ namespace TankGame
             editor = new LevelEditor();
             localBattleScreen = new BattleScreenLocal();
             mainPauseMenu = new PauseMenu();
+            pauseSettings = new PauseSettings();
             #endregion
+            gameSettings = new Settings();
         }
         //Initialize things upon class creation
         public void Initialize()
         {
             //game is loading
             loading = true;
-
+            
             //r = new RasterizerState();
             //cutOff = new Rectangle(0, 0, 1344, 756);
 
@@ -97,9 +97,9 @@ namespace TankGame
             {
                 pauseScreen = mainPauseMenu;
             }
-
+            pauseScreen.Initialize();
             loading = false;
-            Paused = false;
+            //Paused = false;
 
             #region screen change events
             mainMenu.ChangeScreen += HandleScreenChanged;
@@ -108,6 +108,7 @@ namespace TankGame
             localBattleScreen.ChangeScreen += HandleScreenChanged;
 
             mainPauseMenu.ChangeScreen += HandlePauseScreenChanged;
+            pauseSettings.SaveSettings += SettingsChanged;
             #endregion
         }
         //Loads the Content for The gamestate
@@ -148,6 +149,12 @@ namespace TankGame
             if (Paused)
             {
                 pauseScreen.Update();
+            }
+            KeyboardState oldKey = key;
+            key = Keyboard.GetState();
+            if (key.IsKeyDown(Keys.F) && !oldKey.IsKeyDown(Keys.F))
+            {
+                ToggleBorderless();
             }
         }
         //Draws the images and textures we use
@@ -221,18 +228,62 @@ namespace TankGame
                 case "pause":
                     Paused = false;
                     break;
+                case "settings":
+                    pauseScreen = pauseSettings; 
+                    break;
+                case "resume":
+                    break;
+                case "mainmenu":
+                    break;
                 default:
                     Load = false;
                     break;
             }
             if (Load)
             {
+                justPaused = true;
                 Initialize();
                 LoadContent(spriteBatch, graphicsManager);
                 pauseScreen.nextScreen = "";
             }
             //Resets the button on the screen
             pauseScreen.ButtonReset();
+        }
+        public void SettingsChanged(object sender, EventArgs eventArgs)
+        {
+            gameSettings.SaveSettings();
+        }
+
+        private void ToggleBorderless()
+        {
+            //if the game is in fullscreen, un fullscreen it
+            if (graphicsManager.IsFullScreen)
+            {
+                graphicsManager.IsFullScreen = false;                
+                Main.gameWindow.Position = windowPos;
+
+                graphicsManager.PreferredBackBufferHeight = windowHeight;
+                graphicsManager.PreferredBackBufferWidth = windoWidth;
+
+
+                exitingBorderless = true;
+                graphicsManager.ApplyChanges();
+            }
+            //if the game isnt in fullscreen, fullscreen it
+            else
+            {
+                windowHeight = Main.gameWindow.ClientBounds.Height;
+                windoWidth = Main.gameWindow.ClientBounds.Width;
+                windowPos = Main.gameWindow.Position;
+
+                graphicsManager.IsFullScreen = true;
+                exitingBorderless = false;
+                //set backbuffer to entire screen
+                graphicsManager.PreferredBackBufferHeight = Main.graphicsAdapter.CurrentDisplayMode.Height;
+                graphicsManager.PreferredBackBufferWidth = Main.graphicsAdapter.CurrentDisplayMode.Width;
+
+                graphicsManager.ApplyChanges();
+            }
         }
     }
 }

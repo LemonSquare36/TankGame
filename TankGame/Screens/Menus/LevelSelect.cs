@@ -53,7 +53,7 @@ namespace TankGame
         {
             base.Update();
             selectedFile = levelSelection.curSelection;
-            levelSelection.Update(mouse, worldPosition);
+            levelSelection.Update(mouse, worldPosition, keyState, keyHeldState);
             Select.Update(mouse, worldPosition);
         }
         //Holds Draw

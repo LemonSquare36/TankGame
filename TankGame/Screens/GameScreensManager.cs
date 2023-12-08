@@ -277,7 +277,7 @@ namespace TankGame
                 if (tank.curSquare.Contains(worldPosition))
                 {
                     //if the mouse is clicked on the tank and the tanks isnt already active
-                    if (curLeftClick == ButtonState.Pressed && tank.alive)
+                    if (curLeftClick == ButtonState.Pressed && oldLeftClick != ButtonState.Pressed &&tank.alive)
                     {
                         //set all tanks to inactive
                         foreach (Tank tank2 in boardState.playerList[boardState.curPlayerNum].tanks)

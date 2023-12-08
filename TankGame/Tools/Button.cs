@@ -178,6 +178,7 @@ namespace TankGame
                 if (rectangle.Contains(worldMousePosition))
                 {
                     Texture = pressed;
+                    buttonActive = true;
                     //Edge Detection
                     if (curClick == ButtonState.Pressed && oldClick == ButtonState.Released)
                     {
@@ -185,6 +186,8 @@ namespace TankGame
                         OnButtonClicked();
                     }
                 }
+                else
+                    buttonActive = false;
             }
             else if (toggle)
             {
@@ -323,6 +326,7 @@ namespace TankGame
         {
             if (soundEffect != null)
             {
+                SoundManager.VolumeChecker(soundEffect);
                 soundEffect.Play();
             }
         }

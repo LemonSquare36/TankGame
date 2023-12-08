@@ -151,10 +151,12 @@ namespace TankGame
         private void windowSizeChanged(object sender, EventArgs e)
         {
             //whenever the window is resized, recalculate the backbuffer and viewport/matrix information
-            graphicsManager.PreferredBackBufferWidth = Window.ClientBounds.Width;
-            graphicsManager.PreferredBackBufferHeight = Window.ClientBounds.Height;
-            graphicsManager.ApplyChanges();
-
+            if (!graphicsManager.IsFullScreen && !gameState.exitingBorderless)
+            {
+                graphicsManager.PreferredBackBufferWidth = Window.ClientBounds.Width;
+                graphicsManager.PreferredBackBufferHeight = Window.ClientBounds.Height;
+                graphicsManager.ApplyChanges();
+            }           
             defualtView = Main.graphicsDevice.Viewport;
             Camera.setBound(defualtView);
             defualtMatrix = Camera.getScalingMatrix(Camera.ResolutionScale.X, Camera.ResolutionScale.Y);

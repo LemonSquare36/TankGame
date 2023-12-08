@@ -59,7 +59,7 @@ namespace TankGame.Objects.Entities
             texDead = Main.GameContent.Load<Texture2D>(texFileDead);
             gunTex = Main.GameContent.Load<Texture2D>(gunTexFile);
             muzzleFlash = Main.GameContent.Load<Texture2D>(muzzleFlashFile);
-            smokepuff = new Animation("GameSprites/SpriteSheets/BattleSprites/smoke", 3, 3, 7, 1, new Rectangle(0, 0, 75, 75), 200);
+            smokepuff = new Animation("GameSprites/SpriteSheets/BattleSprites/smoke", 3, 3, 7, 1, new Rectangle(0, 0, 75, 75), 300);
         }
         public override void Draw(SpriteBatch spriteBatch)
         {
@@ -131,7 +131,7 @@ namespace TankGame.Objects.Entities
                 texFile = "GameSprites/BattleSprites/Tanks/RegularTankBody";
                 gunTexFile = "GameSprites/BattleSprites/Tanks/RegularTankGun";
                 muzzleFlashFile = "GameSprites/BattleSprites/Tanks/RegularTankGunFlash";
-                gunOrigin = new Vector2(25, 42);
+                gunOrigin = new Vector2(25, 40);
                 HP = 4;
                 range = 4;
                 damage = 2;
@@ -621,16 +621,19 @@ namespace TankGame.Objects.Entities
         /// <summary>handles playing the tank firing noise </summary>
         public static void playFireSoundEffect()
         {
+            SoundManager.VolumeChecker(fire);
             fire.Stop();
             fire.Play();
         }
         private static void playDeathSoundEffect()
         {
+            SoundManager.VolumeChecker(death);
             death.Stop();
             death.Play();
         }
         public static void playSelectSoundEffect()
         {
+            SoundManager.VolumeChecker(select);
             select.Stop();
             select.Play();
         }

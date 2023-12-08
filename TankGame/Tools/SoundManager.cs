@@ -8,12 +8,13 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using TankGame.GameInfo;
 
 namespace TankGame.Tools
 {
     internal class SoundManager
     {
-        public static float MasterVolume, SoundEffectVolume, MusicVolume;
+        private static float MasterVolume, SoundEffectVolume, MusicVolume;
 
         public SoundManager()
         {
@@ -21,9 +22,9 @@ namespace TankGame.Tools
         }
         public static void LoadSoundSettings()
         {
-            MasterVolume = 30;
-            SoundEffectVolume = 50;
-            MusicVolume = 50;
+            MasterVolume = Settings.masterVolume;
+            SoundEffectVolume = Settings.soundEffectVolume;
+            MusicVolume = Settings.musicVolume;
         }
         public static void SaveSoundSettings()
         {

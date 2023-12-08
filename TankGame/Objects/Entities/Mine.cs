@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 using TankGame.Tools;
+using static System.Net.WebRequestMethods;
 
 namespace TankGame.Objects.Entities
 {
@@ -60,6 +61,7 @@ namespace TankGame.Objects.Entities
         }
         public static void PlayMineExplosion()
         {
+            SoundManager.VolumeChecker(explosion);
             explosion.Stop();
             explosion.Play();
         }

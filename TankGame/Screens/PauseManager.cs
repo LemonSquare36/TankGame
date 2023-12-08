@@ -27,6 +27,9 @@ namespace TankGame.Screens
         //spriteBatch for all the screens
         protected SpriteBatch spriteBatch;
         bool firstPuase = true;
+        protected bool anyObjectActive = false;
+
+        Texture2D PauseGlobalBG;
 
         #region Held functions
 
@@ -40,6 +43,8 @@ namespace TankGame.Screens
         {
             spriteBatch = spriteBatchmain;
             SoundManager.LoadSoundSettings();
+
+            PauseGlobalBG = Main.GameContent.Load<Texture2D>("GameSprites/WhiteDot");
         }
         public virtual void UnloadContent()
         {
@@ -62,7 +67,7 @@ namespace TankGame.Screens
         //Holds Draw
         public virtual void Draw()
         {
-
+            spriteBatch.Draw(PauseGlobalBG, new Rectangle(0, 0, 2000, 1100), new Color(Color.Black, 90));
         }
 
         //Holds the Function
@@ -88,6 +93,7 @@ namespace TankGame.Screens
         //Event for Changing the Screen
         public event EventHandler ChangeScreen;
         public event EventHandler buttonPressed;
+        public event EventHandler SaveSettings;
         public void OnScreenChanged()
         {
             ChangeScreen?.Invoke(this, EventArgs.Empty);
@@ -95,6 +101,10 @@ namespace TankGame.Screens
         public void OnButtonPressed()
         {
             buttonPressed?.Invoke(this, EventArgs.Empty);
+        }
+        public void OnSettingsSave(object sender, EventArgs e)
+        {
+            SaveSettings?.Invoke(this, EventArgs.Empty);
         }
 
         //calculates the accurate mouse position so the screen can scale
@@ -132,8 +142,15 @@ namespace TankGame.Screens
             //if escape is pressed then
             else if (keyState.IsKeyDown(Keys.Escape) && !keyHeldState.IsKeyDown(Keys.Escape))
             {
-                GameState.Paused = false;
-                ScreenManager.popupActive = false;
+                if (anyObjectActive)
+                {
+
+                }
+                else
+                {
+                    GameState.Paused = false;
+                    ScreenManager.popupActive = false;
+                }
             }
         }
     }

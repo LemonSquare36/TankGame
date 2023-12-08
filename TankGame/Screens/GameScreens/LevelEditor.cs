@@ -212,7 +212,7 @@ namespace TankGame
                     box.Update(mouse, worldPosition, keyState, keyHeldState);
                 }
 
-                levelSelection.Update(mouse, worldPosition);
+                levelSelection.Update(mouse, worldPosition, keyState, keyHeldState);
 
 
                 //check for changes in the text boxes

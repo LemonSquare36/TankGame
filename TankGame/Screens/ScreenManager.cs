@@ -17,7 +17,7 @@ namespace TankGame
         //gets sent to GameState to inform the manager which screen to load
         public string nextScreen, selectedFile;
         //puases the game when true
-        protected bool anyObjectActive = false, escapePressed = false;
+        protected bool anyObjectActive = false, escapePressed = false, justPaused, justUnPuased;
         public static bool popupActive = false;
         //mouse that every screen uses
         protected MouseState mouse;
@@ -77,9 +77,16 @@ namespace TankGame
                 oldRightClick = curRightClick;
                 curRightClick = mouse.RightButton;
             }
-            else
+            else if (justPaused)
             {
-
+                keyState = new KeyboardState();
+                keyHeldState = new KeyboardState();
+                curLeftClick = new ButtonState();
+                oldLeftClick = new ButtonState();
+                curRightClick = new ButtonState();
+                oldRightClick = new ButtonState();
+                justPaused = false;
+                justUnPuased = true;
             }
 
             //current rectange the mouse is in
@@ -89,7 +96,13 @@ namespace TankGame
                 curBoard.getGridSquare(worldPosition, out curGridLocation);
             }
             //this handles what happens when escape gets pressed
-            EscapeKeyManager();
+            if (justUnPuased && !popupActive)
+            {
+                justUnPuased = false;
+                //keyHeldState = keyState;
+            }
+            else
+                EscapeKeyManager();
 
             //popupActive is used for other popups including the puasescreen in gamestate
             if (GameState.Paused)
@@ -190,7 +203,7 @@ namespace TankGame
             //escape isnt currently "pressed" for anything that needs that info
             escapePressed = false;
             //if escape is pressed then
-            if (keyState.IsKeyDown(Keys.Escape) && !keyHeldState.IsKeyDown(Keys.Escape) && !popupActive)
+            if (keyState.IsKeyDown(Keys.Escape) && !keyHeldState.IsKeyDown(Keys.Escape) && !popupActive && !justUnPuased)
             {
                 //if it "wasnt" but is
                 if (!escapePressed)
@@ -213,10 +226,10 @@ namespace TankGame
                         //puase code
                         escapePressed = true;
                         GameState.Paused = true;
+                        justPaused = true;
                     }
                 }
             }
-            //if a button is pressed then in the update section of the game it will catch it. If its not then this will stay false
             anyObjectActive = false;
         }
     }
