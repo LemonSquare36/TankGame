@@ -13,8 +13,6 @@ namespace TankGame.Objects
     //stores the information for a player
     internal class Player
     {
-        public float AP;
-        public int startAP;
         public List<Items> Items = new List<Items>();
         public List<Tank> tanks = new List<Tank>();
         public List<Mine> mines = new List<Mine>();
@@ -26,10 +24,8 @@ namespace TankGame.Objects
 
         public List<SpawnTile> SpawnTiles;
 
-        public Player(int ActionPoints, int Sweeps)
+        public Player(int Sweeps)
         {
-            AP = ActionPoints;
-            startAP = ActionPoints;
             inventory = new Inventory(Sweeps);
         }
         public int getActiveTankNum()
@@ -42,10 +38,6 @@ namespace TankGame.Objects
                 }
             }
             return -2; //return -2 for no tanks active so that it can be compared to a turn start -1 and return true for currrent tank not active
-        }
-        public void startTurn()
-        {
-            AP = startAP;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace TankGame
 
         InputBox tanksCount, minesCount;
         Button mines, ready, endturn, undo, sweep;
-        Button regTank, sniperTank, scoutTank;
+        Button regTank, sniperTank, scoutTank, heavyTank;
         List<Button> placementButtonList = new List<Button>();
         List<Button> battleButtonList = new List<Button>();
         List<Button> inventoryButtonList = new List<Button>();
@@ -89,6 +89,10 @@ namespace TankGame
                         scoutTank = new Button(new Vector2(1720, 550), 50, 50, "GameSprites/BattleSprites/Tanks/ScoutTank", "Scout", "toggle");
                         scoutTank.ChangeButtonColor(Color.Gray);
                         break;
+                    case "Heavy":
+                        heavyTank = new Button(new Vector2(1820, 490), 50, 50, "GameSprites/BattleSprites/Tanks/HeavyTank", "Heavy", "toggle");
+                        heavyTank.ChangeButtonColor(Color.White);
+                        break;
                 }
             }
             //load tank buttons when not allowed
@@ -107,6 +111,10 @@ namespace TankGame
                     case "Scout":
                         scoutTank = new Button(new Vector2(1720, 550), 50, 50, "GameSprites/BattleSprites/Tanks/TankDead", "Scout", "toggleOneTex");
                         scoutTank.ChangeButtonColor(Color.Gray);
+                        break;
+                    case "Heavy":
+                        heavyTank = new Button(new Vector2(1820, 490), 50, 50, "GameSprites/BattleSprites/Tanks/TankDead", "Heavy", "toggleOneTex");
+                        heavyTank.ChangeButtonColor(Color.Gray);
                         break;
                 }
             }
@@ -133,6 +141,7 @@ namespace TankGame
             placementButtonList.Add(regTank);
             placementButtonList.Add(sniperTank);
             placementButtonList.Add(scoutTank);
+            placementButtonList.Add(heavyTank);
             placementButtonList.Add(mines);
             placementButtonList.Add(ready);
             //battle stage buttons
@@ -152,6 +161,7 @@ namespace TankGame
             regTank.ButtonClicked += AddTankPressed;
             sniperTank.ButtonClicked += AddTankPressed;
             scoutTank.ButtonClicked += AddTankPressed;
+            heavyTank.ButtonClicked += AddTankPressed;
             mines.ButtonClicked += AddMinePressed;
             ready.ButtonClicked += ReadyPressed;
             undo.ButtonClicked += UndoPressed;
@@ -332,6 +342,7 @@ namespace TankGame
                 }
                 if (DrawTankInfo)
                 {
+                    spriteBatch.DrawString(font, "Current AP: " + boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].AP, new Vector2(1600, 350), Color.Black);
                     foreach (RectangleF rF in CircleTiles)
                     {
                         if (!rF.Null)
@@ -358,7 +369,6 @@ namespace TankGame
 
             //draw current players turn info
             spriteBatch.DrawString(font, "Current Player: " + (boardState.curPlayerNum + 1), new Vector2(1550, 250), Color.Black);
-            spriteBatch.DrawString(font, "Current AP: " + boardState.playerList[boardState.curPlayerNum].AP, new Vector2(1600, 350), Color.Black);
         }
 
         public override void ButtonReset()
@@ -391,6 +401,10 @@ namespace TankGame
             if (scoutTank.Texture == scoutTank.Pressed)
             {
                 AddEntity("scoutTank", tanksCount, minesCount, ref minesUsed, ref tanksUsed);
+            }
+            if (heavyTank.Texture == heavyTank.Pressed)
+            {
+                AddEntity("heavyTank", tanksCount, minesCount, ref minesUsed, ref tanksUsed);
             }
             else if (mines.Texture == mines.Pressed)
             {

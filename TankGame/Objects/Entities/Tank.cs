@@ -28,6 +28,7 @@ namespace TankGame.Objects.Entities
         public bool targetAquired = false;
 
         Vector2 gunOrigin = new Vector2();
+        Vector2 gunOrigin2 = new Vector2();
         //what the tank is shooting at
         bool wallFound = false;
         bool tankFound = false;
@@ -36,6 +37,7 @@ namespace TankGame.Objects.Entities
 
         private string tankType;
         public int range;
+        public float AP, startAP;
         public int damage, wallDamage;
         public int buildCost;
         public float movementCost, fireCost;
@@ -63,16 +65,28 @@ namespace TankGame.Objects.Entities
         }
         public override void Draw(SpriteBatch spriteBatch)
         {
+            //if it is out of AP then draw it in gray
+            if (AP < fireCost && AP < movementCost)
+            {
+                drawColor = Color.Gray;
+            }
+            //if its not out of AP and drawing like it is then draw it in white
+            else if (drawColor == Color.Gray)
+            {
+                drawColor = Color.White;
+            }
+
+
             if (alive)
             {
                 spriteBatch.Draw(tex, curSquare.Location, null, drawColor, 0, Vector2.Zero, size, SpriteEffects.None, 0);
                 if (flashTimer == 0)
                 {
-                    spriteBatch.Draw(gunTex, curSquare.Location - new Vector2(0,15) + gunOrigin, null, drawColor, (float)gunAngle, gunOrigin, size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(gunTex, (curSquare.Location - gunOrigin2) + gunOrigin, null, drawColor, (float)gunAngle, gunOrigin, size, SpriteEffects.None, 0);
                 }
                 else
                 {
-                    spriteBatch.Draw(muzzleFlash, curSquare.Location - new Vector2(0, 15) + gunOrigin, null, drawColor, (float)gunAngle, gunOrigin, size, SpriteEffects.None, 0);
+                    spriteBatch.Draw(muzzleFlash, (curSquare.Location - gunOrigin2) + gunOrigin, null, drawColor, (float)gunAngle, gunOrigin, size, SpriteEffects.None, 0);
                     flashTimer -= (float)Main.gameTime.ElapsedGameTime.TotalMilliseconds;
                     if (flashTimer < 0)
                     {
@@ -111,6 +125,10 @@ namespace TankGame.Objects.Entities
         {
             return HP;
         }
+        public void setDrawColor(Color color)
+        {
+            drawColor = color;
+        }
 
         public override void alterHP(int HPChange)
         {
@@ -132,6 +150,9 @@ namespace TankGame.Objects.Entities
                 gunTexFile = "GameSprites/BattleSprites/Tanks/RegularTankGun";
                 muzzleFlashFile = "GameSprites/BattleSprites/Tanks/RegularTankGunFlash";
                 gunOrigin = new Vector2(25, 40);
+                gunOrigin2 = new Vector2(0, 15);
+                startAP = 4;
+                AP = startAP;
                 HP = 4;
                 range = 4;
                 damage = 2;
@@ -147,6 +168,8 @@ namespace TankGame.Objects.Entities
                 gunTexFile = "GameSprites/BattleSprites/Tanks/SniperTankGun";
                 muzzleFlashFile = "GameSprites/BattleSprites/Tanks/SniperTankGunFlash";
                 gunOrigin = new Vector2(25F, 46);
+                startAP = 4;
+                AP = startAP;
                 HP = 4;
                 range = 8;
                 damage = 1;
@@ -161,7 +184,10 @@ namespace TankGame.Objects.Entities
                 texFile = "GameSprites/BattleSprites/Tanks/ScoutTankBody";
                 gunTexFile = "GameSprites/BattleSprites/Tanks/ScoutTankGun";
                 muzzleFlashFile = "GameSprites/BattleSprites/Tanks/ScoutTankGunFlash";
-                gunOrigin = new Vector2(25, 36);
+                gunOrigin = new Vector2(25, 38);
+                gunOrigin2 = new Vector2(0, 20);
+                startAP = 4;
+                AP = startAP;
                 HP = 2;
                 range = 4;
                 damage = 1;
@@ -170,6 +196,24 @@ namespace TankGame.Objects.Entities
                 movementCost = 0.5F;
                 fireCost = 2;
                 buildCost = 3;
+            }
+            else if (Type == "Heavy")
+            {
+                texFile = "GameSprites/BattleSprites/Tanks/HeavyTankBody";
+                gunTexFile = "GameSprites/BattleSprites/Tanks/HeavyTankGun";
+                muzzleFlashFile = "GameSprites/BattleSprites/Tanks/HeavyTankGunFlash";
+                gunOrigin = new Vector2(25, 47);
+                gunOrigin2 = new Vector2(0, 25);
+                startAP = 4;
+                AP = startAP;
+                HP = 6;
+                range = 3;
+                damage = 4;
+                wallDamage = 100;
+                curHP = HP;
+                movementCost = 1;
+                fireCost = 2;
+                buildCost = 10;
             }
         }
 
@@ -183,7 +227,7 @@ namespace TankGame.Objects.Entities
                 //keep track of the tanks path through the list of tiles
                 int checkedTiles = 0;
                 //keep checking as long as the player has ap to spend and the path has more tiles to check
-                while (checkedTiles * movementCost <= (boardState.playerList[boardState.curPlayerNum].AP) && checkedTiles < path.Count)
+                while (checkedTiles * movementCost <= AP && checkedTiles < path.Count)
                 {
                     //check each of the item boxes for collision 
                     for (int i = 0; i < boardState.itemBoxes.Count; i++)//(checked before mines since mines killing a tank exits the loop)
@@ -214,7 +258,7 @@ namespace TankGame.Objects.Entities
                                     curSquare = curBoard.getGrid()[path[path.Count - 1 - checkedTiles].location.X, path[path.Count - 1 - checkedTiles].location.Y];
 
                                     //spend the AP required to move there
-                                    boardState.playerList[boardState.curPlayerNum].AP -= checkedTiles * movementCost;
+                                    AP -= checkedTiles * movementCost;
                                     //remove the mine from the game
                                     boardState.playerList[i].mines.Remove(boardState.playerList[i].mines[j]);
                                     tankDied = true;
@@ -231,7 +275,7 @@ namespace TankGame.Objects.Entities
                 if (alive)
                 {
                     checkedTiles--; //do this since if the tank lived, it added 1 extra at the end of the loop
-                    boardState.playerList[boardState.curPlayerNum].AP -= checkedTiles * movementCost;
+                    AP -= checkedTiles * movementCost;
                     gridLocation = path[path.Count - 1 - checkedTiles].location;
                     curSquare = curBoard.getGrid()[path[path.Count - 1 - checkedTiles].location.X, path[path.Count - 1 - checkedTiles].location.Y];
                 }
@@ -248,7 +292,7 @@ namespace TankGame.Objects.Entities
                 if (curRightClick == ButtonState.Pressed && oldRightClick != ButtonState.Pressed)
                 {
                     //does the player have the action points to fire
-                    if (boardState.playerList[boardState.curPlayerNum].AP >= fireCost)
+                    if (AP >= fireCost)
                     {
                         //get the rectangle to see if its null 
                         RectangleF targetRectangle = curBoard.getGridSquare(curGridLocation.X, curGridLocation.Y);//set the target rectangle 
@@ -441,7 +485,7 @@ namespace TankGame.Objects.Entities
         private bool FireGun(BoardState boardState, ref bool fired)
         {
             //spend AP, tell the outside function the gun when off, and play the tank fire sound
-            boardState.playerList[boardState.curPlayerNum].AP -= fireCost;
+            AP -= fireCost;
             fired = true;
             playFireSoundEffect();
             playSmokePuff = true;
@@ -660,6 +704,8 @@ namespace TankGame.Objects.Entities
             @new.type = ItemToClone.type;
             @new.gunAngle = ItemToClone.gunAngle;
             @new.muzzleFlash = ItemToClone.muzzleFlash;
+            @new.startAP = ItemToClone.startAP;
+            @new.AP = ItemToClone.AP;
 
             return @new;
         }

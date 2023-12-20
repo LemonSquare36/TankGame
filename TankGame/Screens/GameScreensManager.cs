@@ -15,10 +15,8 @@ namespace TankGame
     {
         //hold the level file location
         private string file;
-        //Action points per turn
-        int AP = 4;
         //turn tracker
-        int activeTankNum = -1;
+        protected int activeTankNum = -1;
 
         Texture2D trail, end;
 
@@ -97,7 +95,7 @@ namespace TankGame
                     //get player amount and make players with spawn regions for each one
                     for (int i = 0; i < rules.numOfPlayers; i++)
                     {
-                        boardState.playerList.Add(new Player(AP, rules.startingSweeps));
+                        boardState.playerList.Add(new Player(rules.startingSweeps));
                         boardState.playerList[i].SpawnTiles = levelManager.getPlayerSpawns()[i];
                     }
 
@@ -181,6 +179,10 @@ namespace TankGame
                             break;
                         case "scoutTank":
                             tempTank = new Tank(curGrid, curGridLocation, "Scout");
+
+                            break;
+                        case "heavyTank":
+                            tempTank = new Tank(curGrid, curGridLocation, "Heavy");
 
                             break;
                         case "mine":
@@ -376,7 +378,7 @@ namespace TankGame
             //ensure the tank is active and has player has ap left
             if (activeTankNum != -1)
             {
-                if (boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active && boardState.playerList[boardState.curPlayerNum].AP > 0)
+                if (boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].Active && boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].AP > 0)
                 {
                     //if the mouse is within the board
                     if (mouseInBoard || boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].targetAquired)
@@ -440,6 +442,12 @@ namespace TankGame
         #region BUTTON EVENTS
         protected void EndTurnPressed(object sender, EventArgs e)
         {
+            //reset exhausted tanks draw color to normal before swapping players
+            foreach (Tank tank in boardState.playerList[boardState.curPlayerNum].tanks)
+            {
+                tank.AP = tank.startAP;
+            }
+
             //make number of players 0 based. If the current player isnt the last player move to next
             if (boardState.curPlayerNum < rules.numOfPlayers - 1)
             {
@@ -450,14 +458,14 @@ namespace TankGame
                 boardState.curPlayerNum = 0;
             }
 
-            //reset all tanks to inactive
+            //reset all tanks to inactive and reset there AP to start of turn AP
             activeTankNum = -1;
             foreach (Tank tank in boardState.playerList[boardState.curPlayerNum].tanks)
             {
                 tank.Active = false;
+                tank.AP = tank.startAP;
             }
-            //reset the players AP to the turn start AP
-            boardState.playerList[boardState.curPlayerNum].AP = boardState.playerList[boardState.curPlayerNum].startAP;
+
             //clear the path for the pathfinder
             path = new List<Cell>();
             //dont draw tank info immediatly
@@ -555,7 +563,7 @@ namespace TankGame
                     //finds the count in the non reverse way (for drawing text to screen)
                     int reverseListCounter = path.Count - 1 - i;
                     //if it is the first item in the list and out of range, draw in red
-                    if (i == 0 && reverseListCounter > boardState.playerList[boardState.curPlayerNum].AP / boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].movementCost)
+                    if (i == 0 && reverseListCounter > boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].AP / boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].movementCost)
                     {
                         //we devide by 50 here since that is the size of the sprite (make sure it scales with the size of the board rectangles)
                         spriteBatch.Draw(end, cellRect.Location, null, Color.DarkRed, 0, Vector2.Zero, rectScale, SpriteEffects.None, 0);
@@ -573,7 +581,7 @@ namespace TankGame
 
                     }
                     //if the reverse counter is less than equals the amount the tank can move, then draw that differently, so the player knows where they will stop
-                    else if (reverseListCounter == boardState.playerList[boardState.curPlayerNum].AP / boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].movementCost)
+                    else if (reverseListCounter == boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].AP / boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].movementCost)
                     {
                         //we devide by 50 here since that is the size of the sprite (make sure it scales with the size of the board rectangles)
                         spriteBatch.Draw(end, cellRect.Location, null, Color.White, 0, Vector2.Zero, rectScale, SpriteEffects.None, 0);
@@ -582,7 +590,7 @@ namespace TankGame
                         spriteBatch.DrawString(font, Convert.ToString(reverseListCounter), cellRect.Center + new Vector2(-10 * rectScale.X, -10 * rectScale.Y), Color.Black, 0, Vector2.Zero, .6f * cellRect.Width / 48, SpriteEffects.None, 0);
                     }
                     //its not a special spot but it is over the amount they can move (draw red)
-                    else if (i != 0 && reverseListCounter > boardState.playerList[boardState.curPlayerNum].AP / boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].movementCost)
+                    else if (i != 0 && reverseListCounter > boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].AP / boardState.playerList[boardState.curPlayerNum].tanks[activeTankNum].movementCost)
                     {
                         spriteBatch.Draw(trail, cellRect.Center + (new Vector2(-8, -8) * rectScale), null, Color.DarkRed, 0, Vector2.Zero, rectScale, SpriteEffects.None, 0);
                     }

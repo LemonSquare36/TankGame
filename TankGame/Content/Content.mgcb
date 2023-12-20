@@ -776,6 +776,66 @@
 /processorParam:TextureFormat=Color
 /build:GameSprites/BattleSprites/pathTrail.png
 
+#begin GameSprites/BattleSprites/Tanks/HeavyTankBody.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/HeavyTankBody.png
+
+#begin GameSprites/BattleSprites/Tanks/HeavyTankGun.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/HeavyTankGun.png
+
+#begin GameSprites/BattleSprites/Tanks/HeavyTankGunFlash.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/HeavyTankGunFlash.png
+
+#begin GameSprites/BattleSprites/Tanks/HeavyTankH.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/HeavyTankH.png
+
+#begin GameSprites/BattleSprites/Tanks/HeavyTankUH.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GameSprites/BattleSprites/Tanks/HeavyTankUH.png
+
 #begin GameSprites/BattleSprites/Tanks/MuzzleFlash.png
 /importer:TextureImporter
 /processor:TextureProcessor

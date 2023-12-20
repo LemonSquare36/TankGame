@@ -155,13 +155,16 @@ namespace TankGame.Tools
             buttonUpdate(Mouse, WorldPos);
             bool scrolldown = false;
             bool scrollup = false;
-            if (ButtonsList[topButton].ButtonActive)
+            if (numSelections < selections.Length)
             {
-                scrollup = true;
-            }
-            else if (ButtonsList[topButton + numSelections-1].ButtonActive)
-            {
-                scrolldown = true;
+                if (ButtonsList[topButton].ButtonActive)
+                {
+                    scrollup = true;
+                }
+                else if (ButtonsList[topButton + numSelections - 1].ButtonActive)
+                {
+                    scrolldown = true;
+                }
             }
 
             if (curKeyState.IsKeyDown(Keys.Up) && !oldKeyState.IsKeyDown(Keys.Up))
@@ -195,7 +198,7 @@ namespace TankGame.Tools
             else if (curKeyState.IsKeyDown(Keys.Down) && !oldKeyState.IsKeyDown(Keys.Down))
             {
                 int j = ButtonsList.FindIndex(X => X.ButtonActive == true);
-                if (j < ButtonsList.Count - 1)
+                if (j < ButtonsList.Count - 1 && j != -1)
                 {
                     ButtonsList[j].ButtonReset();
                     j++;

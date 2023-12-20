@@ -32,6 +32,7 @@ namespace TankGame.GameInfo
             allowedTanks.Add("Regular");
             allowedTanks.Add("Sniper");
             allowedTanks.Add("Scout");
+            allowedTanks.Add("Heavy");
             //notAllowedTanks.Add("Regular");
         }
         /// <summary>

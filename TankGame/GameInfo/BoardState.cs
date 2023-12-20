@@ -54,7 +54,7 @@ namespace TankGame.GameInfo
             //clone the players in the player list
             for (int i = 0; i < curBoardState.playerList.Count; i++)
             {
-                @newBoardState.playerList.Add(new Player((int)curBoardState.playerList[i].AP, curBoardState.playerList[i].inventory.sweeps));
+                @newBoardState.playerList.Add(new Player(curBoardState.playerList[i].inventory.sweeps));
                 foreach (Tank tank in curBoardState.playerList[i].tanks)
                 {
                     @newBoardState.playerList[i].tanks.Add(Tank.Clone(tank));
@@ -131,8 +131,6 @@ namespace TankGame.GameInfo
 
             //redo the gridlocations list
             getGridLocations();
-
-            playerList[curPlayerNum].AP = previousState.playerList[curPlayerNum].AP;
         }
         #region information grabbing
         public List<Point> getWallLocations()
